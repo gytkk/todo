@@ -1,6 +1,19 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* react-big-calendar 밑줄 강제 제거 */
+.rbc-calendar,
+.rbc-calendar *,
+.rbc-date-cell,
+.rbc-date-cell *,
+[class*="rbc"],
+[class*="rbc"] * {
+  text-decoration: none !important;
+  text-decoration-line: none !important;
+  border-bottom: none !important;
+  text-underline-offset: unset !important;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -116,7 +129,160 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+
+  /* 스크롤바 숨기기 */
+  ::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: none;
+  }
+
+  /* 전역 밑줄 제거 - react-big-calendar용 */
+  [class*="rbc"] * {
+    text-decoration: none !important;
+    text-decoration-line: none !important;
+    border-bottom: none !important;
+  }
+}
+
+/* react-big-calendar 요일 스타일 커스터마이징 */
+.rbc-header {
+  padding: 0 6px !important;
+  font-size: 0.9em !important;
+  font-weight: 700 !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.rbc-row.rbc-month-header {
+  height: 32px !important;
+}
+
+.rbc-header+.rbc-header {
+  border-left: 1px solid #e5e7eb !important;
+}
+
+/* 캘린더 외곽 border만 제거 */
+.rbc-calendar {
+  border: none !important;
+}
+
+.rbc-month-view {
+  border: none !important;
+}
+
+.rbc-btn-group .rbc-button:nth-child(2) {
+  display: inline-block !important;
+}
+
+/* 캘린더 날짜 셀 스타일링 */
+.rbc-date-cell {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  padding: 8px !important;
+}
+
+.rbc-date-cell > a {
+  text-align: center !important;
+  width: 100% !important;
+  font-weight: 500 !important;
+  color: #374151 !important;
+  text-decoration: none !important;
+  padding: 4px 0 !important;
+}
+
+.rbc-date-cell > a:link,
+.rbc-date-cell > a:visited,
+.rbc-date-cell > a:hover,
+.rbc-date-cell > a:active {
+  text-decoration: none !important;
+}
+
+.rbc-date-cell > a:hover {
+  color: #1f2937 !important;
+}
+
+/* 오늘 날짜 스타일링 */
+.rbc-today .rbc-date-cell > a {
+  background-color: #3b82f6 !important;
+  color: white !important;
+  border-radius: 50% !important;
+  width: 32px !important;
+  height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 auto !important;
+}
+
+/* 월 뷰의 날짜 셀 */
+.rbc-month-view .rbc-date-cell {
+  min-height: 40px !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  border-right: 1px solid #e5e7eb !important;
+}
+
+/* 다른 월의 날짜 (비활성화된 날짜) */
+.rbc-off-range .rbc-date-cell > a {
+  color: #9ca3af !important;
+}
+
+.rbc-off-range-bg .rbc-date-cell > a {
+  color: #9ca3af !important;
+}
+
+/* 주말 날짜 강조 */
+.rbc-date-cell > a {
+  transition: all 0.2s ease !important;
+}
+
+/* 날짜 셀 내부의 이벤트 영역 */
+.rbc-row-content {
+  padding-top: 4px !important;
+}
+
+/* react-big-calendar 전체에서 링크 밑줄 제거 - 더 강력한 선택자 */
+.rbc-calendar * {
+  text-decoration: none !important;
+}
+
+.rbc-calendar *:link,
+.rbc-calendar *:visited,
+.rbc-calendar *:hover,
+.rbc-calendar *:active {
+  text-decoration: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+}
+
+/* 날짜 셀 특정 스타일링 */
+.rbc-month-view .rbc-date-cell button,
+.rbc-month-view .rbc-date-cell a,
+.rbc-month-view .rbc-date-cell span {
+  text-decoration: none !important;
+  border-bottom: none !important;
+  text-decoration-line: none !important;
+  text-decoration-style: none !important;
+}
+
+/* 전역 밑줄 제거 */
+.rbc-calendar button,
+.rbc-calendar a,
+.rbc-calendar span,
+.rbc-calendar div {
+  text-decoration: none !important;
+  text-decoration-line: none !important;
+  border-bottom: none !important;
 }
