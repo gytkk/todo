@@ -98,14 +98,14 @@ export const DailyView: React.FC<DailyViewProps> = ({
     if (selectedDayRef.current && scrollContainerRef.current) {
       const container = scrollContainerRef.current;
       const selectedElement = selectedDayRef.current;
-      
+
       const containerHeight = container.clientHeight;
       const selectedTop = selectedElement.offsetTop;
       const selectedHeight = selectedElement.clientHeight;
-      
+
       // 선택된 요소를 화면 중앙에 위치시키기
       const scrollTop = selectedTop - (containerHeight / 2) + (selectedHeight / 2);
-      
+
       container.scrollTo({
         top: scrollTop,
         behavior: 'smooth'
@@ -128,7 +128,7 @@ export const DailyView: React.FC<DailyViewProps> = ({
       />
 
       {/* 메인 콘텐츠: 세로 스크롤 */}
-      <div 
+      <div
         ref={scrollContainerRef}
         className="flex-1 overflow-y-auto scroll-smooth"
       >
@@ -136,16 +136,15 @@ export const DailyView: React.FC<DailyViewProps> = ({
           {days.map((dayData, index) => {
             const isSelectedDay = index === selectedDayIndex;
             const isTodayActual = isToday(dayData.date);
-            
+
             return (
               <div
                 key={dayData.date.getTime()}
                 ref={isSelectedDay ? selectedDayRef : undefined}
-                className={`transition-all duration-200 ${
-                  isSelectedDay 
-                    ? 'border-l-4 border-blue-500 pl-4' 
+                className={`transition-all duration-200 ${isSelectedDay
+                    ? 'border-l-4 border-blue-500 pl-4'
                     : 'pl-4'
-                }`}
+                  }`}
               >
                 <DaySection
                   dayData={dayData}

@@ -1,7 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, ReactNode, useEffect, useMemo } from 'react';
-import { TodoItem, AppSettings, PageType, SidebarState, CalendarState, TodoCategory, CategoryFilter } from '@calendar-todo/shared-types';
+import React, { createContext, useContext, ReactNode, useEffect } from 'react';
+import { TodoItem, AppSettings, TodoCategory, CategoryFilter } from '@calendar-todo/shared-types';
 import { useTodos } from '@/hooks/useTodos';
 import { useCalendar } from '@/hooks/useCalendar';
 import { useSettings } from '@/hooks/useSettings';

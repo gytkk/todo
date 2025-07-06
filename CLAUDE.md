@@ -38,9 +38,12 @@ This project uses Turborepo for monorepo management with the following structure
 │   ├── frontend/          # Next.js todo calendar application
 │   └── backend/           # NestJS API server
 ├── packages/
-│   └── shared-config/     # Shared configuration files
-├── turbo.json            # Turborepo configuration
-└── package.json          # Root package.json with workspaces
+│   ├── shared-config/    # Shared configuration files
+│   └── shared-types/     # Shared types between frontend/backend
+├── CLAUDE.md             # Documentation for Claude Code 
+├── package.json          # Root package.json with workspaces
+├── README.md             # Documentation for the project
+└── turbo.json            # Turborepo configuration
 ```
 
 ## Architecture

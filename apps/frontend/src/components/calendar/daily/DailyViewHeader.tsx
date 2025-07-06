@@ -2,8 +2,6 @@
 
 import React from 'react';
 import { CalendarCommonHeader } from '../shared/CalendarCommonHeader';
-import { format } from 'date-fns';
-import { ko } from 'date-fns/locale';
 
 type CalendarViewType = 'month' | 'week' | 'day';
 
@@ -23,7 +21,6 @@ export const DailyViewHeader: React.FC<DailyViewHeaderProps> = ({
   onPreviousDay,
   onNextDay,
   onToday,
-  onDateSelect,
   formatDate,
   isToday,
   onViewChange

@@ -1,25 +1,24 @@
 import { TodoCategory } from '@calendar-todo/shared-types';
 
-// 기본 제공 카테고리 (삭제 불가)
 export const DEFAULT_CATEGORIES: TodoCategory[] = [
-  { 
-    id: 'work', 
-    name: '회사', 
-    color: '#3b82f6', 
+  {
+    id: 'work',
+    name: '회사',
+    color: '#3b82f6',
     isDefault: true,
     createdAt: new Date('2024-01-01')
   },
-  { 
-    id: 'family', 
-    name: '가족', 
-    color: '#10b981', 
+  {
+    id: 'family',
+    name: '가족',
+    color: '#10b981',
     isDefault: true,
     createdAt: new Date('2024-01-01')
   },
-  { 
-    id: 'personal', 
-    name: '개인', 
-    color: '#f59e0b', 
+  {
+    id: 'personal',
+    name: '개인',
+    color: '#f59e0b',
     isDefault: true,
     createdAt: new Date('2024-01-01')
   },

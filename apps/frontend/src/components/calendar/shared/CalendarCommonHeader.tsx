@@ -56,11 +56,11 @@ export const CalendarCommonHeader: React.FC<CalendarCommonHeaderProps> = ({
         >
           <ChevronLeft className="w-4 h-4 text-gray-600" />
         </Button>
-        
+
         <h2 className="text-lg font-semibold text-gray-900 min-w-[200px] text-center">
           {title}
         </h2>
-        
+
         <Button
           variant="ghost"
           size="sm"
@@ -78,11 +78,10 @@ export const CalendarCommonHeader: React.FC<CalendarCommonHeaderProps> = ({
           variant={currentView === 'month' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => onViewChange('month')}
-          className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-            currentView === 'month'
+          className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${currentView === 'month'
               ? 'bg-white text-gray-900 shadow-sm hover:bg-gray-50'
               : 'text-gray-600 hover:text-gray-900'
-          }`}
+            }`}
         >
           <Grid3X3 className="h-4 w-4" />
           월간
@@ -91,11 +90,10 @@ export const CalendarCommonHeader: React.FC<CalendarCommonHeaderProps> = ({
           variant={currentView === 'week' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => onViewChange('week')}
-          className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-            currentView === 'week'
+          className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${currentView === 'week'
               ? 'bg-white text-gray-900 shadow-sm hover:bg-gray-50'
               : 'text-gray-600 hover:text-gray-900'
-          }`}
+            }`}
         >
           <Calendar className="h-4 w-4" />
           주간
@@ -104,11 +102,10 @@ export const CalendarCommonHeader: React.FC<CalendarCommonHeaderProps> = ({
           variant={currentView === 'day' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => onViewChange('day')}
-          className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-            currentView === 'day'
+          className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${currentView === 'day'
               ? 'bg-white text-gray-900 shadow-sm hover:bg-gray-50'
               : 'text-gray-600 hover:text-gray-900'
-          }`}
+            }`}
         >
           <List className="h-4 w-4" />
           일간

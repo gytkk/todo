@@ -1,4 +1,4 @@
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, isToday as isDateToday, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays } from 'date-fns';
+import { format, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, isToday as isDateToday, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
 export const isToday = (date: Date): boolean => {
@@ -58,7 +58,7 @@ export const getMonthYear = (date: Date): string => {
 export const getWeekRange = (date: Date): string => {
   const startOfWeekDate = startOfWeek(date, { weekStartsOn: 0 });
   const endOfWeekDate = endOfWeek(date, { weekStartsOn: 0 });
-  
+
   if (startOfWeekDate.getMonth() === endOfWeekDate.getMonth()) {
     return formatDate(startOfWeekDate, 'yyyy년 M월 d일') + ' - ' + formatDate(endOfWeekDate, 'd일');
   } else {

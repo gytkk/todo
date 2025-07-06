@@ -32,10 +32,10 @@ export const CategoryManagement: React.FC<CategoryManagementProps> = ({
   const handleAddCategory = () => {
     if (newCategoryName.trim() && selectedColor) {
       // 중복 이름 체크
-      const nameExists = categories.some(cat => 
+      const nameExists = categories.some(cat =>
         cat.name.toLowerCase() === newCategoryName.trim().toLowerCase()
       );
-      
+
       if (nameExists) {
         alert('이미 존재하는 카테고리 이름입니다.');
         return;
@@ -65,11 +65,11 @@ export const CategoryManagement: React.FC<CategoryManagementProps> = ({
   const saveEdit = () => {
     if (editingCategory && editName.trim()) {
       // 중복 이름 체크 (현재 편집 중인 카테고리 제외)
-      const nameExists = categories.some(cat => 
-        cat.id !== editingCategory && 
+      const nameExists = categories.some(cat =>
+        cat.id !== editingCategory &&
         cat.name.toLowerCase() === editName.trim().toLowerCase()
       );
-      
+
       if (nameExists) {
         alert('이미 존재하는 카테고리 이름입니다.');
         return;
@@ -90,19 +90,19 @@ export const CategoryManagement: React.FC<CategoryManagementProps> = ({
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-medium text-gray-900 mb-4">카테고리 관리</h3>
-        
+
         {/* 카테고리 목록 */}
         <div className="space-y-3 mb-6">
           {categories.map(category => {
             const relatedTodos = todos.filter(todo => todo.category?.id === category.id);
-            
+
             return (
-              <div 
+              <div
                 key={category.id}
                 className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
               >
                 <div className="flex items-center gap-3">
-                  <div 
+                  <div
                     className="w-4 h-4 rounded-full flex-shrink-0"
                     style={{ backgroundColor: category.color }}
                   />
@@ -127,7 +127,7 @@ export const CategoryManagement: React.FC<CategoryManagementProps> = ({
                     </Badge>
                   )}
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                   {editingCategory === category.id ? (
                     <>
@@ -136,16 +136,16 @@ export const CategoryManagement: React.FC<CategoryManagementProps> = ({
                     </>
                   ) : (
                     <>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         variant="outline"
                         onClick={() => startEdit(category)}
                         disabled={category.isDefault}
                       >
                         수정
                       </Button>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         variant="destructive"
                         onClick={() => handleDeleteCategory(category.id)}
                         disabled={category.isDefault}
@@ -159,7 +159,7 @@ export const CategoryManagement: React.FC<CategoryManagementProps> = ({
             );
           })}
         </div>
-        
+
         {/* 새 카테고리 추가 */}
         <div className="border-t pt-4">
           <h4 className="font-medium mb-3">새 카테고리 추가</h4>
@@ -177,7 +177,7 @@ export const CategoryManagement: React.FC<CategoryManagementProps> = ({
                 maxLength={20}
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 색상 선택
@@ -187,11 +187,10 @@ export const CategoryManagement: React.FC<CategoryManagementProps> = ({
                   <button
                     key={color}
                     onClick={() => setSelectedColor(color)}
-                    className={`w-8 h-8 rounded-full border-2 transition-all ${
-                      selectedColor === color 
-                        ? 'border-gray-800 scale-110' 
-                        : 'border-gray-300 hover:border-gray-500'
-                    }`}
+                    className={`w-8 h-8 rounded-full border-2 transition-all ${selectedColor === color
+                      ? 'border-gray-800 scale-110'
+                      : 'border-gray-300 hover:border-gray-500'
+                      }`}
                     style={{ backgroundColor: color }}
                     title={`색상: ${color}`}
                   />
@@ -203,8 +202,8 @@ export const CategoryManagement: React.FC<CategoryManagementProps> = ({
                 </p>
               )}
             </div>
-            
-            <Button 
+
+            <Button
               onClick={handleAddCategory}
               disabled={!newCategoryName.trim() || !selectedColor || availableColors.length === 0}
               className="w-full"

@@ -19,11 +19,10 @@ export const CalendarTodos: React.FC<CalendarTodosProps> = ({
         {todos.slice(0, maxVisible).map((todo) => (
           <div
             key={todo.id}
-            className={`text-xs px-1.5 py-0.5 rounded-sm truncate flex-shrink-0 ${
-              todo.completed
-                ? 'bg-gray-100 text-gray-500 line-through'
-                : 'bg-blue-100 text-blue-800'
-            }`}
+            className={`text-xs px-1.5 py-0.5 rounded-sm truncate flex-shrink-0 ${todo.completed
+              ? 'bg-gray-100 text-gray-500 line-through'
+              : 'bg-blue-100 text-blue-800'
+              }`}
             title={todo.title}
           >
             {todo.title}
@@ -43,23 +42,21 @@ export const CalendarTodos: React.FC<CalendarTodosProps> = ({
       {todos.map((todo) => (
         <div
           key={todo.id}
-          className={`text-sm px-2 py-1 rounded-md ${
-            todo.completed
-              ? 'bg-gray-100 text-gray-500 line-through'
-              : 'bg-blue-50 text-blue-900'
-          }`}
+          className={`text-sm px-2 py-1 rounded-md ${todo.completed
+            ? 'bg-gray-100 text-gray-500 line-through'
+            : 'bg-blue-50 text-blue-900'
+            }`}
         >
           <div className="flex items-center gap-2">
             <div
-              className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                todo.completed ? 'bg-gray-400' : 'bg-blue-500'
-              }`}
+              className={`w-2 h-2 rounded-full flex-shrink-0 ${todo.completed ? 'bg-gray-400' : 'bg-blue-500'
+                }`}
             />
             <span className="truncate">{todo.title}</span>
           </div>
         </div>
       ))}
-      
+
       {total > 1 && (
         <div className="text-xs text-gray-500 px-2 mt-1">
           {completed}/{total} 완료

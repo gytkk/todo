@@ -9,7 +9,7 @@ export const useCategories = () => {
     if (typeof window === 'undefined') {
       return DEFAULT_CATEGORIES;
     }
-    
+
     const stored = localStorage.getItem(STORAGE_KEYS.USER_CATEGORIES);
     const userCategories = stored ? JSON.parse(stored).map((cat: any) => ({
       ...cat,
@@ -27,7 +27,7 @@ export const useCategories = () => {
       });
       return defaultFilter;
     }
-    
+
     const stored = localStorage.getItem(STORAGE_KEYS.CATEGORY_FILTER);
     if (stored) {
       return JSON.parse(stored);
@@ -78,7 +78,7 @@ export const useCategories = () => {
   // 카테고리 수정
   const updateCategory = useCallback((id: string, updates: Partial<TodoCategory>) => {
     setCategories(prev => {
-      const updated = prev.map(cat => 
+      const updated = prev.map(cat =>
         cat.id === id ? { ...cat, ...updates } : cat
       );
       // 사용자 정의 카테고리만 저장
@@ -93,7 +93,7 @@ export const useCategories = () => {
   // 카테고리 삭제
   const deleteCategory = useCallback((id: string, todos: TodoItem[]): boolean => {
     const category = categories.find(cat => cat.id === id);
-    
+
     // 기본 카테고리는 삭제 불가
     if (!category || category.isDefault) {
       return false;
@@ -164,7 +164,7 @@ export const useCategories = () => {
     const newCategoryIds = categories
       .map(cat => cat.id)
       .filter(id => !(id in categoryFilter));
-    
+
     if (newCategoryIds.length > 0) {
       setCategoryFilter(prev => {
         const updated = { ...prev };

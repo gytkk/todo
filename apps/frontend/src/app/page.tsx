@@ -21,7 +21,6 @@ export default function Home() {
     clearAllTodos,
     selectedDate,
     isSidebarOpen,
-    calendarEvents,
     currentDate,
     handleDateSelect,
     closeSidebar,
@@ -105,11 +104,10 @@ export default function Home() {
           }}
           onCloseTodoSidebar={closeSidebar}
         />
-        <div className={`h-screen transition-all duration-300 ease-in-out ${
-          sidebarVisible
-            ? (sidebarExpanded ? 'ml-64' : 'ml-16')
-            : 'ml-0'
-        }`}>
+        <div className={`h-screen transition-all duration-300 ease-in-out ${sidebarVisible
+          ? (sidebarExpanded ? 'ml-64' : 'ml-16')
+          : 'ml-0'
+          }`}>
           {renderContent()}
         </div>
       </div>

@@ -28,8 +28,8 @@ export const useDailyView = (
 
   // 날짜별 할일 필터링 함수
   const getDayTodos = (date: Date): TodoItem[] => {
-    return todos.filter(todo => 
-      isSameDay(todo.date, date) && 
+    return todos.filter(todo =>
+      isSameDay(todo.date, date) &&
       categoryFilter[todo.category.id] !== false
     );
   };
@@ -39,7 +39,7 @@ export const useDailyView = (
     const total = dayTodos.length;
     const completed = dayTodos.filter(todo => todo.completed).length;
     const completion = total > 0 ? Math.round((completed / total) * 100) : 0;
-    
+
     return { total, completed, completion };
   };
 
