@@ -1,36 +1,191 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Calendar Todo Monorepo
 
-## Getting Started
+A Korean calendar-based todo application built with Next.js 15, TypeScript, and shadcn/ui components. This project uses Turborepo for efficient monorepo management.
 
-First, run the development server:
+## 🏗️ Project Structure
+
+```
+├── apps/
+│   └── frontend/          # Next.js todo calendar application
+├── packages/
+│   └── shared-config/     # Shared configuration files
+├── turbo.json            # Turborepo configuration
+└── package.json          # Root package.json with workspaces
+```
+
+## ✨ Features
+
+- **Full-screen Calendar**: Built with react-big-calendar and date-fns Korean localization
+- **Dual Sidebar Layout**: Collapsible navigation sidebar + sliding todo management sidebar
+- **Todo Management**: Date-specific todo creation, editing, and completion tracking
+- **Settings Management**: Comprehensive settings with JSON editor and data export/import
+- **Statistics Dashboard**: Usage analytics and completion rates
+- **Responsive Design**: Modern UI with shadcn/ui components and Tailwind CSS
+- **Local Storage**: Persistent data storage with automatic date serialization
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- npm 10+
+
+### Installation
+
+1. Clone the repository:
+
+```bash
+git clone <repository-url>
+cd calendar-todo
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Start the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📝 Available Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Root Level Commands (Turborepo)
 
-## Learn More
+- `npm run dev` - Start all development servers using Turbo
+- `npm run build` - Build all applications using Turbo
+- `npm run lint` - Run ESLint on all packages using Turbo
+- `npm run type-check` - Run TypeScript type checking on all packages using Turbo
+- `npm run clean` - Clean cache files across all packages using Turbo
 
-To learn more about Next.js, take a look at the following resources:
+### Frontend App Commands (apps/frontend/)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `npm run dev` - Start development server with Turbopack
+- `npm run dev:stable` - Start development server on port 3000
+- `npm run dev:fallback` - Start development server on port 3001
+- `npm run build` - Build for production
+- `npm run build:clean` - Clean build with .next removal
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm run type-check` - Run TypeScript type checking
+- `npm run clean` - Clean cache files
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🛠️ Tech Stack
 
-## Deploy on Vercel
+- **Framework**: Next.js 15 with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS 4
+- **UI Components**: shadcn/ui with Radix UI primitives
+- **Calendar**: react-big-calendar with date-fns
+- **Localization**: Korean (ko) locale support
+- **Icons**: Lucide React
+- **Monorepo**: Turborepo
+- **Package Manager**: npm with workspaces
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🎨 Key Components
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **CalendarView**: Full-screen calendar with Korean localization
+- **TodoSidebar**: Sliding sidebar for date-specific todo management
+- **Settings**: Comprehensive settings management with JSON editor
+- **Statistics**: Usage analytics and completion tracking
+- **Sidebar Navigation**: Collapsible navigation between home/settings
+
+## 📊 Data Structure
+
+```typescript
+interface TodoItem {
+  id: string;
+  title: string;
+  date: Date;
+  completed: boolean;
+}
+
+interface CalendarEvent extends Event {
+  id: string;
+  title: string;
+  start: Date;
+  end: Date;
+  resource?: TodoItem;
+}
+
+interface AppSettings {
+  theme: 'light' | 'dark' | 'system';
+  language: 'ko' | 'en';
+  dateFormat: 'YYYY-MM-DD' | 'MM/DD/YYYY' | 'DD/MM/YYYY';
+  // ... other settings
+}
+```
+
+## 🔧 Development
+
+### Adding New Apps
+
+To add a new app to the monorepo:
+
+1. Create a new directory in `apps/`
+2. Add the app's `package.json`
+3. Update the root `turbo.json` if needed
+4. Install dependencies from the root: `npm install`
+
+### Adding New Packages
+
+To add a new shared package:
+
+1. Create a new directory in `packages/`
+2. Add the package's `package.json`
+3. Reference it in other packages as needed
+
+### Code Style
+
+- Use TypeScript with strong typing
+- Follow camelCase for variables/functions, PascalCase for components
+- Use early returns over deep nesting
+- Keep components focused on single responsibility
+- Import order: React, external libs, internal modules
+
+## 📁 File Structure
+
+```
+apps/frontend/
+├── src/
+│   ├── app/                 # Next.js app router
+│   ├── components/          # React components
+│   │   ├── calendar/        # Calendar-related components
+│   │   ├── todo/           # Todo management components
+│   │   └── ui/             # shadcn/ui components
+│   ├── contexts/           # React contexts
+│   ├── hooks/              # Custom hooks
+│   ├── lib/                # Utilities
+│   ├── services/           # Business logic
+│   ├── types/              # TypeScript types
+│   └── utils/              # Helper functions
+├── components.json         # shadcn/ui configuration
+├── next.config.ts          # Next.js configuration
+├── tailwind.config.js      # Tailwind CSS configuration
+└── tsconfig.json          # TypeScript configuration
+```
+
+## 🚀 Deployment
+
+The frontend app can be deployed on any platform that supports Next.js:
+
+- **Vercel**: Connect your repository for automatic deployments
+- **Netlify**: Use the Next.js build command
+- **Docker**: Use the provided Dockerfile (if available)
+
+## 📄 License
+
+This project is private and not licensed for public use.
+
+## 🤝 Contributing
+
+This is a private project. Please follow the existing code style and patterns when making changes.
+
+## 📞 Support
+
+For questions or issues, please refer to the `CLAUDE.md` file for detailed development guidelines and architecture information.
