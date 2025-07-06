@@ -6,27 +6,11 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Download, Upload, Palette, Calendar, BarChart3, Settings as SettingsIcon, Copy, Code, Edit3, Eye, Check, AlertTriangle, RefreshCw } from "lucide-react";
+import { Trash2, Download, Upload, Palette, Calendar, Settings as SettingsIcon, Copy, Code, Edit3, Eye, Check, AlertTriangle, RefreshCw } from "lucide-react";
 import { useState, useEffect } from "react";
-
-interface TodoItem {
-  id: string;
-  title: string;
-  date: Date;
-  completed: boolean;
-}
-
-interface AppSettings {
-  theme: 'light' | 'dark' | 'system';
-  language: 'ko' | 'en';
-  dateFormat: 'YYYY-MM-DD' | 'MM/DD/YYYY' | 'DD/MM/YYYY';
-  timeFormat: '12h' | '24h';
-  weekStart: 'sunday' | 'monday' | 'saturday';
-  defaultView: 'month' | 'week' | 'day';
-  showWeekends: boolean;
-  autoBackup: boolean;
-  backupInterval: 'daily' | 'weekly' | 'monthly';
-}
+import { TodoItem, AppSettings } from '@/types';
+import { useSettings } from '@/hooks/useSettings';
+import { useTodos } from '@/hooks/useTodos';
 
 interface SettingsProps {
   todos: TodoItem[];
@@ -37,43 +21,14 @@ export function Settings({ todos, onClearData }: SettingsProps) {
   const [isClearing, setIsClearing] = useState(false);
   const [copiedJson, setCopiedJson] = useState(false);
   const [showJsonEditor, setShowJsonEditor] = useState(false);
-  
+
   // JSON 편집기 상태
   const [jsonText, setJsonText] = useState<string>('');
   const [jsonError, setJsonError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [settingsBackup, setSettingsBackup] = useState<AppSettings | null>(null);
-  const [settings, setSettings] = useState<AppSettings>({
-    theme: 'light',
-    language: 'ko',
-    dateFormat: 'YYYY-MM-DD',
-    timeFormat: '24h',
-    weekStart: 'sunday',
-    defaultView: 'month',
-    showWeekends: true,
-    autoBackup: false,
-    backupInterval: 'weekly'
-  });
-
-  // 설정 로드
-  useEffect(() => {
-    const savedSettings = localStorage.getItem('app-settings');
-    if (savedSettings) {
-      setSettings(JSON.parse(savedSettings));
-    }
-  }, []);
-
-  // 설정 저장
-  const saveSettings = (newSettings: AppSettings) => {
-    setSettings(newSettings);
-    localStorage.setItem('app-settings', JSON.stringify(newSettings));
-  };
-
-  // 설정 업데이트 함수
-  const updateSetting = <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => {
-    const newSettings = { ...settings, [key]: value };
-    saveSettings(newSettings);
-  };
+  
+  const { settings, updateSetting, resetSettings, setSettings } = useSettings();
 
   // settings 변경 시 jsonText 동기화
   useEffect(() => {
@@ -108,7 +63,7 @@ export function Settings({ todos, onClearData }: SettingsProps) {
       // 필수 필드 검증
       const data = jsonData as Record<string, unknown>;
       const requiredFields: (keyof AppSettings)[] = [
-        'theme', 'language', 'dateFormat', 'timeFormat', 
+        'theme', 'language', 'dateFormat', 'timeFormat',
         'weekStart', 'defaultView', 'showWeekends', 'autoBackup', 'backupInterval'
       ];
 
@@ -158,7 +113,7 @@ export function Settings({ todos, onClearData }: SettingsProps) {
       }
 
       // 검증 통과 시 설정 적용
-      saveSettings(jsonData as AppSettings);
+      setSettings(jsonData as AppSettings);
       return true;
     } catch (error) {
       setJsonError(error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.');
@@ -169,7 +124,7 @@ export function Settings({ todos, onClearData }: SettingsProps) {
   // JSON 텍스트 변경 처리
   const handleJsonChange = (newJsonText: string) => {
     setJsonText(newJsonText);
-    
+
     if (newJsonText.trim() === '') {
       setJsonError('JSON이 비어있습니다.');
       return;
@@ -197,23 +152,12 @@ export function Settings({ todos, onClearData }: SettingsProps) {
   // 백업에서 복원
   const restoreFromBackup = () => {
     if (settingsBackup) {
-      saveSettings(settingsBackup);
+      setSettings(settingsBackup);
       setJsonText(JSON.stringify(settingsBackup, null, 2));
       setJsonError(null);
     }
   };
 
-  // 통계 계산
-  const completedTodos = todos.filter(t => t.completed).length;
-  const incompleteTodos = todos.length - completedTodos;
-  const completionRate = todos.length > 0 ? Math.round((completedTodos / todos.length) * 100) : 0;
-
-  // 최근 7일 완료 할일 수
-  const getRecentCompletions = () => {
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    return todos.filter(t => t.completed && new Date(t.date) >= sevenDaysAgo).length;
-  };
 
   // JSON 복사 기능
   const handleCopyJson = async () => {
@@ -272,7 +216,7 @@ export function Settings({ todos, onClearData }: SettingsProps) {
           <h1 className="text-2xl font-bold text-gray-900">설정</h1>
           <p className="text-gray-600 mt-2">앱 설정을 관리하세요</p>
         </div>
-        
+
         {/* JSON 편집기 토글 버튼 */}
         <Button
           variant={showJsonEditor ? "default" : "outline"}
@@ -391,18 +335,17 @@ export function Settings({ todos, onClearData }: SettingsProps) {
                       )}
                     </div>
                   </div>
-                  
+
                   {/* JSON 편집기/뷰어 */}
                   <div className="relative">
                     {isEditing ? (
                       <textarea
                         value={jsonText}
                         onChange={(e) => handleJsonChange(e.target.value)}
-                        className={`w-full h-96 p-4 rounded-lg text-sm font-mono border resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                          jsonError 
-                            ? 'border-red-500 focus:ring-red-500 bg-red-50' 
+                        className={`w-full h-96 p-4 rounded-lg text-sm font-mono border resize-none focus:outline-none focus:ring-2 focus:ring-offset-2 ${jsonError
+                            ? 'border-red-500 focus:ring-red-500 bg-red-50'
                             : 'border-gray-300 focus:ring-blue-500 bg-white'
-                        }`}
+                          }`}
                         placeholder="JSON 설정을 입력하세요..."
                         spellCheck={false}
                       />
@@ -450,7 +393,7 @@ export function Settings({ todos, onClearData }: SettingsProps) {
                 {/* 오른쪽: 설정 설명 및 관리 */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-medium">설정 관리</h3>
-                  
+
                   {/* JSON 필드 설명 */}
                   <div className="space-y-3">
                     <h4 className="text-base font-medium">JSON 필드 설명</h4>
@@ -504,24 +447,13 @@ export function Settings({ todos, onClearData }: SettingsProps) {
                         <Download className="h-4 w-4 mr-2" />
                         설정 JSON 다운로드
                       </Button>
-                      
+
                       <Button
                         variant="outline"
                         className="w-full"
                         onClick={() => {
                           if (confirm('설정을 기본값으로 초기화하시겠습니까?')) {
-                            const defaultSettings: AppSettings = {
-                              theme: 'light',
-                              language: 'ko',
-                              dateFormat: 'YYYY-MM-DD',
-                              timeFormat: '24h',
-                              weekStart: 'sunday',
-                              defaultView: 'month',
-                              showWeekends: true,
-                              autoBackup: false,
-                              backupInterval: 'weekly'
-                            };
-                            saveSettings(defaultSettings);
+                            resetSettings();
                           }
                         }}
                       >
@@ -539,269 +471,225 @@ export function Settings({ todos, onClearData }: SettingsProps) {
         /* 일반 설정 모드 */
         <div className="space-y-6">
 
-      {/* 애플리케이션 설정 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Palette className="h-5 w-5" />
-            애플리케이션 설정
-          </CardTitle>
-          <CardDescription>
-            테마, 언어 및 기본 설정을 관리합니다
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* 테마 설정 */}
-          <div className="space-y-3">
-            <Label htmlFor="theme-select" className="text-sm font-medium">테마</Label>
-            <Select value={settings.theme} onValueChange={(value) => updateSetting('theme', value as AppSettings['theme'])}>
-              <SelectTrigger id="theme-select">
-                <SelectValue placeholder="테마를 선택하세요" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="light">라이트 모드</SelectItem>
-                <SelectItem value="dark">다크 모드</SelectItem>
-                <SelectItem value="system">시스템 설정</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* 언어 설정 */}
-          <div className="space-y-3">
-            <Label htmlFor="language-select" className="text-sm font-medium">언어</Label>
-            <Select value={settings.language} onValueChange={(value) => updateSetting('language', value as AppSettings['language'])}>
-              <SelectTrigger id="language-select">
-                <SelectValue placeholder="언어를 선택하세요" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ko">한국어</SelectItem>
-                <SelectItem value="en">English</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* 날짜 형식 */}
-          <div className="space-y-3">
-            <Label htmlFor="date-format-select" className="text-sm font-medium">날짜 형식</Label>
-            <Select value={settings.dateFormat} onValueChange={(value) => updateSetting('dateFormat', value as AppSettings['dateFormat'])}>
-              <SelectTrigger id="date-format-select">
-                <SelectValue placeholder="날짜 형식을 선택하세요" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="YYYY-MM-DD">2024-01-15</SelectItem>
-                <SelectItem value="MM/DD/YYYY">01/15/2024</SelectItem>
-                <SelectItem value="DD/MM/YYYY">15/01/2024</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* 시간 형식 */}
-          <div className="space-y-3">
-            <Label htmlFor="time-format-select" className="text-sm font-medium">시간 형식</Label>
-            <Select value={settings.timeFormat} onValueChange={(value) => updateSetting('timeFormat', value as AppSettings['timeFormat'])}>
-              <SelectTrigger id="time-format-select">
-                <SelectValue placeholder="시간 형식을 선택하세요" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="12h">12시간 (오전/오후)</SelectItem>
-                <SelectItem value="24h">24시간</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* 주 시작일 */}
-          <div className="space-y-3">
-            <Label htmlFor="week-start-select" className="text-sm font-medium">주 시작일</Label>
-            <Select value={settings.weekStart} onValueChange={(value) => updateSetting('weekStart', value as AppSettings['weekStart'])}>
-              <SelectTrigger id="week-start-select">
-                <SelectValue placeholder="주 시작일을 선택하세요" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="sunday">일요일</SelectItem>
-                <SelectItem value="monday">월요일</SelectItem>
-                <SelectItem value="saturday">토요일</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* 캘린더 설정 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            캘린더 설정
-          </CardTitle>
-          <CardDescription>
-            캘린더 표시 및 뷰 설정을 관리합니다
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* 기본 뷰 */}
-          <div className="space-y-3">
-            <Label htmlFor="default-view-select" className="text-sm font-medium">기본 뷰</Label>
-            <Select value={settings.defaultView} onValueChange={(value) => updateSetting('defaultView', value as AppSettings['defaultView'])}>
-              <SelectTrigger id="default-view-select">
-                <SelectValue placeholder="기본 뷰를 선택하세요" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="month">월 보기</SelectItem>
-                <SelectItem value="week">주 보기</SelectItem>
-                <SelectItem value="day">일 보기</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* 주말 표시 */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label className="text-sm font-medium">주말 표시</Label>
-              <p className="text-sm text-gray-600">캘린더에서 주말을 표시합니다</p>
-            </div>
-            <Switch
-              checked={settings.showWeekends}
-              onCheckedChange={(checked) => updateSetting('showWeekends', checked)}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* 통계 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
-            사용 통계
-          </CardTitle>
-          <CardDescription>
-            할일 완료 현황과 통계를 확인하세요
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* 통계 카드 */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center p-4 bg-gray-50 rounded-lg">
-              <div className="text-2xl font-bold text-gray-900">{todos.length}</div>
-              <div className="text-sm text-gray-600">전체 할일</div>
-            </div>
-            <div className="text-center p-4 bg-green-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">{completedTodos}</div>
-              <div className="text-sm text-gray-600">완료된 할일</div>
-            </div>
-            <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">{incompleteTodos}</div>
-              <div className="text-sm text-gray-600">진행 중인 할일</div>
-            </div>
-            <div className="text-center p-4 bg-purple-50 rounded-lg">
-              <div className="text-2xl font-bold text-purple-600">{completionRate}%</div>
-              <div className="text-sm text-gray-600">완료율</div>
-            </div>
-          </div>
-
-          {/* 최근 활동 */}
-          <div className="space-y-2">
-            <h4 className="font-medium">최근 활동</h4>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline">최근 7일</Badge>
-              <span className="text-sm text-gray-600">
-                {getRecentCompletions()}개 할일 완료
-              </span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* 데이터 관리 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <SettingsIcon className="h-5 w-5" />
-            데이터 관리
-          </CardTitle>
-          <CardDescription>
-            할일 데이터를 백업하거나 초기화할 수 있습니다
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* 자동 백업 설정 */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="text-sm font-medium">자동 백업</Label>
-                <p className="text-sm text-gray-600">정기적으로 데이터를 자동 백업합니다</p>
-              </div>
-              <Switch
-                checked={settings.autoBackup}
-                onCheckedChange={(checked) => updateSetting('autoBackup', checked)}
-              />
-            </div>
-
-            {settings.autoBackup && (
+          {/* 애플리케이션 설정 */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Palette className="h-5 w-5" />
+                애플리케이션 설정
+              </CardTitle>
+              <CardDescription>
+                테마, 언어 및 기본 설정을 관리합니다
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* 테마 설정 */}
               <div className="space-y-3">
-                <Label htmlFor="backup-interval-select" className="text-sm font-medium">백업 주기</Label>
-                <Select value={settings.backupInterval} onValueChange={(value) => updateSetting('backupInterval', value as AppSettings['backupInterval'])}>
-                  <SelectTrigger id="backup-interval-select">
-                    <SelectValue placeholder="백업 주기를 선택하세요" />
+                <Label htmlFor="theme-select" className="text-sm font-medium">테마</Label>
+                <Select value={settings.theme} onValueChange={(value) => updateSetting('theme', value as AppSettings['theme'])}>
+                  <SelectTrigger id="theme-select">
+                    <SelectValue placeholder="테마를 선택하세요" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="daily">매일</SelectItem>
-                    <SelectItem value="weekly">매주</SelectItem>
-                    <SelectItem value="monthly">매월</SelectItem>
+                    <SelectItem value="light">라이트 모드</SelectItem>
+                    <SelectItem value="dark">다크 모드</SelectItem>
+                    <SelectItem value="system">시스템 설정</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-            )}
-          </div>
 
-          {/* 데이터 백업/복원 */}
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={handleExportData}
-              className="flex-1"
-              disabled={todos.length === 0}
-            >
-              <Download className="h-4 w-4 mr-2" />
-              데이터 내보내기
-            </Button>
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={(): void => {
-                const element = document.getElementById('import-file') as HTMLInputElement;
-                element?.click();
-              }}
-            >
-              <Upload className="h-4 w-4 mr-2" />
-              데이터 가져오기
-            </Button>
-            <input
-              id="import-file"
-              type="file"
-              accept=".json"
-              onChange={handleImportData}
-              className="hidden"
-            />
-          </div>
+              {/* 언어 설정 */}
+              <div className="space-y-3">
+                <Label htmlFor="language-select" className="text-sm font-medium">언어</Label>
+                <Select value={settings.language} onValueChange={(value) => updateSetting('language', value as AppSettings['language'])}>
+                  <SelectTrigger id="language-select">
+                    <SelectValue placeholder="언어를 선택하세요" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ko">한국어</SelectItem>
+                    <SelectItem value="en">English</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-          {/* 데이터 초기화 */}
-          <div className="pt-4 border-t">
-            <Button
-              variant="destructive"
-              onClick={handleClearData}
-              disabled={isClearing || todos.length === 0}
-              className="w-full"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              {isClearing ? '데이터 삭제 중...' : '모든 데이터 삭제'}
-            </Button>
-            <p className="text-xs text-gray-500 text-center mt-2">
-              이 작업은 되돌릴 수 없습니다. 신중하게 결정하세요.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+              {/* 날짜 형식 */}
+              <div className="space-y-3">
+                <Label htmlFor="date-format-select" className="text-sm font-medium">날짜 형식</Label>
+                <Select value={settings.dateFormat} onValueChange={(value) => updateSetting('dateFormat', value as AppSettings['dateFormat'])}>
+                  <SelectTrigger id="date-format-select">
+                    <SelectValue placeholder="날짜 형식을 선택하세요" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="YYYY-MM-DD">2024-01-15</SelectItem>
+                    <SelectItem value="MM/DD/YYYY">01/15/2024</SelectItem>
+                    <SelectItem value="DD/MM/YYYY">15/01/2024</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* 시간 형식 */}
+              <div className="space-y-3">
+                <Label htmlFor="time-format-select" className="text-sm font-medium">시간 형식</Label>
+                <Select value={settings.timeFormat} onValueChange={(value) => updateSetting('timeFormat', value as AppSettings['timeFormat'])}>
+                  <SelectTrigger id="time-format-select">
+                    <SelectValue placeholder="시간 형식을 선택하세요" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="12h">12시간 (오전/오후)</SelectItem>
+                    <SelectItem value="24h">24시간</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* 주 시작일 */}
+              <div className="space-y-3">
+                <Label htmlFor="week-start-select" className="text-sm font-medium">주 시작일</Label>
+                <Select value={settings.weekStart} onValueChange={(value) => updateSetting('weekStart', value as AppSettings['weekStart'])}>
+                  <SelectTrigger id="week-start-select">
+                    <SelectValue placeholder="주 시작일을 선택하세요" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="sunday">일요일</SelectItem>
+                    <SelectItem value="monday">월요일</SelectItem>
+                    <SelectItem value="saturday">토요일</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 캘린더 설정 */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                캘린더 설정
+              </CardTitle>
+              <CardDescription>
+                캘린더 표시 및 뷰 설정을 관리합니다
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* 기본 뷰 */}
+              <div className="space-y-3">
+                <Label htmlFor="default-view-select" className="text-sm font-medium">기본 뷰</Label>
+                <Select value={settings.defaultView} onValueChange={(value) => updateSetting('defaultView', value as AppSettings['defaultView'])}>
+                  <SelectTrigger id="default-view-select">
+                    <SelectValue placeholder="기본 뷰를 선택하세요" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="month">월 보기</SelectItem>
+                    <SelectItem value="week">주 보기</SelectItem>
+                    <SelectItem value="day">일 보기</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* 주말 표시 */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-medium">주말 표시</Label>
+                  <p className="text-sm text-gray-600">캘린더에서 주말을 표시합니다</p>
+                </div>
+                <Switch
+                  checked={settings.showWeekends}
+                  onCheckedChange={(checked) => updateSetting('showWeekends', checked)}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+
+          {/* 데이터 관리 */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <SettingsIcon className="h-5 w-5" />
+                데이터 관리
+              </CardTitle>
+              <CardDescription>
+                할일 데이터를 백업하거나 초기화할 수 있습니다
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* 자동 백업 설정 */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-sm font-medium">자동 백업</Label>
+                    <p className="text-sm text-gray-600">정기적으로 데이터를 자동 백업합니다</p>
+                  </div>
+                  <Switch
+                    checked={settings.autoBackup}
+                    onCheckedChange={(checked) => updateSetting('autoBackup', checked)}
+                  />
+                </div>
+
+                {settings.autoBackup && (
+                  <div className="space-y-3">
+                    <Label htmlFor="backup-interval-select" className="text-sm font-medium">백업 주기</Label>
+                    <Select value={settings.backupInterval} onValueChange={(value) => updateSetting('backupInterval', value as AppSettings['backupInterval'])}>
+                      <SelectTrigger id="backup-interval-select">
+                        <SelectValue placeholder="백업 주기를 선택하세요" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="daily">매일</SelectItem>
+                        <SelectItem value="weekly">매주</SelectItem>
+                        <SelectItem value="monthly">매월</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+
+              {/* 데이터 백업/복원 */}
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={handleExportData}
+                  className="flex-1"
+                  disabled={todos.length === 0}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  데이터 내보내기
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={(): void => {
+                    const element = document.getElementById('import-file') as HTMLInputElement;
+                    element?.click();
+                  }}
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  데이터 가져오기
+                </Button>
+                <input
+                  id="import-file"
+                  type="file"
+                  accept=".json"
+                  onChange={handleImportData}
+                  className="hidden"
+                />
+              </div>
+
+              {/* 데이터 초기화 */}
+              <div className="pt-4 border-t">
+                <Button
+                  variant="destructive"
+                  onClick={handleClearData}
+                  disabled={isClearing || todos.length === 0}
+                  className="w-full"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  {isClearing ? '데이터 삭제 중...' : '모든 데이터 삭제'}
+                </Button>
+                <p className="text-xs text-gray-500 text-center mt-2">
+                  이 작업은 되돌릴 수 없습니다. 신중하게 결정하세요.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* 앱 정보 */}
           <Card>

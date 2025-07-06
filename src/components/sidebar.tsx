@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Home, Settings, Menu, User, LucideIcon } from "lucide-react";
+import { Home, Settings, Menu, User, LucideIcon, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type PageType = "home" | "settings";
+import { PageType } from "@/types";
 
 interface MenuItem {
   id: PageType;
@@ -17,9 +17,10 @@ interface SidebarProps {
   currentPage: PageType;
   onPageChange: (page: PageType) => void;
   onSidebarStateChange?: (expanded: boolean, visible: boolean) => void;
+  onCloseTodoSidebar?: () => void;
 }
 
-export function Sidebar({ currentPage, onPageChange, onSidebarStateChange }: SidebarProps) {
+export function Sidebar({ currentPage, onPageChange, onSidebarStateChange, onCloseTodoSidebar }: SidebarProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isVisible, setIsVisible] = useState(true);
 
@@ -28,6 +29,11 @@ export function Sidebar({ currentPage, onPageChange, onSidebarStateChange }: Sid
       id: "home",
       name: "홈",
       icon: Home,
+    },
+    {
+      id: "statistics",
+      name: "통계",
+      icon: BarChart3,
     },
     {
       id: "settings",
@@ -40,12 +46,18 @@ export function Sidebar({ currentPage, onPageChange, onSidebarStateChange }: Sid
     const newExpanded = !isExpanded;
     setIsExpanded(newExpanded);
     onSidebarStateChange?.(newExpanded, isVisible);
+    if (onCloseTodoSidebar) {
+      onCloseTodoSidebar();
+    }
   };
 
   const toggleVisible = (): void => {
     const newVisible = !isVisible;
     setIsVisible(newVisible);
     onSidebarStateChange?.(isExpanded, newVisible);
+    if (onCloseTodoSidebar) {
+      onCloseTodoSidebar();
+    }
   };
 
   // 초기 상태 전달
@@ -68,11 +80,19 @@ export function Sidebar({ currentPage, onPageChange, onSidebarStateChange }: Sid
       )}
 
       {/* 사이드바 */}
-      <div className={cn(
-        "fixed left-0 top-0 h-screen bg-white border-r border-gray-100 shadow-sm transition-all duration-300 ease-in-out z-40",
-        isVisible ? "translate-x-0" : "-translate-x-full",
-        isExpanded ? "w-64" : "w-16"
-      )}>
+      <div 
+        className={cn(
+          "fixed left-0 top-0 h-screen bg-white border-r border-gray-100 shadow-sm transition-all duration-300 ease-in-out z-40",
+          isVisible ? "translate-x-0" : "-translate-x-full",
+          isExpanded ? "w-64" : "w-16"
+        )}
+        onClick={(e) => {
+          // 사이드바 배경 클릭 시에만 TodoSidebar 닫기
+          if (e.target === e.currentTarget && onCloseTodoSidebar) {
+            onCloseTodoSidebar();
+          }
+        }}
+      >
         {/* 헤더 */}
         <div className="flex items-center justify-between h-16 px-4 border-b border-gray-100">
           {isExpanded && (
@@ -110,7 +130,12 @@ export function Sidebar({ currentPage, onPageChange, onSidebarStateChange }: Sid
                   isActive && "bg-gray-100 text-gray-900",
                   !isExpanded && "justify-center px-0"
                 )}
-                onClick={(): void => onPageChange(item.id)}
+                onClick={(): void => {
+                  onPageChange(item.id);
+                  if (onCloseTodoSidebar) {
+                    onCloseTodoSidebar();
+                  }
+                }}
               >
                 <Icon className={cn("h-5 w-5", isExpanded && "mr-3")} />
                 {isExpanded && (
