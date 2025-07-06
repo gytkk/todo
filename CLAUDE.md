@@ -28,8 +28,30 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Korean calendar-based todo application built with Next.js 15, TypeScript, and shadcn/ui components. The app features a full-screen react-big-calendar with a collapsible sidebar navigation and settings management, providing an intuitive and modern todo management experience.
 
+## Monorepo Structure
+
+This project uses Turborepo for monorepo management with the following structure:
+
+```
+├── apps/
+│   └── frontend/          # Next.js todo calendar application
+├── packages/
+│   └── shared-config/     # Shared configuration files
+├── turbo.json            # Turborepo configuration
+└── package.json          # Root package.json with workspaces
+```
+
 ## Development Commands
 
+### Root Level Commands (run from repository root)
+- `npm run dev` - Start all development servers using Turbo
+- `npm run build` - Build all applications using Turbo
+- `npm run lint` - Run ESLint on all packages using Turbo
+- `npm run type-check` - Run TypeScript type checking on all packages using Turbo
+- `npm run clean` - Clean cache files across all packages using Turbo
+- `npm run dev:restart` - Kill dev process, clean cache, and restart
+
+### Frontend App Commands (run from apps/frontend/)
 - `npm run dev` - Start development server with Turbopack (Do not run this command after applying changes, as it breaks running dev server)
 - `npm run dev:stable` - Start development server on port 3000
 - `npm run dev:fallback` - Start development server on port 3001
@@ -39,16 +61,15 @@ This is a Korean calendar-based todo application built with Next.js 15, TypeScri
 - `npm run lint` - Run ESLint
 - `npm run type-check` - Run TypeScript type checking
 - `npm run clean` - Clean cache files
-- `npm run dev:restart` - Kill dev process, clean cache, and restart
 
 ## Architecture
 
 ### Core Components
-- **Main Application**: Single-page application with calendar and todo management (`src/app/page.tsx`)
-- **Sidebar Navigation**: Collapsible sidebar with home/settings navigation (`src/components/sidebar.tsx`)
+- **Main Application**: Single-page application with calendar and todo management (`apps/frontend/src/app/page.tsx`)
+- **Sidebar Navigation**: Collapsible sidebar with home/settings navigation (`apps/frontend/src/components/sidebar.tsx`)
 - **Calendar Integration**: Uses `react-big-calendar` with date-fns localizer for full-screen calendar display
-- **Settings Management**: Comprehensive settings page with JSON editor (`src/components/settings.tsx`)
-- **Navigation Bar**: Simple header with app title (`src/components/navbar.tsx`)
+- **Settings Management**: Comprehensive settings page with JSON editor (`apps/frontend/src/components/settings.tsx`)
+- **Navigation Bar**: Simple header with app title (`apps/frontend/src/components/navbar.tsx`)
 - **UI Components**: shadcn/ui components with Tailwind CSS styling
 - **Todo Sidebar**: Sliding sidebar for date-specific todo management
 
@@ -96,12 +117,12 @@ interface AppSettings {
 - Responsive design with modern UI
 
 ### Component Structure
-- **Main Application** (`src/app/page.tsx`): Handles all calendar logic, todo management, and main layout
-- **Sidebar Navigation** (`src/components/sidebar.tsx`): Left sidebar with collapsible navigation between home/settings
-- **Settings Page** (`src/components/settings.tsx`): Comprehensive settings with multiple sections and JSON editor
-- **Navigation Bar** (`src/components/navbar.tsx`): Simple top navigation bar
-- **UI Components** (`src/components/ui/`): shadcn/ui components following design system patterns
-- **Utils** (`src/lib/utils.ts`): Utility functions for styling and common operations
+- **Main Application** (`apps/frontend/src/app/page.tsx`): Handles all calendar logic, todo management, and main layout
+- **Sidebar Navigation** (`apps/frontend/src/components/sidebar.tsx`): Left sidebar with collapsible navigation between home/settings
+- **Settings Page** (`apps/frontend/src/components/settings.tsx`): Comprehensive settings with multiple sections and JSON editor
+- **Navigation Bar** (`apps/frontend/src/components/navbar.tsx`): Simple top navigation bar
+- **UI Components** (`apps/frontend/src/components/ui/`): shadcn/ui components following design system patterns
+- **Utils** (`apps/frontend/src/lib/utils.ts`): Utility functions for styling and common operations
 
 ### Layout Design
 - **Dual Sidebar Layout**: 
@@ -175,4 +196,10 @@ interface AppSettings {
 - **Markdown Planning**: Structured todo lists for feature implementation
 - **Progress Tracking**: Manual completion marking in planning documents
 
-This architecture provides a scalable foundation for a comprehensive calendar-based todo management application with modern UX patterns and robust data management.
+### Monorepo Benefits
+- **Code Sharing**: Shared configurations and utilities across multiple apps
+- **Dependency Management**: Centralized dependency management with workspaces
+- **Build Pipeline**: Efficient build and development workflows with Turborepo
+- **Scalability**: Easy addition of new apps (backend, mobile, etc.) in the future
+
+This architecture provides a scalable foundation for a comprehensive calendar-based todo management application with modern UX patterns, robust data management, and monorepo structure for future expansion.
