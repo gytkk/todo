@@ -4,7 +4,7 @@ A Korean calendar-based todo application built with Next.js 15, TypeScript, and 
 
 ## 🏗️ Project Structure
 
-```
+```text
 ├── apps/
 │   └── frontend/          # Next.js todo calendar application
 ├── packages/
@@ -93,6 +93,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ## 🛠️ Tech Stack
 
 ### Frontend
+
 - **Framework**: Next.js 15 with App Router
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS 4
@@ -102,6 +103,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 - **Icons**: Lucide React
 
 ### Backend
+
 - **Framework**: NestJS with Express
 - **Language**: TypeScript
 - **Testing**: Jest with Supertest
@@ -109,6 +111,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 - **Build Tool**: SWC (Speedy Web Compiler)
 
 ### Development
+
 - **Monorepo**: Turborepo
 - **Package Manager**: npm with workspaces
 - **Version Control**: Git with .gitignore for build artifacts
@@ -116,6 +119,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ## 🎨 Key Components
 
 ### Frontend Components
+
 - **CalendarView**: Full-screen calendar with Korean localization
 - **TodoSidebar**: Sliding sidebar for date-specific todo management
 - **Settings**: Comprehensive settings management with JSON editor
@@ -123,6 +127,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 - **Sidebar Navigation**: Collapsible navigation between home/settings
 
 ### Backend Components
+
 - **NestJS API Server**: RESTful API with Express integration
 - **Controllers**: Handle HTTP requests and route management
 - **Services**: Business logic and data processing
@@ -224,6 +229,7 @@ apps/
 ## 🚀 Deployment
 
 ### Frontend Deployment
+
 The frontend app can be deployed on any platform that supports Next.js:
 
 - **Vercel**: Connect your repository for automatic deployments
@@ -231,6 +237,7 @@ The frontend app can be deployed on any platform that supports Next.js:
 - **Docker**: Use the provided Dockerfile (if available)
 
 ### Backend Deployment
+
 The backend API can be deployed on any platform that supports Node.js:
 
 - **Railway**: Deploy NestJS applications with automatic scaling
@@ -240,6 +247,7 @@ The backend API can be deployed on any platform that supports Node.js:
 - **Docker**: Containerized deployment
 
 ### Full-Stack Deployment
+
 - **Turborepo**: Build all apps with `npm run build`
 - **Environment Variables**: Configure separate environments for frontend and backend
 - **API URLs**: Update frontend to point to deployed backend API
