@@ -1,6 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
 import { CalendarEvent, TodoItem } from '@/types';
-import { format } from 'date-fns';
 
 export const useCalendar = (todos: TodoItem[]) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());

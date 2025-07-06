@@ -6,6 +6,8 @@ import { Home, Settings, Menu, User, LucideIcon, BarChart3 } from "lucide-react"
 import { cn } from "@/lib/utils";
 import { CategoryFilter } from "@/components/categories/CategoryFilter";
 import { useAppContext } from "@/contexts/AppContext";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import { PageType } from "@calendar-todo/shared-types";
 
@@ -13,35 +15,39 @@ interface MenuItem {
   id: PageType;
   name: string;
   icon: LucideIcon;
+  href: string;
 }
 
 interface SidebarProps {
   currentPage: PageType;
-  onPageChange: (page: PageType) => void;
   onSidebarStateChange?: (expanded: boolean, visible: boolean) => void;
   onCloseTodoSidebar?: () => void;
 }
 
-export function Sidebar({ currentPage, onPageChange, onSidebarStateChange, onCloseTodoSidebar }: SidebarProps) {
+export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isVisible, setIsVisible] = useState(true);
   const { categories, categoryFilter, toggleCategoryFilter } = useAppContext();
+  const pathname = usePathname();
 
   const menuItems: MenuItem[] = [
     {
       id: "home",
       name: "홈",
       icon: Home,
+      href: "/",
     },
     {
       id: "statistics",
       name: "통계",
       icon: BarChart3,
+      href: "/statistics",
     },
     {
       id: "settings",
       name: "설정",
       icon: Settings,
+      href: "/settings",
     }
   ];
 
@@ -122,38 +128,38 @@ export function Sidebar({ currentPage, onPageChange, onSidebarStateChange, onClo
         <div className="p-2 space-y-2">
           {menuItems.map((item: MenuItem) => {
             const Icon = item.icon;
-            const isActive = currentPage === item.id;
+            const isActive = pathname === item.href;
 
             return (
-              <Button
-                key={item.id}
-                variant={isActive ? "secondary" : "ghost"}
-                className={cn(
-                  "w-full justify-start h-12 px-3 py-2 text-left hover:bg-gray-50",
-                  isActive && "bg-gray-100 text-gray-900",
-                  !isExpanded && "justify-center px-0"
-                )}
-                onClick={(): void => {
-                  onPageChange(item.id);
-                  if (onCloseTodoSidebar) {
-                    onCloseTodoSidebar();
-                  }
-                }}
-              >
-                <Icon className={cn("h-5 w-5", isExpanded && "mr-3")} />
-                {isExpanded && (
-                  <div className="flex flex-col items-start">
-                    <span className="font-medium text-sm">{item.name}</span>
-                  </div>
-                )}
-              </Button>
+              <Link key={item.id} href={item.href}>
+                <Button
+                  variant={isActive ? "secondary" : "ghost"}
+                  className={cn(
+                    "w-full justify-start h-12 px-3 py-2 text-left hover:bg-gray-50",
+                    isActive && "bg-gray-100 text-gray-900",
+                    !isExpanded && "justify-center px-0"
+                  )}
+                  onClick={(): void => {
+                    if (onCloseTodoSidebar) {
+                      onCloseTodoSidebar();
+                    }
+                  }}
+                >
+                  <Icon className={cn("h-5 w-5", isExpanded && "mr-3")} />
+                  {isExpanded && (
+                    <div className="flex flex-col items-start">
+                      <span className="font-medium text-sm">{item.name}</span>
+                    </div>
+                  )}
+                </Button>
+              </Link>
             );
           })}
         </div>
 
         {/* 카테고리 필터 - 홈 페이지에서만 표시 */}
-        {isExpanded && currentPage === "home" && (
-          <div className="flex-1 overflow-y-auto">
+        {isExpanded && pathname === "/" && (
+          <div className="flex-1 overflow-y-auto scrollbar-thin">
             <CategoryFilter
               categories={categories}
               categoryFilter={categoryFilter}

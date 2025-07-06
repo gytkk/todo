@@ -141,7 +141,7 @@ export function TodoSidebar({ isOpen, selectedDate, onClose }: TodoSidebarProps)
         <div className="flex-1 flex flex-col space-y-4 p-4">
           <TodoForm onAddTodo={handleAddTodo} categories={categories} disabled={!selectedDate} />
           
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto scrollbar-visible">
             <TodoList
               todos={selectedDateTodos}
               onToggleTodo={toggleTodo}

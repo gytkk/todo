@@ -1,4 +1,11 @@
-import { Event } from "react-big-calendar";
+// 기본 Event 타입 정의
+export interface Event {
+  title?: string;
+  allDay?: boolean;
+  start?: Date;
+  end?: Date;
+  resource?: unknown;
+}
 
 // Category 관련 타입들
 export interface TodoCategory {

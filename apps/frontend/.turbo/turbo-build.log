@@ -2,3 +2,58 @@
 > frontend@0.1.0 build
 > next build
 
+   ▲ Next.js 15.3.4
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 2000ms
+   Linting and checking validity of types ...
+
+Failed to compile.
+
+./src/components/calendar/custom/CalendarTodos.tsx
+7:3  Error: 'date' is defined but never used.  @typescript-eslint/no-unused-vars
+13:9  Error: 'hasIncomplete' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/calendar/daily/DaySection.tsx
+32:3  Error: 'isToday' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/calendar/daily/hooks/useDailyView.ts
+69:6  Warning: React Hook useMemo has a missing dependency: 'getDayTodos'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/categories/CategoryFilter.tsx
+17:9  Error: 'activeCount' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+18:9  Error: 'totalCount' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/settings/CategoryManagement.tsx
+221:44  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+221:47  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+
+./src/components/statistics/StatisticsPage.tsx
+8:51  Error: 'eachDayOfInterval' is defined but never used.  @typescript-eslint/no-unused-vars
+259:41  Error: 'index' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/todo/TodoSidebar.tsx
+7:22  Error: 'TodoItemType' is defined but never used.  @typescript-eslint/no-unused-vars
+73:11  Error: 'lastElement' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/hooks/useCategories.ts
+14:66  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+125:21  Error: 'removed' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/services/settingsService.ts
+108:38  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/utils/errorHandler.ts
+12:55  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+12:65  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+40:60  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+50:57  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+npm error Lifecycle script `build` failed with error:
+npm error code 1
+npm error path /home/gytkk/workspace/todo/apps/frontend
+npm error workspace frontend@0.1.0
+npm error location /home/gytkk/workspace/todo/apps/frontend
+npm error command failed
+npm error command sh -c next build

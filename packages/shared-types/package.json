@@ -12,9 +12,7 @@
     "dev": "tsc --watch",
     "clean": "rm -rf dist"
   },
-  "dependencies": {
-    "react-big-calendar": "^1.19.4"
-  },
+  "dependencies": {},
   "devDependencies": {
     "typescript": "^5",
     "@types/react": "^19"

@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@calendar-todo/shared-types": "file:../../packages/shared-types",
+    "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-navigation-menu": "^1.2.13",
     "@radix-ui/react-select": "^2.2.5",

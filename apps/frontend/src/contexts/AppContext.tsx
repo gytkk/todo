@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, ReactNode, useEffect } from 'react';
-import { TodoItem, AppSettings, TodoCategory, CategoryFilter } from '@calendar-todo/shared-types';
+import { TodoItem, AppSettings, TodoCategory, CategoryFilter, CalendarEvent } from '@calendar-todo/shared-types';
 import { useTodos } from '@/hooks/useTodos';
 import { useCalendar } from '@/hooks/useCalendar';
 import { useSettings } from '@/hooks/useSettings';
@@ -16,12 +16,18 @@ interface AppContextType {
   deleteTodo: (id: string) => void;
   clearAllTodos: () => void;
   getTodosByDate: (date: Date) => TodoItem[];
-  getTodoStats: () => any;
+  getTodoStats: () => {
+    total: number;
+    completed: number;
+    incomplete: number;
+    completionRate: number;
+    recentCompletions: number;
+  };
 
   // Calendar related
   selectedDate: Date | undefined;
   isSidebarOpen: boolean;
-  calendarEvents: any[];
+  calendarEvents: CalendarEvent[];
   currentDate: Date;
   handleDateSelect: (date: Date) => void;
   closeSidebar: () => void;

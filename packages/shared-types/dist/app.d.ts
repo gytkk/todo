@@ -1,10 +1,36 @@
+export interface UserInfo {
+    name: string;
+    email: string;
+    profileImage?: string;
+}
+export interface Category {
+    id: string;
+    name: string;
+    color: string;
+    isDefault: boolean;
+}
 export interface AppSettings {
+    userInfo: UserInfo;
+    categories: Category[];
     theme: 'light' | 'dark' | 'system';
     language: 'ko' | 'en';
+    themeColor: string;
+    customColor: string;
+    defaultView: 'month' | 'week' | 'day';
     dateFormat: 'YYYY-MM-DD' | 'MM/DD/YYYY' | 'DD/MM/YYYY';
     timeFormat: '12h' | '24h';
+    timezone: string;
     weekStart: 'sunday' | 'monday' | 'saturday';
-    defaultView: 'month' | 'week' | 'day';
+    oldTodoDisplayLimit: number;
+    autoMoveTodos: boolean;
+    saturationAdjustment: {
+        enabled: boolean;
+        levels: Array<{
+            days: number;
+            opacity: number;
+        }>;
+    };
+    completedTodoDisplay: 'all' | 'yesterday' | 'none';
     showWeekends: boolean;
     autoBackup: boolean;
     backupInterval: 'daily' | 'weekly' | 'monthly';
