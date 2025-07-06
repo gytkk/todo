@@ -1,0 +1,39 @@
+{
+  "name": "@calendar-todo/shared-types",
+  "version": "0.1.0",
+  "description": "Shared TypeScript types for calendar todo monorepo",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "react-big-calendar": "^1.19.4"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "@types/react": "^19"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    },
+    "./auth": {
+      "types": "./dist/auth.d.ts",
+      "import": "./dist/auth.js",
+      "require": "./dist/auth.js"
+    },
+    "./todo": {
+      "types": "./dist/todo.d.ts",
+      "import": "./dist/todo.js",
+      "require": "./dist/todo.js"
+    }
+  }
+}

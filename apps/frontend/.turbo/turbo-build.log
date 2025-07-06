@@ -1,58 +1,4 @@
 
-
 > frontend@0.1.0 build
 > next build
 
-[1G[0K   [1m[38;2;173;127;168m▲ Next.js 15.3.4[39m[22m
-
- [37m[1m [22m[39m Creating an optimized production build ...
- [32m[1m✓[22m[39m Compiled successfully in 0ms
-[?25l [37m[1m [22m[39m Linting and checking validity of types  [36m.[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m..[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m...[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m.[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m..[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m...[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m.[39m[2K[1G[?25h[31m
-Failed to compile.[39m
-[?25l [36m.[39m [2K[1G[?25h
-./src/components/settings.tsx
-13:10  Error: 'useTodos' is defined but never used.  @typescript-eslint/no-unused-vars
-
-./src/components/statistics/StatisticsPage.tsx
-8:51  Error: 'eachDayOfInterval' is defined but never used.  @typescript-eslint/no-unused-vars
-259:41  Error: 'index' is defined but never used.  @typescript-eslint/no-unused-vars
-
-./src/components/todo/TodoSidebar.tsx
-7:22  Error: 'TodoItemType' is defined but never used.  @typescript-eslint/no-unused-vars
-73:11  Error: 'lastElement' is assigned a value but never used.  @typescript-eslint/no-unused-vars
-
-./src/contexts/AppContext.tsx
-4:33  Error: 'PageType' is defined but never used.  @typescript-eslint/no-unused-vars
-4:43  Error: 'SidebarState' is defined but never used.  @typescript-eslint/no-unused-vars
-4:57  Error: 'CalendarState' is defined but never used.  @typescript-eslint/no-unused-vars
-18:23  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-23:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-
-./src/hooks/useCalendar.ts
-3:10  Error: 'format' is defined but never used.  @typescript-eslint/no-unused-vars
-
-./src/hooks/useLocalStorage.ts
-1:20  Error: 'useEffect' is defined but never used.  @typescript-eslint/no-unused-vars
-
-./src/hooks/useTodos.ts
-1:10  Error: 'useState' is defined but never used.  @typescript-eslint/no-unused-vars
-1:20  Error: 'useEffect' is defined but never used.  @typescript-eslint/no-unused-vars
-
-./src/services/settingsService.ts
-108:38  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-
-./src/utils/errorHandler.ts
-12:55  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-12:65  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-40:60  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-50:57  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-
-info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
-[?25l [36m.[39m [?25h[1G[0K⠙[1G[0K[1mnpm[22m [31merror[39m Lifecycle script `build` failed with error:
-[1G[0K⠙[1G[0K[1mnpm[22m [31merror[39m [94mcode[39m [33m1[39m
-[1G[0K⠙[1G[0K[1mnpm[22m [31merror[39m [94mpath[39m /home/gytkk/workspace/todo/apps/frontend
-[1G[0K⠙[1G[0K[1mnpm[22m [31merror[39m [94mworkspace[39m frontend@0.1.0
-[1G[0K⠙[1G[0K[1mnpm[22m [31merror[39m [94mlocation[39m /home/gytkk/workspace/todo/apps/frontend
-[1G[0K⠙[1G[0K[1mnpm[22m [31merror[39m command failed
-[1G[0K⠙[1G[0K[1mnpm[22m [31merror[39m [94mcommand[39m sh -c next build
-[1G[0K⠙[1G[0K

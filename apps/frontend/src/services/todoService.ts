@@ -15,14 +15,14 @@ export class TodoService {
   async getTodos(): Promise<TodoItem[]> {
     try {
       const savedTodos = safeLocalStorageGet(this.STORAGE_KEY, []);
-      
+
       if (Array.isArray(savedTodos)) {
         return savedTodos.map((todo: SavedTodoItem) => ({
           ...todo,
           date: new Date(todo.date),
         }));
       }
-      
+
       return [];
     } catch (error) {
       console.error('Error loading todos:', error);
@@ -36,7 +36,7 @@ export class TodoService {
         ...todo,
         date: todo.date.toISOString(),
       }));
-      
+
       return safeLocalStorageSet(this.STORAGE_KEY, serializedTodos);
     } catch (error) {
       console.error('Error saving todos:', error);
@@ -51,10 +51,10 @@ export class TodoService {
         ...todo,
         id: Date.now().toString(),
       };
-      
+
       const updatedTodos = [...currentTodos, newTodo];
       const success = await this.saveTodos(updatedTodos);
-      
+
       return success ? newTodo : null;
     } catch (error) {
       console.error('Error adding todo:', error);
@@ -68,7 +68,7 @@ export class TodoService {
       const updatedTodos = currentTodos.map(todo =>
         todo.id === id ? { ...todo, ...updates } : todo
       );
-      
+
       return await this.saveTodos(updatedTodos);
     } catch (error) {
       console.error('Error updating todo:', error);
@@ -80,7 +80,7 @@ export class TodoService {
     try {
       const currentTodos = await this.getTodos();
       const filteredTodos = currentTodos.filter(todo => todo.id !== id);
-      
+
       return await this.saveTodos(filteredTodos);
     } catch (error) {
       console.error('Error deleting todo:', error);
@@ -111,21 +111,21 @@ export class TodoService {
   async importTodos(file: File): Promise<TodoItem[]> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      
+
       reader.onload = async (e) => {
         try {
           const importedData = JSON.parse(e.target?.result as string);
-          
+
           if (!Array.isArray(importedData)) {
             throw new Error('Invalid file format');
           }
-          
+
           // Validate and convert dates
           const validatedTodos: TodoItem[] = importedData.map((item, index) => {
             if (!item.id || !item.title || !item.date) {
               throw new Error(`Invalid todo item at index ${index}`);
             }
-            
+
             return {
               id: item.id,
               title: item.title,
@@ -133,18 +133,18 @@ export class TodoService {
               completed: Boolean(item.completed),
             };
           });
-          
+
           const success = await this.saveTodos(validatedTodos);
           if (!success) {
             throw new Error('Failed to save imported todos');
           }
-          
+
           resolve(validatedTodos);
         } catch (error) {
           reject(new Error('Failed to import todos: ' + (error as Error).message));
         }
       };
-      
+
       reader.onerror = () => reject(new Error('Failed to read file'));
       reader.readAsText(file);
     });

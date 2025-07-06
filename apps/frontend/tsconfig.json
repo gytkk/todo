@@ -25,6 +25,12 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@calendar-todo/shared-types": [
+        "../../packages/shared-types/src"
+      ],
+      "@calendar-todo/shared-types/*": [
+        "../../packages/shared-types/src/*"
       ]
     }
   },

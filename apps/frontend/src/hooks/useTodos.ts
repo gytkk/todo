@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { TodoItem, SavedTodoItem, TodoStats } from '@/types';
+import { TodoItem, SavedTodoItem, TodoStats, TodoCategory } from '@calendar-todo/shared-types';
 import { useLocalStorage } from './useLocalStorage';
 import { format } from 'date-fns';
+import { DEFAULT_CATEGORIES } from '@/constants/categories';
 
-export const useTodos = () => {
+export const useTodos = (categories: TodoCategory[] = DEFAULT_CATEGORIES) => {
   const [storedTodos, setStoredTodos] = useLocalStorage<SavedTodoItem[]>('calendar-todos', []);
   
   // Convert stored todos to proper TodoItem objects with Date objects
@@ -16,26 +17,32 @@ export const useTodos = () => {
         return {
           ...todo,
           date: new Date(), // Fallback to current date
+          category: todo.category || categories.find(c => c.id === 'personal') || DEFAULT_CATEGORIES[2], // Default to "개인" category
         };
       }
       return {
         ...todo,
         date: todoDate,
+        category: todo.category || categories.find(c => c.id === 'personal') || DEFAULT_CATEGORIES[2], // Default to "개인" category
       };
     });
-  }, [storedTodos]);
+  }, [storedTodos, categories]);
 
-  const addTodo = useCallback((title: string, date: Date) => {
-    if (title.trim() && date) {
+  const addTodo = useCallback((title: string, date: Date, categoryId: string) => {
+    if (title.trim() && date && categoryId) {
+      // Find category by ID
+      const category = categories.find(cat => cat.id === categoryId) || categories.find(cat => cat.id === 'personal') || DEFAULT_CATEGORIES[2];
+      
       const newSavedTodo: SavedTodoItem = {
         id: Date.now().toString(),
         title: title.trim(),
         date: date.toISOString(),
         completed: false,
+        category: category,
       };
       setStoredTodos(prevTodos => [...prevTodos, newSavedTodo]);
     }
-  }, [setStoredTodos]);
+  }, [setStoredTodos, categories]);
 
   const toggleTodo = useCallback((id: string) => {
     setStoredTodos(prevTodos =>

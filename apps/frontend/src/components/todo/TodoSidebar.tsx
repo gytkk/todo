@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { TodoItem as TodoItemType } from '@/types';
+import { TodoItem as TodoItemType } from '@calendar-todo/shared-types';
 import { TodoForm } from './TodoForm';
 import { TodoList } from './TodoList';
 import { TodoStats } from './TodoStats';
@@ -18,7 +18,7 @@ interface TodoSidebarProps {
 }
 
 export function TodoSidebar({ isOpen, selectedDate, onClose }: TodoSidebarProps) {
-  const { addTodo, toggleTodo, deleteTodo, getTodosByDate } = useAppContext();
+  const { addTodo, toggleTodo, deleteTodo, getTodosByDate, categories } = useAppContext();
   const sidebarRef = useRef<HTMLDivElement>(null);
   
   const selectedDateTodos = useMemo(() => {
@@ -33,9 +33,9 @@ export function TodoSidebar({ isOpen, selectedDate, onClose }: TodoSidebarProps)
     recentCompletions: 0,
   }), [selectedDateTodos]);
 
-  const handleAddTodo = (title: string) => {
+  const handleAddTodo = (title: string, categoryId: string) => {
     if (selectedDate) {
-      addTodo(title, selectedDate);
+      addTodo(title, selectedDate, categoryId);
     }
   };
 
@@ -139,7 +139,7 @@ export function TodoSidebar({ isOpen, selectedDate, onClose }: TodoSidebarProps)
         </div>
         
         <div className="flex-1 flex flex-col space-y-4 p-4">
-          <TodoForm onAddTodo={handleAddTodo} disabled={!selectedDate} />
+          <TodoForm onAddTodo={handleAddTodo} categories={categories} disabled={!selectedDate} />
           
           <div className="flex-1 overflow-y-auto">
             <TodoList

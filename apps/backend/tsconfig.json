@@ -11,6 +11,14 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "incremental": true,
+    "paths": {
+      "@calendar-todo/shared-types": [
+        "../../packages/shared-types/src"
+      ],
+      "@calendar-todo/shared-types/*": [
+        "../../packages/shared-types/src/*"
+      ]
+    },
     "skipLibCheck": true,
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,

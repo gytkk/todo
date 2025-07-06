@@ -1,6 +1,5 @@
 "use client";
 
-import { SlotInfo } from "react-big-calendar";
 import { Navbar } from "@/components/navbar";
 import { Sidebar } from "@/components/sidebar";
 import { Settings } from "@/components/settings";
@@ -9,7 +8,7 @@ import { CalendarView } from "@/components/calendar/CalendarView";
 import { TodoSidebar } from "@/components/todo/TodoSidebar";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useState, useCallback } from "react";
-import { PageType, CalendarEvent } from "@/types";
+import { PageType } from "@calendar-todo/shared-types";
 import { useAppContext } from "@/contexts/AppContext";
 
 export default function Home() {
@@ -23,8 +22,10 @@ export default function Home() {
     selectedDate,
     isSidebarOpen,
     calendarEvents,
+    currentDate,
     handleDateSelect,
     closeSidebar,
+    handleNavigate,
   } = useAppContext();
 
   const handleCalendarClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
@@ -75,9 +76,11 @@ export default function Home() {
         <Navbar onCloseTodoSidebar={closeSidebar} />
         <div className="h-[calc(100vh-4rem)] bg-white relative">
           <CalendarView
-            events={calendarEvents}
-            onSelectSlot={(slotInfo: SlotInfo) => handleDateSelect(slotInfo.start)}
-            onSelectEvent={(event: CalendarEvent) => handleDateSelect(event.start)}
+            currentDate={currentDate}
+            selectedDate={selectedDate}
+            todos={todos}
+            onDateSelect={handleDateSelect}
+            onNavigate={handleNavigate}
             onCalendarClick={handleCalendarClick}
           />
         </div>

@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 export const useCalendar = (todos: TodoItem[]) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [currentDate, setCurrentDate] = useState<Date>(new Date());
 
   const calendarEvents: CalendarEvent[] = useMemo(() => {
     return todos.map((todo) => {
@@ -35,13 +36,19 @@ export const useCalendar = (todos: TodoItem[]) => {
     setIsSidebarOpen(true);
   }, []);
 
+  const handleNavigate = useCallback((date: Date) => {
+    setCurrentDate(date);
+  }, []);
+
   return {
     selectedDate,
     isSidebarOpen,
     calendarEvents,
+    currentDate,
     handleDateSelect,
     closeSidebar,
     openSidebar,
     setSelectedDate,
+    handleNavigate,
   };
 };

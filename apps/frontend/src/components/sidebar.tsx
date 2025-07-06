@@ -4,8 +4,10 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Home, Settings, Menu, User, LucideIcon, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CategoryFilter } from "@/components/categories/CategoryFilter";
+import { useAppContext } from "@/contexts/AppContext";
 
-import { PageType } from "@/types";
+import { PageType } from "@calendar-todo/shared-types";
 
 interface MenuItem {
   id: PageType;
@@ -23,6 +25,7 @@ interface SidebarProps {
 export function Sidebar({ currentPage, onPageChange, onSidebarStateChange, onCloseTodoSidebar }: SidebarProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isVisible, setIsVisible] = useState(true);
+  const { categories, categoryFilter, toggleCategoryFilter } = useAppContext();
 
   const menuItems: MenuItem[] = [
     {
@@ -82,7 +85,7 @@ export function Sidebar({ currentPage, onPageChange, onSidebarStateChange, onClo
       {/* 사이드바 */}
       <div 
         className={cn(
-          "fixed left-0 top-0 h-screen bg-white border-r border-gray-100 shadow-sm transition-all duration-300 ease-in-out z-40",
+          "fixed left-0 top-0 h-screen bg-white border-r border-gray-100 shadow-sm transition-all duration-300 ease-in-out z-40 flex flex-col",
           isVisible ? "translate-x-0" : "-translate-x-full",
           isExpanded ? "w-64" : "w-16"
         )}
@@ -148,14 +151,17 @@ export function Sidebar({ currentPage, onPageChange, onSidebarStateChange, onClo
           })}
         </div>
 
-        {/* 하단 정보 */}
-        {isExpanded && (
-          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100 bg-gray-50">
-            <div className="text-xs text-gray-500 text-center">
-              Next.js 15 + shadcn/ui
-            </div>
+        {/* 카테고리 필터 - 홈 페이지에서만 표시 */}
+        {isExpanded && currentPage === "home" && (
+          <div className="flex-1 overflow-y-auto">
+            <CategoryFilter
+              categories={categories}
+              categoryFilter={categoryFilter}
+              onToggleCategory={toggleCategoryFilter}
+            />
           </div>
         )}
+
       </div>
     </>
   );
