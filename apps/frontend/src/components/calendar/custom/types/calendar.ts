@@ -17,6 +17,7 @@ export interface CalendarProps {
   onDateSelect: (date: Date) => void;
   onNavigate: (date: Date) => void;
   view?: CalendarView;
+  onViewChange?: (view: CalendarView) => void;
 }
 
 export interface CalendarHeaderProps {

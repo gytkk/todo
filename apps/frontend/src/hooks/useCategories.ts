@@ -6,6 +6,10 @@ import { DEFAULT_CATEGORIES, CATEGORY_COLORS, STORAGE_KEYS } from '@/constants/c
 export const useCategories = () => {
   // localStorage에서 카테고리 로드 (기본 카테고리 + 사용자 정의)
   const [categories, setCategories] = useState<TodoCategory[]>(() => {
+    if (typeof window === 'undefined') {
+      return DEFAULT_CATEGORIES;
+    }
+    
     const stored = localStorage.getItem(STORAGE_KEYS.USER_CATEGORIES);
     const userCategories = stored ? JSON.parse(stored).map((cat: any) => ({
       ...cat,
@@ -15,6 +19,15 @@ export const useCategories = () => {
   });
 
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>(() => {
+    if (typeof window === 'undefined') {
+      // 기본 상태: 모든 카테고리 선택
+      const defaultFilter: CategoryFilter = {};
+      DEFAULT_CATEGORIES.forEach(cat => {
+        defaultFilter[cat.id] = true;
+      });
+      return defaultFilter;
+    }
+    
     const stored = localStorage.getItem(STORAGE_KEYS.CATEGORY_FILTER);
     if (stored) {
       return JSON.parse(stored);
@@ -41,15 +54,23 @@ export const useCategories = () => {
       const updated = [...prev, newCategory];
       // 사용자 정의 카테고리만 저장
       const userCategories = updated.filter(cat => !cat.isDefault);
-      localStorage.setItem(STORAGE_KEYS.USER_CATEGORIES, JSON.stringify(userCategories));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(STORAGE_KEYS.USER_CATEGORIES, JSON.stringify(userCategories));
+      }
       return updated;
     });
 
     // 새 카테고리는 기본적으로 필터에 포함
-    setCategoryFilter(prev => ({
-      ...prev,
-      [newCategory.id]: true
-    }));
+    setCategoryFilter(prev => {
+      const updated = {
+        ...prev,
+        [newCategory.id]: true
+      };
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(STORAGE_KEYS.CATEGORY_FILTER, JSON.stringify(updated));
+      }
+      return updated;
+    });
 
     return newCategory;
   }, []);
@@ -62,7 +83,9 @@ export const useCategories = () => {
       );
       // 사용자 정의 카테고리만 저장
       const userCategories = updated.filter(cat => !cat.isDefault);
-      localStorage.setItem(STORAGE_KEYS.USER_CATEGORIES, JSON.stringify(userCategories));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(STORAGE_KEYS.USER_CATEGORIES, JSON.stringify(userCategories));
+      }
       return updated;
     });
   }, []);
@@ -91,14 +114,18 @@ export const useCategories = () => {
       const updated = prev.filter(cat => cat.id !== id);
       // 사용자 정의 카테고리만 저장
       const userCategories = updated.filter(cat => !cat.isDefault);
-      localStorage.setItem(STORAGE_KEYS.USER_CATEGORIES, JSON.stringify(userCategories));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(STORAGE_KEYS.USER_CATEGORIES, JSON.stringify(userCategories));
+      }
       return updated;
     });
 
     // 필터에서도 제거
     setCategoryFilter(prev => {
       const { [id]: removed, ...rest } = prev;
-      localStorage.setItem(STORAGE_KEYS.CATEGORY_FILTER, JSON.stringify(rest));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(STORAGE_KEYS.CATEGORY_FILTER, JSON.stringify(rest));
+      }
       return rest;
     });
 
@@ -117,7 +144,9 @@ export const useCategories = () => {
         ...prev,
         [categoryId]: !prev[categoryId]
       };
-      localStorage.setItem(STORAGE_KEYS.CATEGORY_FILTER, JSON.stringify(updated));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(STORAGE_KEYS.CATEGORY_FILTER, JSON.stringify(updated));
+      }
       return updated;
     });
   }, []);
@@ -142,7 +171,9 @@ export const useCategories = () => {
         newCategoryIds.forEach(id => {
           updated[id] = true;
         });
-        localStorage.setItem(STORAGE_KEYS.CATEGORY_FILTER, JSON.stringify(updated));
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(STORAGE_KEYS.CATEGORY_FILTER, JSON.stringify(updated));
+        }
         return updated;
       });
     }

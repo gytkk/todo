@@ -10,12 +10,14 @@ export const CalendarContainer: React.FC<CalendarProps> = ({
   onDateSelect,
   onNavigate,
   view: initialView = 'month',
+  onViewChange,
 }) => {
   const [view, setView] = useState<CalendarView>(initialView);
 
   const handleViewChange = useCallback((newView: CalendarView) => {
     setView(newView);
-  }, []);
+    onViewChange?.(newView);
+  }, [onViewChange]);
 
   const handleDateSelect = useCallback((date: Date) => {
     onDateSelect(date);

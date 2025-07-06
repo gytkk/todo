@@ -69,8 +69,13 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
           {calendarDates.map((calendarDate) => (
             <div
               key={calendarDate.date.getTime()}
-              className={`p-3 border-r border-gray-200 cursor-pointer transition-colors ${calendarDate.isSelected ? 'bg-blue-50 ring-2 ring-blue-500 ring-inset' : 'hover:bg-gray-50'
-                }`}
+              className={`p-3 border-r border-gray-200 cursor-pointer transition-colors ${
+                calendarDate.isToday
+                  ? 'bg-blue-50 hover:bg-blue-100'
+                  : 'bg-white hover:bg-gray-50'
+              } ${
+                calendarDate.isSelected ? 'ring-2 ring-blue-500 ring-inset' : ''
+              }`}
               onClick={() => onDateSelect(calendarDate.date)}
             >
               <div className="flex items-center justify-between mb-2">

@@ -1,11 +1,11 @@
 "use client";
 
 import React from 'react';
-import { TodoCategory, CategoryFilter } from '@calendar-todo/shared-types';
+import { TodoCategory, CategoryFilter as CategoryFilterType } from '@calendar-todo/shared-types';
 
 interface CategoryFilterProps {
   categories: TodoCategory[];
-  categoryFilter: CategoryFilter;
+  categoryFilter: CategoryFilterType;
   onToggleCategory: (categoryId: string) => void;
 }
 
