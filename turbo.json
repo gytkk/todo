@@ -4,7 +4,20 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+    },
+    "start:dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "format": {
+      "dependsOn": ["^format"]
+    },
+    "test": {
+      "dependsOn": ["^test"]
+    },
+    "test:e2e": {
+      "dependsOn": ["^test:e2e"]
     },
     "lint": {
       "dependsOn": ["^lint"]
@@ -18,6 +31,9 @@
     },
     "clean": {
       "cache": false
+    },
+    "start:prod": {
+      "dependsOn": ["build"]
     }
   }
 }

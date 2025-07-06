@@ -1,5 +1,5 @@
 {
-  "name": "calendar-todo",
+  "name": "calendar-todo-monorepo",
   "version": "0.1.0",
   "packageManager": "npm@10.0.0",
   "private": true,
@@ -10,8 +10,13 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
+    "start:dev": "turbo run start:dev",
+    "start:prod": "turbo run start:prod",
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
+    "format": "turbo run format",
+    "test": "turbo run test",
+    "test:e2e": "turbo run test:e2e",
     "clean": "turbo run clean && rm -rf node_modules/.cache",
     "dev:restart": "pkill -f 'turbo run dev' || true && npm run clean && npm run dev"
   },
