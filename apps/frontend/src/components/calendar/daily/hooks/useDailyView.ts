@@ -26,25 +26,25 @@ export const useDailyView = (
 ) => {
   const [selectedDate, setSelectedDate] = useState(initialDate);
 
-  // 날짜별 할일 필터링 함수
-  const getDayTodos = (date: Date): TodoItem[] => {
-    return todos.filter(todo =>
-      isSameDay(todo.date, date) &&
-      categoryFilter[todo.category.id] !== false
-    );
-  };
-
-  // 통계 계산 함수
-  const getStats = (dayTodos: TodoItem[]) => {
-    const total = dayTodos.length;
-    const completed = dayTodos.filter(todo => todo.completed).length;
-    const completion = total > 0 ? Math.round((completed / total) * 100) : 0;
-
-    return { total, completed, completion };
-  };
-
   // 더 많은 날짜 데이터 생성 (선택된 날짜 기준으로 앞뒤 30일씩)
   const dailyData: DailyViewData = useMemo(() => {
+    // 날짜별 할일 필터링 함수
+    const getDayTodos = (date: Date): TodoItem[] => {
+      return todos.filter(todo =>
+        isSameDay(todo.date, date) &&
+        categoryFilter[todo.category.id] !== false
+      );
+    };
+
+    // 통계 계산 함수
+    const getStats = (dayTodos: TodoItem[]) => {
+      const total = dayTodos.length;
+      const completed = dayTodos.filter(todo => todo.completed).length;
+      const completion = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+      return { total, completed, completion };
+    };
+
     const days: DayData[] = [];
     const totalDays = 61; // 앞뒤 30일씩 + 선택날짜 = 총 61일
     const selectedDayIndex = 30; // 가운데가 선택된 날짜

@@ -9,7 +9,7 @@ export class AppError extends Error {
   }
 }
 
-export const withErrorHandling = <T extends (...args: any[]) => any>(
+export const withErrorHandling = <T extends (...args: unknown[]) => unknown>(
   fn: T,
   fallback?: () => ReturnType<T>
 ): T => {
@@ -37,7 +37,7 @@ export const handleAsyncError = async <T>(
   }
 };
 
-export const safeLocalStorageGet = (key: string, fallback: any = null) => {
+export const safeLocalStorageGet = (key: string, fallback: unknown = null) => {
   try {
     const item = localStorage.getItem(key);
     return item ? JSON.parse(item) : fallback;
@@ -47,7 +47,7 @@ export const safeLocalStorageGet = (key: string, fallback: any = null) => {
   }
 };
 
-export const safeLocalStorageSet = (key: string, value: any): boolean => {
+export const safeLocalStorageSet = (key: string, value: unknown): boolean => {
   try {
     localStorage.setItem(key, JSON.stringify(value));
     return true;

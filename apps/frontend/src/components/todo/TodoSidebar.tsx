@@ -4,7 +4,6 @@ import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { TodoItem as TodoItemType } from '@calendar-todo/shared-types';
 import { TodoForm } from './TodoForm';
 import { TodoList } from './TodoList';
 import { TodoStats } from './TodoStats';
@@ -70,7 +69,6 @@ export function TodoSidebar({ isOpen, selectedDate, onClose }: TodoSidebarProps)
     // 첫 번째 포커스 가능한 요소에 포커스
     const focusableElements = sidebar.querySelectorAll(focusableSelector);
     const firstElement = focusableElements[0] as HTMLElement;
-    const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
     
     if (firstElement) {
       firstElement.focus();

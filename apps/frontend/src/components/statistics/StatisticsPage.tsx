@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { BarChart3, Calendar, CheckCircle, Clock, TrendingUp, Target } from "lucide-react";
 import { TodoItem } from '@/types';
 import { useMemo } from 'react';
-import { format, subDays, startOfWeek, endOfWeek, eachDayOfInterval, isWithinInterval } from 'date-fns';
+import { format, subDays, startOfWeek, endOfWeek, isWithinInterval } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
 interface StatisticsPageProps {
@@ -256,7 +256,7 @@ export function StatisticsPage({ todos }: StatisticsPageProps) {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {dailyCompletions.map((day, index) => (
+            {dailyCompletions.map((day) => (
               <div key={day.date} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div className="flex items-center gap-3">
                   <div className="text-sm font-medium w-8">{day.day}</div>

@@ -218,7 +218,7 @@ export const CategoryManagement: React.FC<CategoryManagementProps> = ({
           <h4 className="text-sm font-medium text-blue-900 mb-2">카테고리 관리 안내</h4>
           <ul className="text-sm text-blue-800 space-y-1">
             <li>• 기본 카테고리(회사, 가족, 개인)는 수정하거나 삭제할 수 없습니다.</li>
-            <li>• 카테고리를 삭제하면 해당 카테고리의 할일들은 "개인" 카테고리로 이동됩니다.</li>
+            <li>• 카테고리를 삭제하면 해당 카테고리의 할일들은 &quot;개인&quot; 카테고리로 이동됩니다.</li>
             <li>• 최대 {categories.length + availableColors.length}개의 카테고리를 만들 수 있습니다.</li>
           </ul>
         </div>

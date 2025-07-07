@@ -11,7 +11,7 @@ export const useCategories = () => {
     }
 
     const stored = localStorage.getItem(STORAGE_KEYS.USER_CATEGORIES);
-    const userCategories = stored ? JSON.parse(stored).map((cat: any) => ({
+    const userCategories = stored ? JSON.parse(stored).map((cat: TodoCategory) => ({
       ...cat,
       createdAt: new Date(cat.createdAt)
     })) : [];
@@ -122,7 +122,8 @@ export const useCategories = () => {
 
     // 필터에서도 제거
     setCategoryFilter(prev => {
-      const { [id]: removed, ...rest } = prev;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { [id]: _removed, ...rest } = prev;
       if (typeof window !== 'undefined') {
         localStorage.setItem(STORAGE_KEYS.CATEGORY_FILTER, JSON.stringify(rest));
       }

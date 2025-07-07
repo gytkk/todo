@@ -14,8 +14,6 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
   categoryFilter,
   onToggleCategory
 }) => {
-  const activeCount = Object.values(categoryFilter).filter(Boolean).length;
-  const totalCount = categories.length;
 
   return (
     <div className="p-4 border-t border-gray-200">

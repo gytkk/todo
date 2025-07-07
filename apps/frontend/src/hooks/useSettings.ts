@@ -53,26 +53,25 @@ const defaultSettings: AppSettings = {
 // 기존 설정 데이터 마이그레이션 함수
 const migrateSettings = (oldSettings: unknown): AppSettings => {
   // 기존 설정이 새로운 구조를 이미 가지고 있다면 그대로 반환
-  if (oldSettings && oldSettings.userInfo && oldSettings.categories) {
+  if (oldSettings && typeof oldSettings === 'object' && 'userInfo' in oldSettings && 'categories' in oldSettings) {
     return oldSettings as AppSettings;
   }
   
   // 기존 설정이 있다면 새로운 구조로 마이그레이션
-  const migratedSettings: AppSettings = {
-    ...defaultSettings,
-    // 기존 설정이 있는 경우 해당 값들을 유지
-    ...(oldSettings && {
-      theme: oldSettings.theme || defaultSettings.theme,
-      language: oldSettings.language || defaultSettings.language,
-      dateFormat: oldSettings.dateFormat || defaultSettings.dateFormat,
-      timeFormat: oldSettings.timeFormat || defaultSettings.timeFormat,
-      weekStart: oldSettings.weekStart || defaultSettings.weekStart,
-      defaultView: oldSettings.defaultView || defaultSettings.defaultView,
-      showWeekends: oldSettings.showWeekends !== undefined ? oldSettings.showWeekends : defaultSettings.showWeekends,
-      autoBackup: oldSettings.autoBackup !== undefined ? oldSettings.autoBackup : defaultSettings.autoBackup,
-      backupInterval: oldSettings.backupInterval || defaultSettings.backupInterval,
-    })
-  };
+  const migratedSettings: AppSettings = { ...defaultSettings };
+  
+  if (oldSettings && typeof oldSettings === 'object') {
+    const old = oldSettings as Record<string, unknown>;
+    if (old.theme) migratedSettings.theme = old.theme as AppSettings['theme'];
+    if (old.language) migratedSettings.language = old.language as AppSettings['language'];
+    if (old.dateFormat) migratedSettings.dateFormat = old.dateFormat as AppSettings['dateFormat'];
+    if (old.timeFormat) migratedSettings.timeFormat = old.timeFormat as AppSettings['timeFormat'];
+    if (old.weekStart) migratedSettings.weekStart = old.weekStart as AppSettings['weekStart'];
+    if (old.defaultView) migratedSettings.defaultView = old.defaultView as AppSettings['defaultView'];
+    if (old.showWeekends !== undefined) migratedSettings.showWeekends = old.showWeekends as boolean;
+    if (old.autoBackup !== undefined) migratedSettings.autoBackup = old.autoBackup as boolean;
+    if (old.backupInterval) migratedSettings.backupInterval = old.backupInterval as AppSettings['backupInterval'];
+  }
   
   return migratedSettings;
 };

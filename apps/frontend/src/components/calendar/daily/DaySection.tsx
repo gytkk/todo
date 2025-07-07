@@ -29,7 +29,6 @@ export const DaySection: React.FC<DaySectionProps> = ({
   onDeleteTodo,
   onEditTodo,
   isMainSection = false,
-  isToday = false
 }) => {
   const [isExpanded, setIsExpanded] = useState(isMainSection);
   const { date, todos, stats } = dayData;

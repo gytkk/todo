@@ -1,4 +1,4 @@
-import { TodoItem, SavedTodoItem } from '@/types';
+import { TodoItem, SavedTodoItem, TodoCategory } from '@/types';
 import { safeLocalStorageGet, safeLocalStorageSet } from '@/utils/errorHandler';
 
 export class TodoService {
@@ -121,16 +121,18 @@ export class TodoService {
           }
 
           // Validate and convert dates
-          const validatedTodos: TodoItem[] = importedData.map((item, index) => {
-            if (!item.id || !item.title || !item.date) {
+          const validatedTodos: TodoItem[] = importedData.map((item: unknown, index) => {
+            const todoItem = item as Record<string, unknown>;
+            if (!todoItem.id || !todoItem.title || !todoItem.date) {
               throw new Error(`Invalid todo item at index ${index}`);
             }
 
             return {
-              id: item.id,
-              title: item.title,
-              date: new Date(item.date),
-              completed: Boolean(item.completed),
+              id: todoItem.id as string,
+              title: todoItem.title as string,
+              date: new Date(todoItem.date as string),
+              completed: Boolean(todoItem.completed),
+              category: (todoItem.category as TodoCategory) || { id: 'default', name: '일반', color: '#3B82F6', isDefault: true },
             };
           });
 

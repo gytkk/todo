@@ -1,16 +1,14 @@
 import React from 'react';
 import { CalendarTodosProps } from './types/calendar';
-import { getTodoCompletionStats, hasIncompleteTodos } from './utils/calendarUtils';
+import { getTodoCompletionStats } from './utils/calendarUtils';
 
 export const CalendarTodos: React.FC<CalendarTodosProps> = ({
   todos,
-  date,
   compact = false,
 }) => {
   if (todos.length === 0) return null;
 
   const { total, completed } = getTodoCompletionStats(todos);
-  const hasIncomplete = hasIncompleteTodos(todos);
 
   if (compact) {
     const maxVisible = 4; // 더 많은 할일을 표시

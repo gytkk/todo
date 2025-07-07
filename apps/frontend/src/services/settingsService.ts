@@ -6,12 +6,32 @@ export class SettingsService {
   private readonly STORAGE_KEY = 'app-settings';
   
   private readonly defaultSettings: AppSettings = {
+    userInfo: {
+      name: '',
+      email: '',
+      profileImage: ''
+    },
+    categories: [],
     theme: 'light',
     language: 'ko',
+    themeColor: '#3b82f6',
+    customColor: '#3b82f6',
+    defaultView: 'month',
     dateFormat: 'YYYY-MM-DD',
     timeFormat: '24h',
+    timezone: 'Asia/Seoul',
     weekStart: 'sunday',
-    defaultView: 'month',
+    oldTodoDisplayLimit: 7,
+    autoMoveTodos: false,
+    saturationAdjustment: {
+      enabled: false,
+      levels: [
+        { days: 3, opacity: 0.8 },
+        { days: 7, opacity: 0.6 },
+        { days: 14, opacity: 0.4 }
+      ]
+    },
+    completedTodoDisplay: 'all',
     showWeekends: true,
     autoBackup: false,
     backupInterval: 'weekly'
@@ -105,7 +125,7 @@ export class SettingsService {
     });
   }
 
-  private validateSettings(settings: any): AppSettings {
+  private validateSettings(settings: unknown): AppSettings {
     const validThemes = ['light', 'dark', 'system'];
     const validLanguages = ['ko', 'en'];
     const validDateFormats = ['YYYY-MM-DD', 'MM/DD/YYYY', 'DD/MM/YYYY'];
@@ -114,16 +134,38 @@ export class SettingsService {
     const validDefaultViews = ['month', 'week', 'day'];
     const validBackupIntervals = ['daily', 'weekly', 'monthly'];
 
-    return {
-      theme: validThemes.includes(settings.theme) ? settings.theme : this.defaultSettings.theme,
-      language: validLanguages.includes(settings.language) ? settings.language : this.defaultSettings.language,
-      dateFormat: validDateFormats.includes(settings.dateFormat) ? settings.dateFormat : this.defaultSettings.dateFormat,
-      timeFormat: validTimeFormats.includes(settings.timeFormat) ? settings.timeFormat : this.defaultSettings.timeFormat,
-      weekStart: validWeekStarts.includes(settings.weekStart) ? settings.weekStart : this.defaultSettings.weekStart,
-      defaultView: validDefaultViews.includes(settings.defaultView) ? settings.defaultView : this.defaultSettings.defaultView,
-      showWeekends: typeof settings.showWeekends === 'boolean' ? settings.showWeekends : this.defaultSettings.showWeekends,
-      autoBackup: typeof settings.autoBackup === 'boolean' ? settings.autoBackup : this.defaultSettings.autoBackup,
-      backupInterval: validBackupIntervals.includes(settings.backupInterval) ? settings.backupInterval : this.defaultSettings.backupInterval,
-    };
+    const validatedSettings = { ...this.defaultSettings };
+    
+    const settingsObj = settings as Record<string, unknown>;
+    
+    if (validThemes.includes(settingsObj.theme as string)) {
+      validatedSettings.theme = settingsObj.theme as AppSettings['theme'];
+    }
+    if (validLanguages.includes(settingsObj.language as string)) {
+      validatedSettings.language = settingsObj.language as AppSettings['language'];
+    }
+    if (validDateFormats.includes(settingsObj.dateFormat as string)) {
+      validatedSettings.dateFormat = settingsObj.dateFormat as AppSettings['dateFormat'];
+    }
+    if (validTimeFormats.includes(settingsObj.timeFormat as string)) {
+      validatedSettings.timeFormat = settingsObj.timeFormat as AppSettings['timeFormat'];
+    }
+    if (validWeekStarts.includes(settingsObj.weekStart as string)) {
+      validatedSettings.weekStart = settingsObj.weekStart as AppSettings['weekStart'];
+    }
+    if (validDefaultViews.includes(settingsObj.defaultView as string)) {
+      validatedSettings.defaultView = settingsObj.defaultView as AppSettings['defaultView'];
+    }
+    if (typeof settingsObj.showWeekends === 'boolean') {
+      validatedSettings.showWeekends = settingsObj.showWeekends;
+    }
+    if (typeof settingsObj.autoBackup === 'boolean') {
+      validatedSettings.autoBackup = settingsObj.autoBackup;
+    }
+    if (validBackupIntervals.includes(settingsObj.backupInterval as string)) {
+      validatedSettings.backupInterval = settingsObj.backupInterval as AppSettings['backupInterval'];
+    }
+    
+    return validatedSettings;
   }
 }
