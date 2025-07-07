@@ -2,7 +2,12 @@
 export interface User {
   id: string;
   email: string;
-  name: string;
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+  profileImage?: string;
+  emailVerified: boolean;
+  isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -10,7 +15,11 @@ export interface User {
 export interface UserProfile {
   id: string;
   email: string;
-  name: string;
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+  profileImage?: string;
+  emailVerified: boolean;
   createdAt: Date;
 }
 
@@ -23,10 +32,12 @@ export interface JwtPayload {
 }
 
 // 인증 요청/응답 DTO들
-export interface CreateUserRequest {
+export interface RegisterRequest {
   email: string;
   password: string;
-  name: string;
+  firstName: string;
+  lastName: string;
+  username?: string;
 }
 
 export interface LoginRequest {
@@ -35,18 +46,38 @@ export interface LoginRequest {
 }
 
 export interface AuthResponse {
-  access_token: string;
-  user: {
-    id: string;
-    email: string;
-    name: string;
-  };
+  accessToken: string;
+  refreshToken: string;
+  user: UserProfile;
 }
 
-export interface UpdateProfileRequest {
-  name?: string;
-  currentPassword?: string;
-  newPassword?: string;
+export interface RefreshTokenRequest {
+  refreshToken: string;
+}
+
+export interface RefreshTokenResponse {
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface UpdateUserRequest {
+  firstName?: string;
+  lastName?: string;
+  username?: string;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
 }
 
 export interface UpdateProfileResponse {
