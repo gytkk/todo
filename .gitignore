@@ -4,11 +4,6 @@
 /node_modules
 /.pnp
 .pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
 
 **/node_modules/
 
@@ -16,7 +11,8 @@
 /coverage
 
 # turbo
-.turbo/*
+**/.turbo/
+**/.turbo
 
 # next.js
 **/.next/
