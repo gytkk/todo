@@ -9,8 +9,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Overall
 
 - Always scan the entire module directory before making changes
-- Do not use `npm` command directly, and use `turbo` or `pnpm` instead
-  - Do not use `npm run build` or `npm run dev` commands to check changes because it breaks running development server
+- **ALWAYS use `turbo` commands for all development operations** - never use `npm` directly
+  - Use `turbo build` instead of `npm run build`
+  - Use `turbo dev` instead of `npm run dev`
+  - Use `turbo lint` instead of `npm run lint`
+  - Use `turbo type-check` instead of `npm run typecheck`
+  - Use `turbo test` instead of `npm run test`
+- Do not use `npm run build` or `npm run dev` commands as they break the running development server
+- For package management, use `pnpm` instead of `npm`
 
 ### Planning
 
@@ -128,6 +134,36 @@ This project uses Turborepo for monorepo management with the following structure
 - pnpm package manager
 - Turborepo CLI
 
+### Turbo Command Quick Reference
+
+| Task | Command | Description |
+|------|---------|-------------|
+| Development | `turbo dev` | Start all development servers |
+| Build | `turbo build` | Build all packages and apps |
+| Lint | `turbo lint` | Run ESLint on all packages |
+| Type Check | `turbo type-check` | Run TypeScript type checking |
+| Test | `turbo test` | Run all tests |
+| E2E Test | `turbo test:e2e` | Run end-to-end tests |
+| Clean | `turbo clean` | Clear all caches |
+| Filtered | `turbo <command> --filter=<package>` | Run command on specific package |
+
+**Important**: Always use `turbo` commands instead of `npm run` commands!
+
+#### Common Filtered Commands
+```bash
+# Frontend only
+turbo dev --filter=frontend
+turbo build --filter=frontend
+turbo lint --filter=frontend
+
+# Backend only  
+turbo dev --filter=backend
+turbo build --filter=backend
+
+# Shared types only
+turbo build --filter=@calendar-todo/shared-types
+```
+
 ### Development Commands
 
 #### Start Development Servers
@@ -161,11 +197,14 @@ turbo build --filter=frontend...
 # Run linting across all packages
 turbo lint
 
-# Run type checking
-turbo typecheck
+# Run type checking (note: correct task name is 'type-check')
+turbo type-check
 
 # Lint specific package
 turbo lint --filter=frontend
+
+# Type check specific package
+turbo type-check --filter=frontend
 ```
 
 #### Testing Commands
@@ -173,11 +212,15 @@ turbo lint --filter=frontend
 # Run all tests
 turbo test
 
+# Run end-to-end tests
+turbo test:e2e
+
 # Run tests for specific package
 turbo test --filter=frontend
+turbo test --filter=backend
 
-# Run tests in watch mode
-turbo test:watch --filter=frontend
+# Note: Watch mode depends on individual package configuration
+# Check package.json in each app for available test scripts
 ```
 
 ### Pre-commit Validation Checklist
@@ -198,7 +241,7 @@ Before committing changes, run the following commands in order:
 3. **Code Quality**
    ```bash
    turbo lint
-   turbo typecheck
+   turbo type-check
    ```
 
 4. **Functionality Testing**
@@ -263,13 +306,14 @@ pnpm add <package> --filter=@calendar-todo/shared-types
 2. **Production Validation**
    ```bash
    turbo lint
-   turbo typecheck
+   turbo type-check
    turbo test
    ```
 
 3. **Size Analysis** (Frontend)
    ```bash
-   cd apps/frontend
-   pnpm build
-   pnpm analyze  # if configured
+   # Build and analyze frontend bundle size
+   turbo build --filter=frontend
+   # Note: Bundle analysis commands should use turbo if available,
+   # otherwise use pnpm directly within the specific package directory
    ```
