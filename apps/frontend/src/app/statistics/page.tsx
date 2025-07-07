@@ -2,6 +2,7 @@
 
 import { StatisticsPage } from "@/components/statistics/StatisticsPage";
 import { AppLayout } from "@/components/AppLayout";
+import { PageHeader } from "@/components/common/PageHeader";
 import { useAppContext } from "@/contexts/AppContext";
 
 export default function Statistics() {
@@ -9,7 +10,8 @@ export default function Statistics() {
 
   return (
     <AppLayout>
-      <div className="h-screen overflow-y-auto">
+      <PageHeader title="통계" />
+      <div className="h-[calc(100vh-4rem)] bg-white overflow-y-auto">
         <div className="p-6">
           <StatisticsPage todos={todos} />
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Navbar } from "@/components/navbar";
+import { PageHeader } from "@/components/common/PageHeader";
 import { CalendarView } from "@/components/calendar/CalendarView";
 import { TodoSidebar } from "@/components/todo/TodoSidebar";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -40,7 +40,7 @@ function HomeContent() {
   return (
     <AppLayout>
       <ErrorBoundary>
-        <Navbar onCloseTodoSidebar={closeSidebar} />
+        <PageHeader title="홈" onCloseTodoSidebar={closeSidebar} />
         <div className="h-[calc(100vh-4rem)] bg-white relative">
           <CalendarView
             currentDate={currentDate}
