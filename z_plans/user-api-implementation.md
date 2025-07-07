@@ -297,6 +297,38 @@ CREATE TABLE refresh_tokens (
 - Guards (Integration 테스트에서 커버)
 - main.ts (애플리케이션 부트스트랩)
 
+### ✅ 완료된 OpenAPI 구현 (2025-07-07)
+
+#### OpenAPI/Swagger 문서화
+1. **설치 및 설정**
+   - `@nestjs/swagger` 패키지 설치 완료
+   - main.ts에서 Swagger 설정 구성
+   - JWT Bearer 인증 스키마 추가
+
+2. **API 문서화**
+   - AuthController: 모든 인증 엔드포인트 문서화
+     - 회원가입, 로그인, 토큰 갱신, 로그아웃
+   - UserController: 모든 사용자 관리 엔드포인트 문서화
+     - 프로필 조회, 업데이트, 비밀번호 변경, 계정 삭제
+
+3. **DTO 스키마 문서화**
+   - RegisterDto: 상세한 필드 설명과 패턴 규칙
+   - LoginDto: 로그인 필드 문서화
+   - UpdateUserDto: 사용자 업데이트 필드 문서화
+   - ChangePasswordDto: 비밀번호 변경 필드 문서화
+
+4. **Swagger UI 설정**
+   - URL: http://localhost:3002/api
+   - JWT 인증 지원 (Bearer 토큰)
+   - persistAuthorization 설정으로 새로고침 시에도 인증 유지
+
+5. **테스트 결과**
+   - 서버 시작 성공 확인
+   - Swagger JSON API 접근 가능 (`/api-json`)
+   - API 제목: "Todo Calendar API"
+   - API 설명: "Korean calendar-based todo application API"
+   - 버전: "1.0"
+
 ### 다음 단계 권장사항
 1. 실제 데이터베이스 연동 (PostgreSQL/MySQL)
 2. E2E 테스트 추가
