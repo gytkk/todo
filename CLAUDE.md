@@ -47,10 +47,13 @@ This project uses Turborepo for monorepo management with the following structure
 │   └── backend/           # NestJS API server
 ├── packages/
 │   ├── shared-config/     # Shared configuration files (ESLint, TypeScript)
-│   └── shared-types/      # Shared TypeScript types between frontend/backend
+│   ├── shared-types/      # Shared TypeScript types between frontend/backend
+│   └── ui/                # Shared UI components library (shadcn/ui)
 ├── z_plans/               # Implementation planning and TODO tracking
 ├── CLAUDE.md              # Documentation for Claude Code 
 ├── package.json           # Root package.json with workspaces
+├── pnpm-lock.yaml         # Package manager lock file
+├── pnpm-workspace.yaml    # Workspace configuration
 ├── README.md              # Project documentation
 └── turbo.json             # Turborepo configuration
 ```
@@ -61,18 +64,29 @@ This project uses Turborepo for monorepo management with the following structure
 
 #### Frontend Components
 
-- **Main Application**: Single-page application with calendar and todo management (`apps/frontend/src/app/page.tsx`)
-- **Sidebar Navigation**: Collapsible sidebar with home/settings navigation (`apps/frontend/src/components/sidebar.tsx`)
+- **App Router Pages**: Next.js 15 App Router with page-level routing
+  - **Main Application**: Calendar and todo management (`apps/frontend/src/app/page.tsx`)
+  - **Settings Page**: User preferences and category management (`apps/frontend/src/app/settings/page.tsx`)
+  - **Statistics Page**: Analytics and reporting (`apps/frontend/src/app/statistics/page.tsx`)
+  - **Authentication Pages**: Login, register, password reset (`apps/frontend/src/app/login/`, `apps/frontend/src/app/register/`, `apps/frontend/src/app/forgot-password/`)
+- **Layout & Navigation**:
+  - **App Layout**: Main application layout wrapper (`apps/frontend/src/components/AppLayout.tsx`)
+  - **Page Header**: Common header component (`apps/frontend/src/components/common/PageHeader.tsx`)
+  - **Sidebar Navigation**: Collapsible sidebar (`apps/frontend/src/components/sidebar.tsx`)
 - **Custom Calendar Implementation**: Self-built calendar system with monthly and daily views
   - **CalendarView**: Main calendar orchestrator (`apps/frontend/src/components/calendar/CalendarView.tsx`)
   - **Custom Calendar**: Monthly grid view (`apps/frontend/src/components/calendar/custom/`)
   - **Daily View**: Detailed daily todo management (`apps/frontend/src/components/calendar/daily/`)
-- **Settings Management**: Comprehensive settings page with user info, categories, and preferences (`apps/frontend/src/components/settings.tsx`)
+  - **Shared Components**: Common calendar components (`apps/frontend/src/components/calendar/shared/`)
+- **Settings Management**: Comprehensive settings with category management (`apps/frontend/src/components/settings/`)
 - **Category System**: Todo categorization with color coding (`apps/frontend/src/components/categories/`)
 - **Todo Management**: Complete todo CRUD operations (`apps/frontend/src/components/todo/`)
 - **Statistics**: Analytics and reporting (`apps/frontend/src/components/statistics/`)
-- **UI Components**: shadcn/ui components with Tailwind CSS styling (`apps/frontend/src/components/ui/`)
+- **Authentication**: Login forms and auth components (`apps/frontend/src/components/auth/`)
+- **UI Components**: Local shadcn/ui components (`apps/frontend/src/components/ui/`)
 - **Context & Hooks**: State management and custom hooks (`apps/frontend/src/contexts/`, `apps/frontend/src/hooks/`)
+- **Services**: Business logic layer (`apps/frontend/src/services/`)
+- **Utils**: Utility functions and helpers (`apps/frontend/src/utils/`, `apps/frontend/src/lib/`)
 
 #### Backend Components
 
@@ -89,6 +103,11 @@ This project uses Turborepo for monorepo management with the following structure
   - **Todo Types**: Todo items, calendar events, API interfaces (`packages/shared-types/src/todo.ts`)
   - **Auth Types**: Authentication and user management (`packages/shared-types/src/auth.ts`)
 - **shared-config**: Common configuration files for linting and TypeScript
+- **ui**: Shared UI components library
+  - **shadcn/ui Components**: Reusable UI components with Tailwind CSS styling
+  - **Shared Hooks**: Common React hooks for UI functionality
+  - **Shared Utilities**: Common utility functions and helpers
+  - **Global Styles**: Shared CSS and styling configurations
 
 ## Key Features
 
@@ -126,13 +145,16 @@ This project uses Turborepo for monorepo management with the following structure
 
 ### Recent Changes
 
-- **URL-based Routing**: Implemented Next.js App Router with page-level routing
-- **State Persistence**: TodoSidebar state managed via URL parameters for refresh resilience
-- **Scrollbar Enhancement**: Custom scrollbar styling for better user experience
-- **react-big-calendar Removal**: Replaced with custom calendar implementation
+- **Next.js 15 App Router**: Implemented page-level routing with App Router
+- **React 19 Upgrade**: Updated to React 19 with latest features and hooks
+- **Monorepo Structure**: Enhanced with shared UI components package
+- **Page Header Simplification**: Removed navigation buttons from header
+- **URL-based Routing**: TodoSidebar state managed via URL parameters for refresh resilience
+- **Custom Calendar Implementation**: Self-built calendar without external dependencies
 - **Settings Redesign**: Complete overhaul with comprehensive user preferences
 - **Category System**: Full implementation with color coding and management
 - **Type System Enhancement**: Expanded shared types for better consistency
+- **Authentication Structure**: Placeholder implementation for future user authentication
 
 ## Build and Testing Procedures
 
@@ -171,6 +193,9 @@ turbo build --filter=backend
 
 # Shared types only
 turbo build --filter=@calendar-todo/shared-types
+
+# UI components only
+turbo build --filter=@calendar-todo/ui
 ```
 
 ### Development Commands
@@ -198,6 +223,7 @@ turbo build
 turbo build --filter=frontend
 turbo build --filter=backend
 turbo build --filter=@calendar-todo/shared-types
+turbo build --filter=@calendar-todo/ui
 
 # Build with dependencies
 turbo build --filter=frontend...
@@ -312,6 +338,7 @@ pnpm add <package> --filter=backend
 
 # Add to shared packages
 pnpm add <package> --filter=@calendar-todo/shared-types
+pnpm add <package> --filter=@calendar-todo/ui
 ```
 
 ### Deployment Preparation

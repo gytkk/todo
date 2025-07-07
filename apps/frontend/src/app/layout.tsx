@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TODO Calendar - 한국어 캘린더 할일 관리",
-  description: "한국어를 지원하는 직관적인 캘린더 기반 할일 관리 애플리케이션",
+  title: "TODO Calendar",
+  description: "직관적인 캘린더 기반 할일 관리 애플리케이션",
 };
 
 export default function RootLayout({
