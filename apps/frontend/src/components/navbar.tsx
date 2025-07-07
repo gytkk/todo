@@ -2,7 +2,7 @@
 
 import {
   NavigationMenuLink,
-} from "@/components/ui/navigation-menu";
+} from "@calendar-todo/ui";
 import { cn } from "@/lib/utils";
 import React from "react";
 import Link from "next/link";

@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Button } from "@/components/ui/button";
+import { Button } from "@calendar-todo/ui";
 import { ChevronLeft, ChevronRight, Home, Grid3X3, Calendar, List } from 'lucide-react';
 
 type CalendarViewType = 'month' | 'week' | 'day';

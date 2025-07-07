@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@calendar-todo/ui";
 import { TodoItem as TodoItemType } from '@/types';
 import { memo, useCallback } from 'react';
 

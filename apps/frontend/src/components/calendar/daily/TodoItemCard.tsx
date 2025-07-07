@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Button } from "@/components/ui/button";
+import { Button } from "@calendar-todo/ui";
 import { TodoItem } from '@calendar-todo/shared-types';
 import { Trash2, Edit3 } from 'lucide-react';
 

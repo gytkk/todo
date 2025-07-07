@@ -2,8 +2,7 @@
 
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button, Badge } from "@calendar-todo/ui";
 import { TodoForm } from './TodoForm';
 import { TodoList } from './TodoList';
 import { TodoStats } from './TodoStats';

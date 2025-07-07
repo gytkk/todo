@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button, Badge } from "@calendar-todo/ui";
 import { TodoCategory, TodoItem } from '@calendar-todo/shared-types';
 
 interface CategoryManagementProps {

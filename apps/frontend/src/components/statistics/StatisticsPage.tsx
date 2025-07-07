@@ -1,7 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, Badge } from "@calendar-todo/ui";
 import { BarChart3, Calendar, CheckCircle, Clock, TrendingUp, Target } from "lucide-react";
 import { TodoItem } from '@/types';
 import { useMemo } from 'react';

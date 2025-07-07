@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Home, Settings, Menu, User, LucideIcon, BarChart3 } from "lucide-react";
+import { Button } from "@calendar-todo/ui";
+import { Home, Settings, Menu, User, LucideIcon, BarChart3, LogIn, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CategoryFilter } from "@/components/categories/CategoryFilter";
 import { useAppContext } from "@/contexts/AppContext";
+import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -28,6 +29,7 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
   const [isExpanded, setIsExpanded] = useState(true);
   const [isVisible, setIsVisible] = useState(true);
   const { categories, categoryFilter, toggleCategoryFilter } = useAppContext();
+  const { user, isAuthenticated, logout } = useAuth();
   const pathname = usePathname();
 
   const menuItems: MenuItem[] = [
@@ -109,8 +111,15 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
               <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
                 <User className="h-4 w-4 text-gray-500" />
               </div>
-              <div className="text-sm text-gray-500 italic">
-                사용자 이름
+              <div className="text-sm">
+                {isAuthenticated ? (
+                  <div>
+                    <div className="font-medium text-gray-900">{user?.name}</div>
+                    <div className="text-xs text-gray-500">{user?.email}</div>
+                  </div>
+                ) : (
+                  <div className="text-gray-500 italic">로그인이 필요합니다</div>
+                )}
               </div>
             </div>
           )}
@@ -167,6 +176,36 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
             />
           </div>
         )}
+
+        {/* 인증 컨트롤 */}
+        <div className="p-2 border-t border-gray-100 mt-auto">
+          {isAuthenticated ? (
+            <Button
+              variant="ghost"
+              onClick={logout}
+              className={cn(
+                "w-full justify-start h-12 px-3 py-2 text-left hover:bg-gray-50 text-red-600 hover:text-red-700",
+                !isExpanded && "justify-center px-0"
+              )}
+            >
+              <LogOut className={cn("h-5 w-5", isExpanded && "mr-3")} />
+              {isExpanded && "로그아웃"}
+            </Button>
+          ) : (
+            <Link href="/login">
+              <Button
+                variant="ghost"
+                className={cn(
+                  "w-full justify-start h-12 px-3 py-2 text-left hover:bg-gray-50",
+                  !isExpanded && "justify-center px-0"
+                )}
+              >
+                <LogIn className={cn("h-5 w-5", isExpanded && "mr-3")} />
+                {isExpanded && "로그인"}
+              </Button>
+            </Link>
+          )}
+        </div>
 
       </div>
     </>

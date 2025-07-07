@@ -8,7 +8,7 @@ import { TodoCategory } from '@calendar-todo/shared-types';
 import { format, differenceInDays, isSameDay, startOfDay } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { Button } from "@/components/ui/button";
+import { Button } from "@calendar-todo/ui";
 
 interface DaySectionProps {
   dayData: DayData;
