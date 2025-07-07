@@ -1,27 +1,20 @@
 {
-  "name": "calendar-todo-monorepo",
+  "name": "calendar-todo",
   "version": "0.1.0",
-  "packageManager": "npm@10.0.0",
+  "packageManager": "pnpm@10.0.0",
   "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
   "scripts": {
-    "dev": "turbo run dev",
     "build": "turbo run build",
-    "start:dev": "turbo run start:dev",
-    "start:prod": "turbo run start:prod",
+    "dev": "turbo run dev",
     "lint": "turbo run lint",
-    "type-check": "turbo run type-check",
-    "format": "turbo run format",
-    "test": "turbo run test",
-    "test:e2e": "turbo run test:e2e",
-    "clean": "turbo run clean && rm -rf node_modules/.cache",
-    "dev:restart": "pkill -f 'turbo run dev' || true && npm run clean && npm run dev"
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "check-types": "turbo run check-types"
   },
   "devDependencies": {
-    "turbo": "^2.5.4",
+    "turbo": "latest",
     "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

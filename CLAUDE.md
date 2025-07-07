@@ -9,13 +9,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Overall
 
 - Always scan the entire module directory before making changes
+- **NEVER use `npm` commands directly** - always use `pnpm` as a package manager
 - **ALWAYS use `turbo` commands for all development operations** - never use `npm` directly
   - Use `turbo build` instead of `npm run build`
   - Use `turbo dev` instead of `npm run dev`
   - Use `turbo lint` instead of `npm run lint`
   - Use `turbo type-check` instead of `npm run typecheck`
   - Use `turbo test` instead of `npm run test`
-- Do not use `npm run build` or `npm run dev` commands as they break the running development server
+- Do not use `turbo build` or `turbo dev` commands as they break the running development server
+- Do not test your result by executing build, except if you are sure it is a build-related change
 - For package management, use `pnpm` instead of `npm`
 
 ### Planning
@@ -91,18 +93,21 @@ This project uses Turborepo for monorepo management with the following structure
 ## Key Features
 
 ### Calendar System
+
 - **Custom Implementation**: Self-built calendar without external dependencies
 - **Multiple Views**: Monthly grid and detailed daily views
 - **Korean Localization**: Full Korean language support
 - **Date Navigation**: Smooth navigation between months and days
 
 ### Todo Management
+
 - **Category Support**: Colored categories with customizable names and colors
 - **Completion Tracking**: Mark todos as complete/incomplete
 - **Date-based Organization**: Todos organized by calendar dates
 - **Quick Actions**: Add, edit, delete todos with intuitive UI
 
 ### Settings & Customization
+
 - **User Profile**: Name, email, profile image management
 - **Category Management**: Add, edit, delete, set default categories (1-10 limit)
 - **Display Preferences**: Language, theme (light/dark/system), custom colors
@@ -111,6 +116,7 @@ This project uses Turborepo for monorepo management with the following structure
 - **Data Management**: Export/import, reset functionality
 
 ### Data Architecture
+
 - **Local Storage**: Client-side data persistence
 - **Type Safety**: Full TypeScript coverage with shared types
 - **Migration Support**: Backward compatibility for settings upgrades
@@ -119,6 +125,7 @@ This project uses Turborepo for monorepo management with the following structure
 ## Development Notes
 
 ### Recent Changes
+
 - **URL-based Routing**: Implemented Next.js App Router with page-level routing
 - **State Persistence**: TodoSidebar state managed via URL parameters for refresh resilience
 - **Scrollbar Enhancement**: Custom scrollbar styling for better user experience
@@ -130,6 +137,7 @@ This project uses Turborepo for monorepo management with the following structure
 ## Build and Testing Procedures
 
 ### Prerequisites
+
 - Node.js (Latest LTS version recommended)
 - pnpm package manager
 - Turborepo CLI
@@ -150,6 +158,7 @@ This project uses Turborepo for monorepo management with the following structure
 **Important**: Always use `turbo` commands instead of `npm run` commands!
 
 #### Common Filtered Commands
+
 ```bash
 # Frontend only
 turbo dev --filter=frontend
@@ -167,6 +176,7 @@ turbo build --filter=@calendar-todo/shared-types
 ### Development Commands
 
 #### Start Development Servers
+
 ```bash
 # Start all services (frontend + backend)
 turbo dev
@@ -179,6 +189,7 @@ turbo dev --filter=backend
 ```
 
 #### Build Commands
+
 ```bash
 # Build all packages and apps
 turbo build
@@ -193,6 +204,7 @@ turbo build --filter=frontend...
 ```
 
 #### Linting and Type Checking
+
 ```bash
 # Run linting across all packages
 turbo lint
@@ -208,6 +220,7 @@ turbo type-check --filter=frontend
 ```
 
 #### Testing Commands
+
 ```bash
 # Run all tests
 turbo test
@@ -228,23 +241,27 @@ turbo test --filter=backend
 Before committing changes, run the following commands in order:
 
 1. **Type Safety Check**
+
    ```bash
    turbo build --filter=@calendar-todo/shared-types
    ```
 
 2. **Build Validation**
+
    ```bash
    turbo build --filter=frontend
    turbo build --filter=backend
    ```
 
 3. **Code Quality**
+
    ```bash
    turbo lint
    turbo type-check
    ```
 
 4. **Functionality Testing**
+
    ```bash
    turbo test
    turbo dev --filter=frontend  # Manual testing
@@ -253,16 +270,19 @@ Before committing changes, run the following commands in order:
 ### Common Issues and Solutions
 
 #### ESLint Errors
+
 - **unused variables**: Remove or prefix with underscore (`_variable`)
 - **any types**: Replace with proper TypeScript types
 - **missing dependencies**: Add missing dependencies to useEffect/useMemo arrays
 
 #### Build Failures
+
 - **Type errors**: Check shared-types package compilation first
 - **Import errors**: Verify file paths and exported types
 - **Hydration errors**: Ensure server/client rendering consistency
 
 #### Development Server Issues
+
 - **Port conflicts**: Development server auto-assigns available ports
 - **Module resolution**: Check import paths and package dependencies
 - **Cache issues**: Clear turbo cache with `turbo clean`
@@ -297,6 +317,7 @@ pnpm add <package> --filter=@calendar-todo/shared-types
 ### Deployment Preparation
 
 1. **Full Clean Build**
+
    ```bash
    turbo clean
    pnpm install
@@ -304,6 +325,7 @@ pnpm add <package> --filter=@calendar-todo/shared-types
    ```
 
 2. **Production Validation**
+
    ```bash
    turbo lint
    turbo type-check
@@ -311,6 +333,7 @@ pnpm add <package> --filter=@calendar-todo/shared-types
    ```
 
 3. **Size Analysis** (Frontend)
+
    ```bash
    # Build and analyze frontend bundle size
    turbo build --filter=frontend
