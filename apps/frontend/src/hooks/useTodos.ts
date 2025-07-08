@@ -3,9 +3,11 @@ import { TodoItem, SavedTodoItem, TodoStats, TodoCategory } from '@calendar-todo
 import { useLocalStorage } from './useLocalStorage';
 import { format } from 'date-fns';
 import { DEFAULT_CATEGORIES } from '@/constants/categories';
+import { TodoService } from '@/services/todoService';
 
 export const useTodos = (categories: TodoCategory[] = DEFAULT_CATEGORIES) => {
   const [storedTodos, setStoredTodos] = useLocalStorage<SavedTodoItem[]>('calendar-todos', []);
+  const todoService = TodoService.getInstance();
   
   // Convert stored todos to proper TodoItem objects with Date objects
   const todos: TodoItem[] = useMemo(() => {

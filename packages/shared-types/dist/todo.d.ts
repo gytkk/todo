@@ -74,3 +74,4 @@ export interface DeleteTodoResponse {
     success: boolean;
     deletedId: string;
 }
+export type CategoryAction = 'deleted' | 'moved' | 'cancelled';

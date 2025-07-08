@@ -7,7 +7,8 @@ import { TodoForm } from './TodoForm';
 import { TodoList } from './TodoList';
 import { TodoStats } from './TodoStats';
 import { useAppContext } from '@/contexts/AppContext';
-import { useMemo, useEffect, useRef } from 'react';
+import { useMemo, useEffect, useRef, useCallback, memo } from 'react';
+import { useFocusTrap, useAria } from '@/hooks/useAccessibility';
 
 interface TodoSidebarProps {
   isOpen: boolean;
@@ -15,9 +16,15 @@ interface TodoSidebarProps {
   onClose: () => void;
 }
 
-export function TodoSidebar({ isOpen, selectedDate, onClose }: TodoSidebarProps) {
+function TodoSidebarComponent({ isOpen, selectedDate, onClose }: TodoSidebarProps) {
   const { addTodo, toggleTodo, deleteTodo, getTodosByDate, categories } = useAppContext();
   const sidebarRef = useRef<HTMLDivElement>(null);
+  const focusTrapRef = useFocusTrap<HTMLDivElement>(isOpen);
+  const { getAriaProps } = useAria();
+  
+  // Static IDs to avoid hydration issues
+  const sidebarId = 'todo-sidebar';
+  const titleId = 'sidebar-title';
   
   const selectedDateTodos = useMemo(() => {
     return selectedDate ? getTodosByDate(selectedDate) : [];
@@ -31,11 +38,11 @@ export function TodoSidebar({ isOpen, selectedDate, onClose }: TodoSidebarProps)
     recentCompletions: 0,
   }), [selectedDateTodos]);
 
-  const handleAddTodo = (title: string, categoryId: string) => {
+  const handleAddTodo = useCallback((title: string, categoryId: string) => {
     if (selectedDate) {
       addTodo(title, selectedDate, categoryId);
     }
-  };
+  }, [selectedDate, addTodo]);
 
   // ESC 키를 눌렀을 때 사이드바 닫기
   useEffect(() => {
@@ -105,22 +112,37 @@ export function TodoSidebar({ isOpen, selectedDate, onClose }: TodoSidebarProps)
 
   return (
     <div
-      ref={sidebarRef}
-      className={`fixed top-16 right-0 h-[calc(100vh-4rem)] w-96 bg-white shadow-lg border-l border-gray-100 transform transition-transform duration-300 ease-in-out z-50 ${
-        isOpen ? 'translate-x-0' : 'translate-x-full'
-      }`}
-      role="dialog"
-      aria-modal="true"
-      aria-label="할일 관리 사이드바"
-    >
+        ref={(el) => {
+          if (sidebarRef.current) sidebarRef.current = el;
+          if (focusTrapRef.current) focusTrapRef.current = el;
+        }}
+        className={`fixed top-16 right-0 h-[calc(100vh-4rem)] w-96 bg-white shadow-lg border-l border-gray-100 transform transition-transform duration-300 ease-in-out z-50 ${
+          isOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+        {...getAriaProps({
+          label: '할일 관리 사이드바',
+          labelledBy: titleId,
+          hidden: !isOpen
+        })}
+        role="dialog"
+        aria-modal="true"
+        id={sidebarId}
+      >
       <div className="h-full flex flex-col">
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
-          <h2 className="text-lg font-semibold">
+          <h2 id={titleId} className="text-lg font-semibold">
             {selectedDate
               ? `${format(selectedDate, "MM월 dd일", { locale: ko })} 할일`
               : "할일 목록"}
             {selectedDateTodos.length > 0 && (
-              <Badge className="ml-2">{selectedDateTodos.length}</Badge>
+              <Badge 
+                className="ml-2"
+                {...getAriaProps({
+                  label: `${selectedDateTodos.length}개의 할일`
+                })}
+              >
+                {selectedDateTodos.length}
+              </Badge>
             )}
           </h2>
           <Button
@@ -128,10 +150,12 @@ export function TodoSidebar({ isOpen, selectedDate, onClose }: TodoSidebarProps)
             size="sm"
             onClick={onClose}
             className="h-8 w-8 p-0"
-            title="닫기 (ESC)"
-            aria-label="사이드바 닫기 (ESC 키)"
+            {...getAriaProps({
+              label: '사이드바 닫기 (ESC 키)'
+            })}
+            autoFocus={isOpen}
           >
-            ✕
+            <span aria-hidden="true">✕</span>
           </Button>
         </div>
         
@@ -165,3 +189,5 @@ export function TodoSidebar({ isOpen, selectedDate, onClose }: TodoSidebarProps)
     </div>
   );
 }
+
+export const TodoSidebar = memo(TodoSidebarComponent);

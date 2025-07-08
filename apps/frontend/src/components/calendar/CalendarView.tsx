@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useState } from 'react';
+import { memo, useState, useCallback } from 'react';
 import { TodoItem } from '@calendar-todo/shared-types';
 import { CalendarContainer } from './custom';
 import { DailyView } from './daily';
@@ -30,17 +30,17 @@ function CalendarViewComponent({
 }: CalendarViewProps) {
   const [currentView, setCurrentView] = useState<CalendarViewType>(defaultView);
 
-  const handleDateSelect = (date: Date) => {
+  const handleDateSelect = useCallback((date: Date) => {
     onDateSelect(date);
-  };
+  }, [onDateSelect]);
 
-  const handleNavigate = (date: Date) => {
+  const handleNavigate = useCallback((date: Date) => {
     onNavigate(date);
-  };
+  }, [onNavigate]);
 
-  const handleViewChange = (view: CalendarViewType) => {
+  const handleViewChange = useCallback((view: CalendarViewType) => {
     setCurrentView(view);
-  };
+  }, []);
 
   const renderCalendarContent = () => {
     if (currentView === 'day') {

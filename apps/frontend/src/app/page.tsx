@@ -8,6 +8,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { useCallback, Suspense } from "react";
 import { useAppContext } from "@/contexts/AppContext";
 import { useCalendarWithUrl } from "@/hooks/useCalendarWithUrl";
+import { PageLoading } from "@/components/ui/loading";
 
 function HomeContent() {
   const { todos } = useAppContext();
@@ -63,7 +64,7 @@ function HomeContent() {
 
 export default function Home() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<PageLoading />}>
       <HomeContent />
     </Suspense>
   );

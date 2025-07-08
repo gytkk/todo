@@ -1,56 +1,16 @@
 "use client";
 
 import React, { createContext, useContext, ReactNode, useEffect } from 'react';
-import { TodoItem, AppSettings, TodoCategory, CategoryFilter, CalendarEvent } from '@calendar-todo/shared-types';
-import { useTodos } from '@/hooks/useTodos';
-import { useCalendar } from '@/hooks/useCalendar';
-import { useSettings } from '@/hooks/useSettings';
-import { useCategories } from '@/hooks/useCategories';
+import { CategoryProvider, useCategoryContext } from './CategoryContext';
+import { TodoProvider, useTodoContext } from './TodoContext';
+import { CalendarProvider, useCalendarContext } from './CalendarContext';
+import { SettingsProvider, useSettingsContext } from './SettingsContext';
 import { initializeDataCleanup } from '@/utils/dataCleanup';
 
+// Combined context type for backward compatibility
 interface AppContextType {
-  // Todo related
-  todos: TodoItem[];
-  addTodo: (title: string, date: Date, categoryId: string) => void;
-  toggleTodo: (id: string) => void;
-  deleteTodo: (id: string) => void;
-  clearAllTodos: () => void;
-  getTodosByDate: (date: Date) => TodoItem[];
-  getTodoStats: () => {
-    total: number;
-    completed: number;
-    incomplete: number;
-    completionRate: number;
-    recentCompletions: number;
-  };
-
-  // Calendar related
-  selectedDate: Date | undefined;
-  isSidebarOpen: boolean;
-  calendarEvents: CalendarEvent[];
-  currentDate: Date;
-  handleDateSelect: (date: Date) => void;
-  closeSidebar: () => void;
-  openSidebar: () => void;
-  setSelectedDate: (date: Date | undefined) => void;
-  handleNavigate: (date: Date) => void;
-
-  // Settings related
-  settings: AppSettings;
-  updateSetting: <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => void;
-  resetSettings: () => void;
-  setSettings: (settings: AppSettings) => void;
-
-  // Category related
-  categories: TodoCategory[];
-  categoryFilter: CategoryFilter;
-  toggleCategoryFilter: (categoryId: string) => void;
-  getFilteredTodos: (todos: TodoItem[]) => TodoItem[];
-  addCategory: (name: string, color: string) => TodoCategory;
-  updateCategory: (id: string, updates: Partial<TodoCategory>) => void;
-  deleteCategory: (id: string, todos: TodoItem[]) => boolean;
-  getCategoryById: (id: string) => TodoCategory | undefined;
-  getAvailableColors: () => string[];
+  // All contexts are accessible through their specific hooks
+  // This interface provides type safety for the combined context
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -59,23 +19,19 @@ interface AppProviderProps {
   children: ReactNode;
 }
 
-export function AppProvider({ children }: AppProviderProps) {
-  const categoryHook = useCategories();
-  const todoHook = useTodos(categoryHook.categories);
-  const calendarHook = useCalendar(todoHook.todos);
-  const settingsHook = useSettings();
+// Internal component that provides the combined context
+function AppContextProvider({ children }: AppProviderProps) {
+  const categories = useCategoryContext();
+  const todos = useTodoContext();
+  const calendar = useCalendarContext();
+  const settings = useSettingsContext();
 
   // Initialize data cleanup on app start
   useEffect(() => {
     initializeDataCleanup();
   }, []);
 
-  const contextValue: AppContextType = {
-    ...todoHook,
-    ...calendarHook,
-    ...settingsHook,
-    ...categoryHook,
-  };
+  const contextValue: AppContextType = {};
 
   return (
     <AppContext.Provider value={contextValue}>
@@ -84,10 +40,54 @@ export function AppProvider({ children }: AppProviderProps) {
   );
 }
 
+export function AppProvider({ children }: AppProviderProps) {
+  return (
+    <SettingsProvider>
+      <CategoryProvider>
+        {/* TodoProvider needs categories, so it's inside CategoryProvider */}
+        <CategoryConsumer>
+          {(categories) => (
+            <TodoProvider categories={categories}>
+              {/* CalendarProvider needs todos, so it's inside TodoProvider */}
+              <TodoConsumer>
+                {(todos) => (
+                  <CalendarProvider todos={todos}>
+                    <AppContextProvider>
+                      {children}
+                    </AppContextProvider>
+                  </CalendarProvider>
+                )}
+              </TodoConsumer>
+            </TodoProvider>
+          )}
+        </CategoryConsumer>
+      </CategoryProvider>
+    </SettingsProvider>
+  );
+}
+
+// Helper components to pass data between providers
+function CategoryConsumer({ children }: { children: (categories: any) => ReactNode }) {
+  const { categories } = useCategoryContext();
+  return <>{children(categories)}</>;
+}
+
+function TodoConsumer({ children }: { children: (todos: any) => ReactNode }) {
+  const { todos } = useTodoContext();
+  return <>{children(todos)}</>;
+}
+
+// Hook that combines all contexts for backward compatibility
 export function useAppContext() {
-  const context = useContext(AppContext);
-  if (context === undefined) {
-    throw new Error('useAppContext must be used within an AppProvider');
-  }
-  return context;
+  const categoryContext = useCategoryContext();
+  const todoContext = useTodoContext();
+  const calendarContext = useCalendarContext();
+  const settingsContext = useSettingsContext();
+
+  return {
+    ...categoryContext,
+    ...todoContext,
+    ...calendarContext,
+    ...settingsContext,
+  };
 }

@@ -91,3 +91,6 @@ export interface DeleteTodoResponse {
   success: boolean;
   deletedId: string;
 }
+
+// Category Action 타입 (카테고리 삭제 시 사용)
+export type CategoryAction = 'deleted' | 'moved' | 'cancelled';

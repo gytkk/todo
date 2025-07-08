@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, memo } from "react";
 import { Button } from "@calendar-todo/ui";
 import { CategorySelector } from "@/components/categories/CategorySelector";
 import { TodoCategory } from "@calendar-todo/shared-types";
@@ -11,22 +11,22 @@ interface TodoFormProps {
   disabled?: boolean;
 }
 
-export function TodoForm({ onAddTodo, categories, disabled = false }: TodoFormProps) {
+function TodoFormComponent({ onAddTodo, categories, disabled = false }: TodoFormProps) {
   const [title, setTitle] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState(categories[0]?.id || "personal");
 
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
     if (title.trim() && selectedCategoryId) {
       onAddTodo(title, selectedCategoryId);
       setTitle("");
     }
-  };
+  }, [title, selectedCategoryId, onAddTodo]);
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       handleSubmit();
     }
-  };
+  }, [handleSubmit]);
 
   return (
     <div className="space-y-4">
@@ -54,3 +54,5 @@ export function TodoForm({ onAddTodo, categories, disabled = false }: TodoFormPr
     </div>
   );
 }
+
+export const TodoForm = memo(TodoFormComponent);
