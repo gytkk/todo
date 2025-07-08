@@ -25,6 +25,8 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { User } from '../users/user.entity';
 import { AuthResponse, RefreshTokenRequest } from '@calendar-todo/shared-types';
+import { AuthResponseDto, UserResponseDto } from './dto/auth-response.dto';
+import { RefreshTokenRequestDto } from './dto/refresh-token-request.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -37,25 +39,7 @@ export class AuthController {
   @ApiResponse({
     status: 201,
     description: 'User successfully registered',
-    type: 'object',
-    schema: {
-      properties: {
-        accessToken: { type: 'string' },
-        refreshToken: { type: 'string' },
-        user: {
-          type: 'object',
-          properties: {
-            id: { type: 'string' },
-            email: { type: 'string' },
-            username: { type: 'string' },
-            firstName: { type: 'string' },
-            lastName: { type: 'string' },
-            emailVerified: { type: 'boolean' },
-            createdAt: { type: 'string', format: 'date-time' },
-          },
-        },
-      },
-    },
+    type: AuthResponseDto,
   })
   @ApiBadRequestResponse({
     description: 'Invalid input data or password requirements not met',
@@ -98,25 +82,7 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'User successfully logged in',
-    type: 'object',
-    schema: {
-      properties: {
-        accessToken: { type: 'string' },
-        refreshToken: { type: 'string' },
-        user: {
-          type: 'object',
-          properties: {
-            id: { type: 'string' },
-            email: { type: 'string' },
-            username: { type: 'string' },
-            firstName: { type: 'string' },
-            lastName: { type: 'string' },
-            emailVerified: { type: 'boolean' },
-            createdAt: { type: 'string', format: 'date-time' },
-          },
-        },
-      },
-    },
+    type: AuthResponseDto,
   })
   @ApiUnauthorizedResponse({
     description: 'Invalid credentials',
@@ -142,25 +108,7 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'Token successfully refreshed',
-    type: 'object',
-    schema: {
-      properties: {
-        accessToken: { type: 'string' },
-        refreshToken: { type: 'string' },
-        user: {
-          type: 'object',
-          properties: {
-            id: { type: 'string' },
-            email: { type: 'string' },
-            username: { type: 'string' },
-            firstName: { type: 'string' },
-            lastName: { type: 'string' },
-            emailVerified: { type: 'boolean' },
-            createdAt: { type: 'string', format: 'date-time' },
-          },
-        },
-      },
-    },
+    type: AuthResponseDto,
   })
   @ApiBadRequestResponse({
     description: 'Invalid refresh token',
@@ -172,7 +120,7 @@ export class AuthController {
       },
     },
   })
-  async refresh(@Body() refreshTokenRequest: RefreshTokenRequest): Promise<AuthResponse> {
+  async refresh(@Body() refreshTokenRequest: RefreshTokenRequestDto): Promise<AuthResponse> {
     return this.authService.refreshToken(refreshTokenRequest.refreshToken);
   }
 
