@@ -1,5 +1,5 @@
 {
-  "extends": "@calendar-todo/shared-config/tsconfig.json",
+  "extends": "../shared-config/tsconfig.json",
   "compilerOptions": {
     "target": "ES2024",
     "module": "ESNext",
