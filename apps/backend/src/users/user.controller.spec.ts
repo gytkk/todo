@@ -127,7 +127,9 @@ describe('UserController', () => {
       const error = new Error('Current password is incorrect');
       userService.changePassword.mockRejectedValue(error);
 
-      await expect(controller.changePassword('test-user-id', changePasswordDto)).rejects.toThrow(error);
+      await expect(controller.changePassword('test-user-id', changePasswordDto)).rejects.toThrow(
+        error,
+      );
     });
   });
 

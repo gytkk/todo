@@ -28,7 +28,7 @@ export class JwtAuthService {
       {
         secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
         expiresIn: '7d', // 7일
-      }
+      },
     );
   }
 

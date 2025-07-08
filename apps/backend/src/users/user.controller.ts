@@ -87,11 +87,11 @@ export class UserController {
     schema: {
       properties: {
         statusCode: { type: 'number', example: 400 },
-        message: { 
+        message: {
           oneOf: [
             { type: 'string', example: 'Validation failed' },
-            { type: 'array', items: { type: 'string' }, example: ['First name cannot be empty'] }
-          ]
+            { type: 'array', items: { type: 'string' }, example: ['First name cannot be empty'] },
+          ],
         },
         error: { type: 'string', example: 'Bad Request' },
       },
@@ -134,11 +134,15 @@ export class UserController {
     schema: {
       properties: {
         statusCode: { type: 'number', example: 400 },
-        message: { 
+        message: {
           oneOf: [
             { type: 'string', example: 'Current password is incorrect' },
-            { type: 'array', items: { type: 'string' }, example: ['New password must be at least 8 characters long'] }
-          ]
+            {
+              type: 'array',
+              items: { type: 'string' },
+              example: ['New password must be at least 8 characters long'],
+            },
+          ],
         },
         error: { type: 'string', example: 'Bad Request' },
       },

@@ -10,15 +10,15 @@ export class UserRepository {
   }
 
   async findById(id: string): Promise<User | null> {
-    return this.users.find(user => user.id === id) || null;
+    return this.users.find((user) => user.id === id) || null;
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    return this.users.find(user => user.email === email) || null;
+    return this.users.find((user) => user.email === email) || null;
   }
 
   async findByUsername(username: string): Promise<User | null> {
-    return this.users.find(user => user.username === username) || null;
+    return this.users.find((user) => user.username === username) || null;
   }
 
   async create(userData: Partial<User>): Promise<User> {
@@ -28,7 +28,7 @@ export class UserRepository {
   }
 
   async update(id: string, updateData: Partial<User>): Promise<User | null> {
-    const userIndex = this.users.findIndex(user => user.id === id);
+    const userIndex = this.users.findIndex((user) => user.id === id);
     if (userIndex === -1) {
       return null;
     }
@@ -44,13 +44,13 @@ export class UserRepository {
 
   async delete(id: string): Promise<boolean> {
     const initialLength = this.users.length;
-    this.users = this.users.filter(user => user.id !== id);
+    this.users = this.users.filter((user) => user.id !== id);
     return this.users.length < initialLength;
   }
 
   async exists(email: string, username?: string): Promise<boolean> {
-    return this.users.some(user => 
-      user.email === email || (username && user.username === username)
+    return this.users.some(
+      (user) => user.email === email || (username && user.username === username),
     );
   }
 }

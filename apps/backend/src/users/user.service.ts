@@ -1,4 +1,9 @@
-import { Injectable, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { PasswordService } from '../auth/password.service';
 import { User } from './user.entity';
@@ -100,7 +105,9 @@ export class UserService {
     }
 
     // 새 비밀번호 강도 검사
-    const passwordValidation = this.passwordService.validatePasswordStrength(changePasswordDto.newPassword);
+    const passwordValidation = this.passwordService.validatePasswordStrength(
+      changePasswordDto.newPassword,
+    );
     if (!passwordValidation.isValid) {
       throw new BadRequestException(passwordValidation.errors);
     }

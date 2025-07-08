@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback, useId } from 'react';
+import { useEffect, useRef, useState, useCallback, useId } from 'react';
 
 // 키보드 내비게이션을 위한 훅
 export function useKeyboardNavigation<T extends HTMLElement = HTMLElement>(
@@ -177,7 +177,7 @@ export function useFocusTrap<T extends HTMLElement = HTMLElement>(isActive: bool
 export function useAria() {
   const baseId = useId();
   const idCounterRef = useRef(0);
-  
+
   const generateId = useCallback((prefix: string = 'aria') => {
     idCounterRef.current += 1;
     return `${prefix}-${baseId}-${idCounterRef.current}`;
@@ -199,7 +199,7 @@ export function useAria() {
       hidden?: boolean;
     } = {}
   ) => {
-    const ariaProps: Record<string, any> = {};
+    const ariaProps: Record<string, string | boolean | undefined> = {};
 
     if (options.label) ariaProps['aria-label'] = options.label;
     if (options.labelledBy) ariaProps['aria-labelledby'] = options.labelledBy;

@@ -55,25 +55,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // TODO: 실제 API 호출로 교체
       // 임시 모의 로그인 로직
       const mockResponse: AuthResponse = {
-        access_token: 'mock_token_' + Date.now(),
+        accessToken: 'mock_token_' + Date.now(),
+        refreshToken: 'mock_refresh_token_' + Date.now(),
         user: {
           id: '1',
           email: credentials.email,
-          name: credentials.email.split('@')[0],
+          username: credentials.email.split('@')[0],
+          emailVerified: true,
+          createdAt: new Date(),
         }
       };
 
       // 토큰과 사용자 정보를 로컬 스토리지에 저장
-      localStorage.setItem('auth_token', mockResponse.access_token);
+      localStorage.setItem('auth_token', mockResponse.accessToken);
       localStorage.setItem('user_data', JSON.stringify({
         ...mockResponse.user,
-        createdAt: new Date(),
+        isActive: true,
         updatedAt: new Date(),
       }));
 
       setUser({
         ...mockResponse.user,
-        createdAt: new Date(),
+        isActive: true,
         updatedAt: new Date(),
       });
     } catch (error) {

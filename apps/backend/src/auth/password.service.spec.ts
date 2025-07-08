@@ -15,7 +15,7 @@ describe('PasswordService', () => {
     }).compile();
 
     service = module.get<PasswordService>(PasswordService);
-    
+
     // Reset mocks before each test
     jest.clearAllMocks();
   });
@@ -154,7 +154,7 @@ describe('PasswordService', () => {
         'TestPassword123}',
         'TestPassword123;',
         'TestPassword123:',
-        'TestPassword123\'',
+        "TestPassword123'",
         'TestPassword123"',
         'TestPassword123\\',
         'TestPassword123|',
@@ -166,7 +166,7 @@ describe('PasswordService', () => {
         'TestPassword123?',
       ];
 
-      passwordsWithSpecialChars.forEach(password => {
+      passwordsWithSpecialChars.forEach((password) => {
         const result = service.validatePasswordStrength(password);
         expect(result.isValid).toBe(true);
         expect(result.errors).toEqual([]);

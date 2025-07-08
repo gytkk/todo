@@ -62,11 +62,15 @@ export class AuthController {
     schema: {
       properties: {
         statusCode: { type: 'number', example: 400 },
-        message: { 
+        message: {
           oneOf: [
             { type: 'string', example: 'Validation failed' },
-            { type: 'array', items: { type: 'string' }, example: ['Email must be a valid email', 'Password is too weak'] }
-          ]
+            {
+              type: 'array',
+              items: { type: 'string' },
+              example: ['Email must be a valid email', 'Password is too weak'],
+            },
+          ],
         },
         error: { type: 'string', example: 'Bad Request' },
       },
@@ -82,9 +86,7 @@ export class AuthController {
       },
     },
   })
-  async register(
-    @Body(ValidationPipe) registerDto: RegisterDto,
-  ): Promise<AuthResponse> {
+  async register(@Body(ValidationPipe) registerDto: RegisterDto): Promise<AuthResponse> {
     return this.authService.register(registerDto);
   }
 
@@ -170,9 +172,7 @@ export class AuthController {
       },
     },
   })
-  async refresh(
-    @Body() refreshTokenRequest: RefreshTokenRequest,
-  ): Promise<AuthResponse> {
+  async refresh(@Body() refreshTokenRequest: RefreshTokenRequest): Promise<AuthResponse> {
     return this.authService.refreshToken(refreshTokenRequest.refreshToken);
   }
 

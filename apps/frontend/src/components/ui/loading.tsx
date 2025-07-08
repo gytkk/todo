@@ -1,4 +1,4 @@
-import { Skeleton, SkeletonCard, SkeletonList, SkeletonText } from './skeleton';
+import { Skeleton, SkeletonCard, SkeletonText } from './skeleton';
 
 // Page level loading components
 export function PageLoading() {

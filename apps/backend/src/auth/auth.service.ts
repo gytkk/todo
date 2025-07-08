@@ -29,7 +29,7 @@ export class AuthService {
     try {
       const payload = this.jwtAuthService.verifyRefreshToken(refreshToken);
       const user = await this.userService.findById(payload.sub);
-      
+
       if (!user || !user.isActive) {
         throw new Error('User not found or inactive');
       }

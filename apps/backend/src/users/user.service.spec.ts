@@ -209,7 +209,9 @@ describe('UserService', () => {
     it('should throw NotFoundException if user not found', async () => {
       userRepository.findById.mockResolvedValue(null);
 
-      await expect(service.update('non-existent-id', updateUserDto)).rejects.toThrow(NotFoundException);
+      await expect(service.update('non-existent-id', updateUserDto)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw ConflictException if username already exists', async () => {
@@ -217,13 +219,15 @@ describe('UserService', () => {
       userRepository.findById.mockResolvedValue(mockUser);
       userRepository.findByUsername.mockResolvedValue(otherUser);
 
-      await expect(service.update('test-user-id', updateUserDto)).rejects.toThrow(ConflictException);
+      await expect(service.update('test-user-id', updateUserDto)).rejects.toThrow(
+        ConflictException,
+      );
     });
 
     it('should allow updating with same username', async () => {
       const updateDtoWithSameUsername = { ...updateUserDto, username: mockUser.username };
       const updatedUser = new User({ ...mockUser, ...updateDtoWithSameUsername });
-      
+
       userRepository.findById.mockResolvedValue(mockUser);
       userRepository.update.mockResolvedValue(updatedUser);
 
@@ -257,7 +261,9 @@ describe('UserService', () => {
         changePasswordDto.currentPassword,
         mockUser.passwordHash,
       );
-      expect(passwordService.validatePasswordStrength).toHaveBeenCalledWith(changePasswordDto.newPassword);
+      expect(passwordService.validatePasswordStrength).toHaveBeenCalledWith(
+        changePasswordDto.newPassword,
+      );
       expect(passwordService.hashPassword).toHaveBeenCalledWith(changePasswordDto.newPassword);
       expect(userRepository.update).toHaveBeenCalledWith('test-user-id', {
         passwordHash: 'new-hashed-password',
@@ -267,14 +273,18 @@ describe('UserService', () => {
     it('should throw NotFoundException if user not found', async () => {
       userRepository.findById.mockResolvedValue(null);
 
-      await expect(service.changePassword('non-existent-id', changePasswordDto)).rejects.toThrow(NotFoundException);
+      await expect(service.changePassword('non-existent-id', changePasswordDto)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw BadRequestException if current password is incorrect', async () => {
       userRepository.findById.mockResolvedValue(mockUser);
       passwordService.comparePassword.mockResolvedValue(false);
 
-      await expect(service.changePassword('test-user-id', changePasswordDto)).rejects.toThrow(BadRequestException);
+      await expect(service.changePassword('test-user-id', changePasswordDto)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should throw BadRequestException if new password is weak', async () => {
@@ -285,7 +295,9 @@ describe('UserService', () => {
         errors: ['Password is too weak'],
       });
 
-      await expect(service.changePassword('test-user-id', changePasswordDto)).rejects.toThrow(BadRequestException);
+      await expect(service.changePassword('test-user-id', changePasswordDto)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -313,7 +325,10 @@ describe('UserService', () => {
       const result = await service.validatePassword('test@example.com', 'correct-password');
 
       expect(userRepository.findByEmail).toHaveBeenCalledWith('test@example.com');
-      expect(passwordService.comparePassword).toHaveBeenCalledWith('correct-password', mockUser.passwordHash);
+      expect(passwordService.comparePassword).toHaveBeenCalledWith(
+        'correct-password',
+        mockUser.passwordHash,
+      );
       expect(result).toEqual(mockUser);
     });
 

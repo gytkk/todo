@@ -1,16 +1,18 @@
 "use client";
 
-import React, { createContext, useContext, ReactNode, useEffect } from 'react';
+import React, { createContext, ReactNode, useEffect } from 'react';
 import { CategoryProvider, useCategoryContext } from './CategoryContext';
 import { TodoProvider, useTodoContext } from './TodoContext';
 import { CalendarProvider, useCalendarContext } from './CalendarContext';
 import { SettingsProvider, useSettingsContext } from './SettingsContext';
 import { initializeDataCleanup } from '@/utils/dataCleanup';
+import { TodoCategory, TodoItem } from '@calendar-todo/shared-types';
 
 // Combined context type for backward compatibility
 interface AppContextType {
   // All contexts are accessible through their specific hooks
   // This interface provides type safety for the combined context
+  initialized: boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -21,17 +23,14 @@ interface AppProviderProps {
 
 // Internal component that provides the combined context
 function AppContextProvider({ children }: AppProviderProps) {
-  const categories = useCategoryContext();
-  const todos = useTodoContext();
-  const calendar = useCalendarContext();
-  const settings = useSettingsContext();
-
   // Initialize data cleanup on app start
   useEffect(() => {
     initializeDataCleanup();
   }, []);
 
-  const contextValue: AppContextType = {};
+  const contextValue: AppContextType = {
+    initialized: true
+  };
 
   return (
     <AppContext.Provider value={contextValue}>
@@ -67,12 +66,12 @@ export function AppProvider({ children }: AppProviderProps) {
 }
 
 // Helper components to pass data between providers
-function CategoryConsumer({ children }: { children: (categories: any) => ReactNode }) {
+function CategoryConsumer({ children }: { children: (categories: TodoCategory[]) => ReactNode }) {
   const { categories } = useCategoryContext();
   return <>{children(categories)}</>;
 }
 
-function TodoConsumer({ children }: { children: (todos: any) => ReactNode }) {
+function TodoConsumer({ children }: { children: (todos: TodoItem[]) => ReactNode }) {
   const { todos } = useTodoContext();
   return <>{children(todos)}</>;
 }

@@ -110,7 +110,10 @@ describe('AuthService', () => {
 
       const result = await service.validateUser('test@example.com', 'wrong-password');
 
-      expect(userService.validatePassword).toHaveBeenCalledWith('test@example.com', 'wrong-password');
+      expect(userService.validatePassword).toHaveBeenCalledWith(
+        'test@example.com',
+        'wrong-password',
+      );
       expect(result).toBeNull();
     });
   });
@@ -156,7 +159,9 @@ describe('AuthService', () => {
         throw new Error('Invalid token');
       });
 
-      await expect(service.refreshToken('invalid-refresh-token')).rejects.toThrow('Invalid refresh token');
+      await expect(service.refreshToken('invalid-refresh-token')).rejects.toThrow(
+        'Invalid refresh token',
+      );
     });
 
     it('should throw error if user not found', async () => {
@@ -166,7 +171,9 @@ describe('AuthService', () => {
       });
       userService.findById.mockResolvedValue(null);
 
-      await expect(service.refreshToken('valid-refresh-token')).rejects.toThrow('Invalid refresh token');
+      await expect(service.refreshToken('valid-refresh-token')).rejects.toThrow(
+        'Invalid refresh token',
+      );
     });
 
     it('should throw error if user is inactive', async () => {
@@ -177,7 +184,9 @@ describe('AuthService', () => {
       });
       userService.findById.mockResolvedValue(inactiveUser);
 
-      await expect(service.refreshToken('valid-refresh-token')).rejects.toThrow('Invalid refresh token');
+      await expect(service.refreshToken('valid-refresh-token')).rejects.toThrow(
+        'Invalid refresh token',
+      );
     });
   });
 });

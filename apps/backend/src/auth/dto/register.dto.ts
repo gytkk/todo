@@ -12,7 +12,8 @@ export class RegisterDto implements RegisterRequest {
   email: string;
 
   @ApiProperty({
-    description: 'User password (minimum 8 characters, must contain uppercase, lowercase, number and special character)',
+    description:
+      'User password (minimum 8 characters, must contain uppercase, lowercase, number and special character)',
     example: 'MySecurePass123@',
     minLength: 8,
     pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]',
@@ -20,7 +21,8 @@ export class RegisterDto implements RegisterRequest {
   @IsString()
   @MinLength(8, { message: 'Password must be at least 8 characters long' })
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, {
-    message: 'Password must contain at least one uppercase letter, one lowercase letter, one number and one special character',
+    message:
+      'Password must contain at least one uppercase letter, one lowercase letter, one number and one special character',
   })
   password: string;
 

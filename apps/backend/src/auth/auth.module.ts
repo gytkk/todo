@@ -23,13 +23,7 @@ import { UserModule } from '../users/user.module';
       inject: [ConfigService],
     }),
   ],
-  providers: [
-    AuthService,
-    JwtAuthService,
-    PasswordService,
-    LocalStrategy,
-    JwtStrategy,
-  ],
+  providers: [AuthService, JwtAuthService, PasswordService, LocalStrategy, JwtStrategy],
   controllers: [AuthController],
   exports: [AuthService, JwtAuthService, PasswordService],
 })

@@ -105,8 +105,11 @@ describe('AuthController', () => {
 
     it('should handle login with different user', async () => {
       const differentUser = new User({ ...mockUser, id: 'different-user-id' });
-      const differentAuthResponse = { ...mockAuthResponse, user: { ...mockAuthResponse.user, id: 'different-user-id' } };
-      
+      const differentAuthResponse = {
+        ...mockAuthResponse,
+        user: { ...mockAuthResponse.user, id: 'different-user-id' },
+      };
+
       authService.login.mockResolvedValue(differentAuthResponse);
 
       const result = await controller.login(loginDto, differentUser);
@@ -134,7 +137,7 @@ describe('AuthController', () => {
         refreshToken: 'new-refresh-token',
         user: mockAuthResponse.user,
       };
-      
+
       authService.refreshToken.mockResolvedValue(newAuthResponse);
 
       const result = await controller.refresh(refreshTokenRequest);
