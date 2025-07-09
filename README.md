@@ -1,5 +1,8 @@
 # TODO Calendar
 
+[![Backend CI](https://github.com/gytkk/todo/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/gytkk/todo/actions/workflows/backend-ci.yml)
+[![Frontend CI](https://github.com/gytkk/todo/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/gytkk/todo/actions/workflows/frontend-ci.yml)
+
 ## 🚀 시작하기
 
 ### 필수 조건
