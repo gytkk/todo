@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { TodoEntity } from './todo.entity';
-import { TodoCategory } from '@calendar-todo/shared-types';
+import { Injectable } from "@nestjs/common";
+import { TodoEntity } from "./todo.entity";
+import { TodoCategory } from "@calendar-todo/shared-types";
 
 @Injectable()
 export class TodoRepository {
@@ -55,7 +55,10 @@ export class TodoRepository {
     return todo;
   }
 
-  async update(id: string, updateData: Partial<TodoEntity>): Promise<TodoEntity | null> {
+  async update(
+    id: string,
+    updateData: Partial<TodoEntity>,
+  ): Promise<TodoEntity | null> {
     const todoIndex = this.todos.findIndex((todo) => todo.id === id);
     if (todoIndex === -1) {
       return null;
@@ -111,7 +114,10 @@ export class TodoRepository {
     return this.todos.filter((todo) => todo.userId === userId).length;
   }
 
-  async countByUserIdAndCompleted(userId: string, completed: boolean): Promise<number> {
+  async countByUserIdAndCompleted(
+    userId: string,
+    completed: boolean,
+  ): Promise<number> {
     return this.todos.filter(
       (todo) => todo.userId === userId && todo.completed === completed,
     ).length;

@@ -1,22 +1,22 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { TodoItem, TodoStats } from '@calendar-todo/shared-types';
+import { ApiProperty } from "@nestjs/swagger";
+import { TodoItem, TodoStats } from "@calendar-todo/shared-types";
 
 export class TodoResponseDto {
   @ApiProperty({
-    description: '할일 아이템',
+    description: "할일 아이템",
     example: {
-      id: 'abc123',
-      title: '프로젝트 문서 작성',
-      date: '2024-01-15T09:00:00.000Z',
+      id: "abc123",
+      title: "프로젝트 문서 작성",
+      date: "2024-01-15T09:00:00.000Z",
       completed: false,
       category: {
-        id: 'work',
-        name: '업무',
-        color: '#FF6B6B',
+        id: "work",
+        name: "업무",
+        color: "#FF6B6B",
         isDefault: false,
-        createdAt: '2024-01-01T00:00:00.000Z',
+        createdAt: "2024-01-01T00:00:00.000Z",
       },
-      userId: 'user123',
+      userId: "user123",
     },
   })
   todo: TodoItem;
@@ -24,13 +24,13 @@ export class TodoResponseDto {
 
 export class TodoListResponseDto {
   @ApiProperty({
-    description: '할일 목록',
+    description: "할일 목록",
     type: [TodoResponseDto],
   })
   todos: TodoItem[];
 
   @ApiProperty({
-    description: '할일 통계',
+    description: "할일 통계",
     example: {
       total: 10,
       completed: 4,
@@ -44,7 +44,7 @@ export class TodoListResponseDto {
 
 export class TodoStatsResponseDto {
   @ApiProperty({
-    description: '할일 통계',
+    description: "할일 통계",
     example: {
       total: 10,
       completed: 4,
@@ -58,14 +58,14 @@ export class TodoStatsResponseDto {
 
 export class DeleteTodoResponseDto {
   @ApiProperty({
-    description: '삭제 성공 여부',
+    description: "삭제 성공 여부",
     example: true,
   })
   success: boolean;
 
   @ApiProperty({
-    description: '삭제된 할일 ID',
-    example: 'abc123',
+    description: "삭제된 할일 ID",
+    example: "abc123",
   })
   deletedId: string;
 }

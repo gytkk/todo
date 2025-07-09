@@ -1,5 +1,9 @@
 # Calendar Todo Monorepo
 
+[![Backend CI](https://github.com/gytkk/todo/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/gytkk/todo/actions/workflows/backend-ci.yml)
+[![Frontend CI](https://github.com/gytkk/todo/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/gytkk/todo/actions/workflows/frontend-ci.yml)
+[![codecov](https://codecov.io/gh/gytkk/todo/branch/main/graph/badge.svg)](https://codecov.io/gh/gytkk/todo)
+
 A Korean calendar-based todo application built with Next.js 15, TypeScript, and shadcn/ui components. This project uses Turborepo for efficient monorepo management.
 
 ## 🏗️ Project Structure
@@ -87,6 +91,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 - `npm run test` - Run unit tests
 - `npm run test:watch` - Run tests in watch mode
 - `npm run test:cov` - Run tests with coverage
+- `npm run test:cov:ci` - Run tests with coverage for CI
 - `npm run test:debug` - Run tests in debug mode
 - `npm run test:e2e` - Run end-to-end tests
 
@@ -133,6 +138,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 - **Services**: Business logic and data processing
 - **Modules**: Dependency injection and application organization
 - **Testing Suite**: Unit and E2E tests with Jest
+- **Code Coverage**: Automated test coverage reporting with CI/CD integration
 
 ## 📊 Data Structure
 

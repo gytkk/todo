@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { User } from './user.entity';
+import { Injectable } from "@nestjs/common";
+import { User } from "./user.entity";
 
 @Injectable()
 export class UserRepository {
@@ -16,7 +16,6 @@ export class UserRepository {
   async findByEmail(email: string): Promise<User | null> {
     return this.users.find((user) => user.email === email) || null;
   }
-
 
   async create(userData: Partial<User>): Promise<User> {
     const user = new User(userData);

@@ -1,12 +1,12 @@
-import { v4 as uuidv4 } from 'uuid';
-import { TodoItem, TodoCategory } from '@calendar-todo/shared-types';
+import { v4 as uuidv4 } from "uuid";
+import { TodoItem, TodoCategory } from "@calendar-todo/shared-types";
 
 export class TodoEntity {
   id: string;
   title: string;
   description?: string;
   completed: boolean;
-  priority: 'high' | 'medium' | 'low';
+  priority: "high" | "medium" | "low";
   category: TodoCategory;
   dueDate: Date;
   createdAt: Date;
@@ -15,21 +15,21 @@ export class TodoEntity {
 
   constructor(data: Partial<TodoEntity>) {
     this.id = data.id || uuidv4();
-    this.title = data.title || '';
+    this.title = data.title || "";
     this.description = data.description;
     this.completed = data.completed || false;
-    this.priority = data.priority || 'medium';
+    this.priority = data.priority || "medium";
     this.category = data.category || {
-      id: 'default',
-      name: '일반',
-      color: '#3B82F6',
+      id: "default",
+      name: "일반",
+      color: "#3B82F6",
       isDefault: true,
       createdAt: new Date(),
     };
     this.dueDate = data.dueDate || new Date();
     this.createdAt = data.createdAt || new Date();
     this.updatedAt = data.updatedAt || new Date();
-    this.userId = data.userId || '';
+    this.userId = data.userId || "";
   }
 
   // Convert to TodoItem for frontend
@@ -52,7 +52,7 @@ export class TodoEntity {
     if (data.priority !== undefined) this.priority = data.priority;
     if (data.category !== undefined) this.category = data.category;
     if (data.dueDate !== undefined) this.dueDate = data.dueDate;
-    
+
     this.updatedAt = new Date();
   }
 

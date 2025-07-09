@@ -3,21 +3,21 @@ import {
   ConflictException,
   NotFoundException,
   BadRequestException,
-} from '@nestjs/common';
-import { UserRepository } from './user.repository';
-import { PasswordService } from '../auth/password.service';
-import { User } from './user.entity';
-import { RegisterDto } from '../auth/dto/register.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { ChangePasswordDto } from './dto/change-password.dto';
-import { UserProfile } from '@calendar-todo/shared-types';
+} from "@nestjs/common";
+import { UserRepository } from "./user.repository";
+import { PasswordService } from "../auth/password.service";
+import { User } from "./user.entity";
+import { RegisterDto } from "../auth/dto/register.dto";
+import { UpdateUserDto } from "./dto/update-user.dto";
+import { ChangePasswordDto } from "./dto/change-password.dto";
+import { UserProfile } from "@calendar-todo/shared-types";
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly passwordService: PasswordService,
-  ) { }
+  ) {}
 
   async create(registerDto: RegisterDto): Promise<User> {
     const { email, password, name } = registerDto;
@@ -25,12 +25,12 @@ export class UserService {
     // 이메일 중복 확인
     const existingUser = await this.userRepository.findByEmail(email);
     if (existingUser) {
-      throw new ConflictException('이미 가입된 이메일입니다');
+      throw new ConflictException("이미 가입된 이메일입니다");
     }
 
-
     // 비밀번호 강도 검사
-    const passwordValidation = this.passwordService.validatePasswordStrength(password);
+    const passwordValidation =
+      this.passwordService.validatePasswordStrength(password);
     if (!passwordValidation.isValid) {
       throw new BadRequestException(passwordValidation.errors);
     }
@@ -61,22 +61,24 @@ export class UserService {
   async update(id: string, updateUserDto: UpdateUserDto): Promise<UserProfile> {
     const user = await this.userRepository.findById(id);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
-
 
     const updatedUser = await this.userRepository.update(id, updateUserDto);
     if (!updatedUser) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
 
     return updatedUser.toProfile();
   }
 
-  async changePassword(id: string, changePasswordDto: ChangePasswordDto): Promise<void> {
+  async changePassword(
+    id: string,
+    changePasswordDto: ChangePasswordDto,
+  ): Promise<void> {
     const user = await this.userRepository.findById(id);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
 
     // 현재 비밀번호 확인
@@ -85,7 +87,7 @@ export class UserService {
       user.passwordHash,
     );
     if (!isCurrentPasswordValid) {
-      throw new BadRequestException('Current password is incorrect');
+      throw new BadRequestException("Current password is incorrect");
     }
 
     // 새 비밀번호 강도 검사
@@ -97,7 +99,9 @@ export class UserService {
     }
 
     // 새 비밀번호 해싱
-    const newPasswordHash = await this.passwordService.hashPassword(changePasswordDto.newPassword);
+    const newPasswordHash = await this.passwordService.hashPassword(
+      changePasswordDto.newPassword,
+    );
 
     // 비밀번호 업데이트
     await this.userRepository.update(id, { passwordHash: newPasswordHash });
@@ -106,17 +110,23 @@ export class UserService {
   async delete(id: string): Promise<void> {
     const deleted = await this.userRepository.delete(id);
     if (!deleted) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
   }
 
-  async validatePassword(email: string, password: string): Promise<User | null> {
+  async validatePassword(
+    email: string,
+    password: string,
+  ): Promise<User | null> {
     const user = await this.userRepository.findByEmail(email);
     if (!user || !user.isActive) {
       return null;
     }
 
-    const isPasswordValid = await this.passwordService.comparePassword(password, user.passwordHash);
+    const isPasswordValid = await this.passwordService.comparePassword(
+      password,
+      user.passwordHash,
+    );
     return isPasswordValid ? user : null;
   }
 }

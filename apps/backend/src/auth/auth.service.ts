@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { UserService } from '../users/user.service';
-import { JwtAuthService } from './jwt.service';
-import { User } from '../users/user.entity';
-import { RegisterDto } from './dto/register.dto';
-import { AuthResponse } from '@calendar-todo/shared-types';
+import { Injectable } from "@nestjs/common";
+import { UserService } from "../users/user.service";
+import { JwtAuthService } from "./jwt.service";
+import { User } from "../users/user.entity";
+import { RegisterDto } from "./dto/register.dto";
+import { AuthResponse } from "@calendar-todo/shared-types";
 
 @Injectable()
 export class AuthService {
@@ -31,17 +31,20 @@ export class AuthService {
       const user = await this.userService.findById(payload.sub);
 
       if (!user || !user.isActive) {
-        throw new Error('User not found or inactive');
+        throw new Error("User not found or inactive");
       }
 
       return this.generateTokens(user);
     } catch (error) {
-      throw new Error('Invalid refresh token');
+      throw new Error("Invalid refresh token");
     }
   }
 
   private generateTokens(user: User): AuthResponse {
-    const accessToken = this.jwtAuthService.generateAccessToken(user.id, user.email);
+    const accessToken = this.jwtAuthService.generateAccessToken(
+      user.id,
+      user.email,
+    );
     const refreshToken = this.jwtAuthService.generateRefreshToken(user.id);
 
     return {

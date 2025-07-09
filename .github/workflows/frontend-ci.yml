@@ -1,0 +1,45 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [main]
+    paths: ['apps/frontend/**', 'packages/**']
+  pull_request:
+    branches: [main]
+    paths: ['apps/frontend/**', 'packages/**']
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [20]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          
+      - name: Install pnpm
+        run: npm install -g pnpm
+        
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Build shared packages
+        run: pnpm build --filter=@calendar-todo/shared-types --filter=@calendar-todo/ui
+        
+      - name: Run lint
+        run: pnpm lint --filter=frontend
+        
+      - name: Run type check
+        run: pnpm type-check --filter=frontend
+        
+      - name: Build frontend
+        run: pnpm build --filter=frontend
