@@ -2,7 +2,6 @@
 
 [![Backend CI](https://github.com/gytkk/todo/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/gytkk/todo/actions/workflows/backend-ci.yml)
 [![Frontend CI](https://github.com/gytkk/todo/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/gytkk/todo/actions/workflows/frontend-ci.yml)
-[![codecov](https://codecov.io/gh/gytkk/todo/branch/main/graph/badge.svg)](https://codecov.io/gh/gytkk/todo)
 
 A Korean calendar-based todo application built with Next.js 15, TypeScript, and shadcn/ui components. This project uses Turborepo for efficient monorepo management.
 
