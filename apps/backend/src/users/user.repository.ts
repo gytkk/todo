@@ -17,9 +17,6 @@ export class UserRepository {
     return this.users.find((user) => user.email === email) || null;
   }
 
-  async findByUsername(username: string): Promise<User | null> {
-    return this.users.find((user) => user.username === username) || null;
-  }
 
   async create(userData: Partial<User>): Promise<User> {
     const user = new User(userData);
@@ -48,9 +45,7 @@ export class UserRepository {
     return this.users.length < initialLength;
   }
 
-  async exists(email: string, username?: string): Promise<boolean> {
-    return this.users.some(
-      (user) => user.email === email || (username && user.username === username),
-    );
+  async exists(email: string): Promise<boolean> {
+    return this.users.some((user) => user.email === email);
   }
 }

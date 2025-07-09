@@ -115,7 +115,7 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
                 {isAuthenticated ? (
                   <div>
                     <div className="font-medium text-gray-900">
-                      {user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.username || user?.email}
+                      {user?.name || user?.email}
                     </div>
                     <div className="text-xs text-gray-500">{user?.email}</div>
                   </div>

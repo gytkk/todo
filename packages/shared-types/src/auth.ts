@@ -2,9 +2,7 @@
 export interface User {
   id: string;
   email: string;
-  username?: string;
-  firstName?: string;
-  lastName?: string;
+  name?: string;
   profileImage?: string;
   emailVerified: boolean;
   isActive: boolean;
@@ -15,9 +13,7 @@ export interface User {
 export interface UserProfile {
   id: string;
   email: string;
-  username?: string;
-  firstName?: string;
-  lastName?: string;
+  name?: string;
   profileImage?: string;
   emailVerified: boolean;
   createdAt: Date;
@@ -35,9 +31,7 @@ export interface JwtPayload {
 export interface RegisterRequest {
   email: string;
   password: string;
-  firstName: string;
-  lastName: string;
-  username?: string;
+  name: string;
 }
 
 export interface LoginRequest {
@@ -61,9 +55,7 @@ export interface RefreshTokenResponse {
 }
 
 export interface UpdateUserRequest {
-  firstName?: string;
-  lastName?: string;
-  username?: string;
+  name?: string;
 }
 
 export interface ChangePasswordRequest {

@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { CalendarEvent, TodoItem } from '@/types';
 
 export const useCalendar = (todos: TodoItem[]) => {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
 
@@ -32,7 +32,13 @@ export const useCalendar = (todos: TodoItem[]) => {
   }, []);
 
   const openSidebar = useCallback(() => {
-    setIsSidebarOpen(true);
+    if (selectedDate) {
+      setIsSidebarOpen(true);
+    }
+  }, [selectedDate]);
+
+  const handleSetSelectedDate = useCallback((date: Date | undefined) => {
+    setSelectedDate(date);
   }, []);
 
   const handleNavigate = useCallback((date: Date) => {
@@ -47,7 +53,7 @@ export const useCalendar = (todos: TodoItem[]) => {
     handleDateSelect,
     closeSidebar,
     openSidebar,
-    setSelectedDate,
+    setSelectedDate: handleSetSelectedDate,
     handleNavigate,
   };
 };

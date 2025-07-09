@@ -12,50 +12,25 @@ export class RegisterDto implements RegisterRequest {
   email: string;
 
   @ApiProperty({
-    description:
-      'User password (minimum 8 characters, must contain uppercase, lowercase, number and special character)',
-    example: 'MySecurePass123@',
+    description: 'User password (minimum 8 characters, English letters, numbers, and basic special characters only)',
+    example: 'MySecurePass123',
     minLength: 8,
-    pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]',
+    pattern: '^[a-zA-Z0-9!@#$%^&*()_+\\-=\\[\\]{};\':"\\\\|,.<>\\/?`~ ]+$',
   })
   @IsString()
   @MinLength(8, { message: 'Password must be at least 8 characters long' })
-  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, {
-    message:
-      'Password must contain at least one uppercase letter, one lowercase letter, one number and one special character',
+  @Matches(/^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~ ]+$/, {
+    message: 'Password can only contain English letters, numbers, and basic special characters',
   })
   password: string;
 
   @ApiProperty({
-    description: 'User first name',
-    example: 'John',
+    description: 'User name',
+    example: 'John Doe',
     minLength: 1,
   })
   @IsString()
-  @MinLength(1, { message: 'First name is required' })
-  firstName: string;
+  @MinLength(1, { message: 'Name is required' })
+  name: string;
 
-  @ApiProperty({
-    description: 'User last name',
-    example: 'Doe',
-    minLength: 1,
-  })
-  @IsString()
-  @MinLength(1, { message: 'Last name is required' })
-  lastName: string;
-
-  @ApiProperty({
-    description: 'Optional username (letters, numbers and underscores only)',
-    example: 'johndoe123',
-    required: false,
-    minLength: 3,
-    pattern: '^[a-zA-Z0-9_]+$',
-  })
-  @IsOptional()
-  @IsString()
-  @MinLength(3, { message: 'Username must be at least 3 characters long' })
-  @Matches(/^[a-zA-Z0-9_]+$/, {
-    message: 'Username can only contain letters, numbers and underscores',
-  })
-  username?: string;
 }

@@ -88,7 +88,7 @@ describe('AuthService', () => {
     });
 
     it('should propagate error from user creation', async () => {
-      const error = new Error('Email already exists');
+      const error = new Error('이미 가입된 이메일입니다');
       userService.create.mockRejectedValue(error);
 
       await expect(service.register(registerDto)).rejects.toThrow(error);

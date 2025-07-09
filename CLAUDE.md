@@ -11,11 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Always scan the entire module directory before making changes
 - **NEVER use `npm` commands directly** - always use `pnpm` as a package manager
 - **ALWAYS use `turbo` commands for all development operations** - never use `npm` directly
-  - Use `turbo build` instead of `npm run build`
-  - Use `turbo dev` instead of `npm run dev`
-  - Use `turbo lint` instead of `npm run lint`
-  - Use `turbo type-check` instead of `npm run typecheck`
-  - Use `turbo test` instead of `npm run test`
+- When you work on backend code, always write unit tests first then implement business logic
 - Do not use `turbo build` or `turbo dev` commands as they break the running development server
 - Do not test your result by executing build, except if you are sure it is a build-related change
 - For package management, use `pnpm` instead of `npm`

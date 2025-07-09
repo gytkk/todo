@@ -17,24 +17,17 @@ export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly passwordService: PasswordService,
-  ) {}
+  ) { }
 
   async create(registerDto: RegisterDto): Promise<User> {
-    const { email, password, firstName, lastName, username } = registerDto;
+    const { email, password, name } = registerDto;
 
     // 이메일 중복 확인
     const existingUser = await this.userRepository.findByEmail(email);
     if (existingUser) {
-      throw new ConflictException('Email already exists');
+      throw new ConflictException('이미 가입된 이메일입니다');
     }
 
-    // 사용자명 중복 확인 (제공된 경우)
-    if (username) {
-      const existingUsername = await this.userRepository.findByUsername(username);
-      if (existingUsername) {
-        throw new ConflictException('Username already exists');
-      }
-    }
 
     // 비밀번호 강도 검사
     const passwordValidation = this.passwordService.validatePasswordStrength(password);
@@ -49,9 +42,7 @@ export class UserService {
     const user = await this.userRepository.create({
       email,
       passwordHash,
-      firstName,
-      lastName,
-      username,
+      name,
       emailVerified: false,
       isActive: true,
     });
@@ -73,13 +64,6 @@ export class UserService {
       throw new NotFoundException('User not found');
     }
 
-    // 사용자명 중복 확인 (변경하려는 경우)
-    if (updateUserDto.username && updateUserDto.username !== user.username) {
-      const existingUsername = await this.userRepository.findByUsername(updateUserDto.username);
-      if (existingUsername && existingUsername.id !== id) {
-        throw new ConflictException('Username already exists');
-      }
-    }
 
     const updatedUser = await this.userRepository.update(id, updateUserDto);
     if (!updatedUser) {

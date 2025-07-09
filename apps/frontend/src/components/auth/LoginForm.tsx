@@ -24,6 +24,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { LoginRequest } from "@calendar-todo/shared-types";
 
 const FormSchema = z.object({
   email: z
@@ -32,8 +33,7 @@ const FormSchema = z.object({
     .email({ message: "올바른 이메일 형식이 아닙니다" }),
   password: z
     .string()
-    .min(1, { message: "비밀번호를 입력해주세요" })
-    .min(6, { message: "비밀번호는 최소 6자 이상이어야 합니다" }),
+    .min(1, { message: "비밀번호를 입력해주세요" }),
 });
 
 export function LoginForm() {
@@ -54,14 +54,24 @@ export function LoginForm() {
     setIsLoading(true);
 
     try {
-      await login(data);
+      const loginData: LoginRequest = {
+        email: data.email,
+        password: data.password,
+      };
+
+      await login(loginData);
+      
       // 로그인 성공 시 메인 페이지로 이동
       router.push('/');
     } catch (error) {
       console.error('로그인 오류:', error);
+      
+      // 에러 메시지 파싱
+      const errorMessage = error instanceof Error ? error.message : '로그인 중 오류가 발생했습니다';
+      
       // Form 레벨에서 에러 설정
       form.setError("root", {
-        message: "로그인 중 오류가 발생했습니다. 이메일과 비밀번호를 확인해주세요."
+        message: errorMessage
       });
     } finally {
       setIsLoading(false);

@@ -55,7 +55,7 @@ function CalendarViewComponent({
 
     // 월간/주간 뷰는 기존 캘린더 사용
     return (
-      <div className="h-full bg-white" onClick={onCalendarClick}>
+      <div className="h-full bg-white overflow-hidden" onClick={onCalendarClick}>
         <NoSSR fallback={<SimpleCalendarSkeleton />}>
           <div className="h-full">
             <CalendarContainer

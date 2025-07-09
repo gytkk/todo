@@ -21,6 +21,7 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [hydrated, setHydrated] = useState(false);
 
   const isAuthenticated = !!user;
 
@@ -39,9 +40,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         console.error('인증 초기화 오류:', error);
         // 손상된 데이터 정리
         localStorage.removeItem('auth_token');
+        localStorage.removeItem('refresh_token');
         localStorage.removeItem('user_data');
       } finally {
         setIsLoading(false);
+        setHydrated(true);
       }
     };
 
@@ -52,30 +55,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setIsLoading(true);
     
     try {
-      // TODO: 실제 API 호출로 교체
-      // 임시 모의 로그인 로직
-      const mockResponse: AuthResponse = {
-        accessToken: 'mock_token_' + Date.now(),
-        refreshToken: 'mock_refresh_token_' + Date.now(),
-        user: {
-          id: '1',
-          email: credentials.email,
-          username: credentials.email.split('@')[0],
-          emailVerified: true,
-          createdAt: new Date(),
-        }
-      };
+      // 실제 API 호출
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '로그인 중 오류가 발생했습니다');
+      }
+
+      const authResponse: AuthResponse = await response.json();
 
       // 토큰과 사용자 정보를 로컬 스토리지에 저장
-      localStorage.setItem('auth_token', mockResponse.accessToken);
+      localStorage.setItem('auth_token', authResponse.accessToken);
+      localStorage.setItem('refresh_token', authResponse.refreshToken);
       localStorage.setItem('user_data', JSON.stringify({
-        ...mockResponse.user,
+        ...authResponse.user,
         isActive: true,
         updatedAt: new Date(),
       }));
 
       setUser({
-        ...mockResponse.user,
+        ...authResponse.user,
         isActive: true,
         updatedAt: new Date(),
       });
@@ -90,6 +96,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const logout = () => {
     // 로컬 스토리지 정리
     localStorage.removeItem('auth_token');
+    localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_data');
     
     // 상태 초기화
@@ -103,12 +110,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const value: AuthContextType = {
     user,
-    isLoading,
+    isLoading: isLoading || !hydrated, // 하이드레이션이 완료되지 않았거나 로딩 중일 때 true
     isAuthenticated,
     login,
     logout,
     updateUser,
   };
+
+  // 하이드레이션이 완료되지 않았을 때 로딩 표시
+  if (!hydrated) {
+    return (
+      <AuthContext.Provider value={value}>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-muted-foreground">로딩 중...</p>
+          </div>
+        </div>
+      </AuthContext.Provider>
+    );
+  }
 
   return (
     <AuthContext.Provider value={value}>

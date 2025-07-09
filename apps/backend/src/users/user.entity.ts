@@ -1,9 +1,7 @@
 export class User {
   id: string;
   email: string;
-  username?: string;
-  firstName?: string;
-  lastName?: string;
+  name?: string;
   passwordHash: string;
   profileImage?: string;
   emailVerified: boolean;
@@ -28,9 +26,7 @@ export class User {
     return {
       id: this.id,
       email: this.email,
-      username: this.username,
-      firstName: this.firstName,
-      lastName: this.lastName,
+      name: this.name,
       profileImage: this.profileImage,
       emailVerified: this.emailVerified,
       createdAt: this.createdAt,

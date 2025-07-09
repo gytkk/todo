@@ -65,7 +65,7 @@ export class AuthController {
     schema: {
       properties: {
         statusCode: { type: 'number', example: 409 },
-        message: { type: 'string', example: 'Email already exists' },
+        message: { type: 'string', example: '이미 가입된 이메일입니다' },
         error: { type: 'string', example: 'Conflict' },
       },
     },

@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './users/user.module';
+import { TodoModule } from './todos/todo.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 @Module({
@@ -15,6 +16,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     }),
     AuthModule,
     UserModule,
+    TodoModule,
   ],
   controllers: [AppController],
   providers: [

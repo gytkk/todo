@@ -2,13 +2,13 @@
 
 import { PageHeader } from "@/components/common/PageHeader";
 import { CalendarView } from "@/components/calendar/CalendarView";
-import { TodoSidebar } from "@/components/todo/TodoSidebar";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AppLayout } from "@/components/AppLayout";
 import { useCallback, Suspense } from "react";
 import { useAppContext } from "@/contexts/AppContext";
-import { useCalendarWithUrl } from "@/hooks/useCalendarWithUrl";
+import { useCalendar } from "@/hooks/useCalendar";
 import { PageLoading } from "@/components/ui/loading";
+import { ResponsiveContainer, ResponsiveTodoInterface } from "@/components/responsive";
 
 function HomeContent() {
   const { todos } = useAppContext();
@@ -19,7 +19,7 @@ function HomeContent() {
     handleDateSelect,
     closeSidebar,
     handleNavigate,
-  } = useCalendarWithUrl(todos);
+  } = useCalendar(todos);
 
   const handleCalendarClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const target = e.target as HTMLElement;
@@ -42,21 +42,26 @@ function HomeContent() {
     <AppLayout>
       <ErrorBoundary>
         <PageHeader title="홈" onCloseTodoSidebar={closeSidebar} />
-        <div className="h-[calc(100vh-4rem)] bg-white relative">
-          <CalendarView
-            currentDate={currentDate}
+        <ResponsiveContainer 
+          className="h-[calc(100vh-4rem)] bg-white" 
+          sidebarOpen={isSidebarOpen}
+        >
+          <ResponsiveTodoInterface
+            isOpen={isSidebarOpen}
             selectedDate={selectedDate}
-            todos={todos}
-            onDateSelect={handleDateSelect}
-            onNavigate={handleNavigate}
-            onCalendarClick={handleCalendarClick}
+            onClose={closeSidebar}
+            calendarContent={
+              <CalendarView
+                currentDate={currentDate}
+                selectedDate={selectedDate}
+                todos={todos}
+                onDateSelect={handleDateSelect}
+                onNavigate={handleNavigate}
+                onCalendarClick={handleCalendarClick}
+              />
+            }
           />
-        </div>
-        <TodoSidebar
-          isOpen={isSidebarOpen}
-          selectedDate={selectedDate}
-          onClose={closeSidebar}
-        />
+        </ResponsiveContainer>
       </ErrorBoundary>
     </AppLayout>
   );

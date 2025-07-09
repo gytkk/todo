@@ -20,20 +20,9 @@ export class PasswordService {
       errors.push('Password must be at least 8 characters long');
     }
 
-    if (!/[a-z]/.test(password)) {
-      errors.push('Password must contain at least one lowercase letter');
-    }
-
-    if (!/[A-Z]/.test(password)) {
-      errors.push('Password must contain at least one uppercase letter');
-    }
-
-    if (!/\d/.test(password)) {
-      errors.push('Password must contain at least one number');
-    }
-
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-      errors.push('Password must contain at least one special character');
+    // ASCII 문자만 허용 (영문 대소문자, 숫자, 특수문자, 공백)
+    if (!/^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~ ]+$/.test(password)) {
+      errors.push('Password can only contain English letters, numbers, and basic special characters');
     }
 
     return {
