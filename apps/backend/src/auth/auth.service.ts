@@ -27,29 +27,64 @@ export class AuthService {
 
   async refreshToken(refreshToken: string): Promise<AuthResponse> {
     try {
-      const payload = this.jwtAuthService.verifyRefreshToken(refreshToken);
+      const tokens = await this.jwtAuthService.refreshAccessToken(refreshToken);
+
+      if (!tokens) {
+        throw new Error("Invalid refresh token");
+      }
+
+      const payload = this.jwtAuthService.verifyRefreshToken(
+        tokens.refreshToken,
+      );
       const user = await this.userService.findById(payload.sub);
 
       if (!user || !user.isActive) {
         throw new Error("User not found or inactive");
       }
 
-      return this.generateTokens(user);
-    } catch (error) {
+      return {
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        user: user.toProfile(),
+      };
+    } catch {
       throw new Error("Invalid refresh token");
     }
   }
 
-  private generateTokens(user: User): AuthResponse {
-    const accessToken = this.jwtAuthService.generateAccessToken(
+  async logout(userId: string, accessToken: string): Promise<void> {
+    // Revoke refresh token
+    await this.jwtAuthService.revokeRefreshToken(userId);
+
+    // Blacklist access token
+    await this.jwtAuthService.blacklistToken(accessToken);
+  }
+
+  async validateToken(token: string): Promise<boolean> {
+    try {
+      // Check if token is blacklisted
+      const isBlacklisted = await this.jwtAuthService.isTokenBlacklisted(token);
+      if (isBlacklisted) {
+        return false;
+      }
+
+      // Verify token signature and expiration
+      this.jwtAuthService.verifyAccessToken(token);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  private async generateTokens(user: User): Promise<AuthResponse> {
+    const tokens = await this.jwtAuthService.generateTokenPair(
       user.id,
       user.email,
     );
-    const refreshToken = this.jwtAuthService.generateRefreshToken(user.id);
 
     return {
-      accessToken,
-      refreshToken,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
       user: user.toProfile(),
     };
   }

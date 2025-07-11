@@ -9,14 +9,16 @@ import { PasswordService } from "./password.service";
 import { LocalStrategy } from "./strategies/local.strategy";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 import { UserModule } from "../users/user.module";
+import { RedisModule } from "../redis/redis.module";
 
 @Module({
   imports: [
     UserModule,
+    RedisModule,
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>("JWT_SECRET"),
         signOptions: { expiresIn: "15m" },
       }),

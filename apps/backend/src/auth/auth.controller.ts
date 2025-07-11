@@ -12,7 +12,6 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
-  ApiBody,
   ApiBadRequestResponse,
   ApiUnauthorizedResponse,
   ApiConflictResponse,
@@ -24,8 +23,8 @@ import { CurrentUser } from "./decorators/current-user.decorator";
 import { RegisterDto } from "./dto/register.dto";
 import { LoginDto } from "./dto/login.dto";
 import { User } from "../users/user.entity";
-import { AuthResponse, RefreshTokenRequest } from "@calendar-todo/shared-types";
-import { AuthResponseDto, UserResponseDto } from "./dto/auth-response.dto";
+import { AuthResponse } from "@calendar-todo/shared-types";
+import { AuthResponseDto } from "./dto/auth-response.dto";
 import { RefreshTokenRequestDto } from "./dto/refresh-token-request.dto";
 
 @ApiTags("auth")
@@ -150,7 +149,7 @@ export class AuthController {
       },
     },
   })
-  async logout(): Promise<{ message: string }> {
+  logout(): { message: string } {
     return { message: "Logged out successfully" };
   }
 }

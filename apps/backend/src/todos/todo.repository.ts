@@ -1,21 +1,72 @@
 import { Injectable } from "@nestjs/common";
 import { TodoEntity } from "./todo.entity";
 import { TodoCategory } from "@calendar-todo/shared-types";
+import { RedisService } from "../redis/redis.service";
 
 @Injectable()
 export class TodoRepository {
-  private todos: TodoEntity[] = [];
+  constructor(private readonly redisService: RedisService) {}
 
   async findAll(): Promise<TodoEntity[]> {
-    return this.todos;
+    const todoIds = await this.redisService.keys("todo:todo:*");
+    const todos: TodoEntity[] = [];
+
+    for (const todoKey of todoIds) {
+      const todoId = todoKey.split(":")[2];
+      const todo = await this.findById(todoId);
+      if (todo) {
+        todos.push(todo);
+      }
+    }
+
+    return todos;
   }
 
   async findById(id: string): Promise<TodoEntity | null> {
-    return this.todos.find((todo) => todo.id === id) || null;
+    const todoKey = this.redisService.generateKey("todo", id);
+    const todoData = await this.redisService.hgetall(todoKey);
+
+    if (!todoData || Object.keys(todoData).length === 0) {
+      return null;
+    }
+
+    const category = this.redisService.deserializeData<TodoCategory>(
+      todoData.category,
+    );
+
+    return new TodoEntity({
+      id: todoData.id,
+      title: todoData.title,
+      description: todoData.description,
+      completed: todoData.completed === "true",
+      priority: todoData.priority as "high" | "medium" | "low",
+      category: category || {
+        id: "default",
+        name: "일반",
+        color: "#3B82F6",
+        isDefault: true,
+        createdAt: new Date(),
+      },
+      dueDate: new Date(todoData.dueDate),
+      createdAt: new Date(todoData.createdAt),
+      updatedAt: new Date(todoData.updatedAt),
+      userId: todoData.userId,
+    });
   }
 
   async findByUserId(userId: string): Promise<TodoEntity[]> {
-    return this.todos.filter((todo) => todo.userId === userId);
+    const userTodosKey = this.redisService.generateKey("user", userId, "todos");
+    const todoIds = await this.redisService.zrange(userTodosKey, 0, -1);
+
+    const todos: TodoEntity[] = [];
+    for (const todoId of todoIds) {
+      const todo = await this.findById(todoId);
+      if (todo) {
+        todos.push(todo);
+      }
+    }
+
+    return todos;
   }
 
   async findByUserIdAndDateRange(
@@ -23,35 +74,140 @@ export class TodoRepository {
     startDate: Date,
     endDate: Date,
   ): Promise<TodoEntity[]> {
-    return this.todos.filter(
-      (todo) =>
-        todo.userId === userId &&
-        todo.dueDate >= startDate &&
-        todo.dueDate <= endDate,
+    const userTodosByDateKey = this.redisService.generateKey(
+      "user",
+      userId,
+      "todos",
+      "bydate",
     );
+    const startTimestamp = Math.floor(startDate.getTime() / 1000);
+    const endTimestamp = Math.floor(endDate.getTime() / 1000);
+
+    const todoIds = await this.redisService.zrangebyscore(
+      userTodosByDateKey,
+      startTimestamp,
+      endTimestamp,
+    );
+
+    const todos: TodoEntity[] = [];
+    for (const todoId of todoIds) {
+      const todo = await this.findById(todoId);
+      if (todo) {
+        todos.push(todo);
+      }
+    }
+
+    return todos;
   }
 
   async findByUserIdAndCategory(
     userId: string,
     categoryId: string,
   ): Promise<TodoEntity[]> {
-    return this.todos.filter(
-      (todo) => todo.userId === userId && todo.category.id === categoryId,
+    const userCategoryKey = this.redisService.generateKey(
+      "user",
+      userId,
+      "category",
+      categoryId,
     );
+    const todoIds = await this.redisService.zrange(userCategoryKey, 0, -1);
+
+    const todos: TodoEntity[] = [];
+    for (const todoId of todoIds) {
+      const todo = await this.findById(todoId);
+      if (todo) {
+        todos.push(todo);
+      }
+    }
+
+    return todos;
   }
 
   async findByUserIdAndCompleted(
     userId: string,
     completed: boolean,
   ): Promise<TodoEntity[]> {
-    return this.todos.filter(
-      (todo) => todo.userId === userId && todo.completed === completed,
+    const userCompletedKey = this.redisService.generateKey(
+      "user",
+      userId,
+      "completed",
+      completed.toString(),
     );
+    const todoIds = await this.redisService.zrange(userCompletedKey, 0, -1);
+
+    const todos: TodoEntity[] = [];
+    for (const todoId of todoIds) {
+      const todo = await this.findById(todoId);
+      if (todo) {
+        todos.push(todo);
+      }
+    }
+
+    return todos;
   }
 
   async create(todoData: Partial<TodoEntity>): Promise<TodoEntity> {
     const todo = new TodoEntity(todoData);
-    this.todos.push(todo);
+    const todoKey = this.redisService.generateKey("todo", todo.id);
+    const userTodosKey = this.redisService.generateKey(
+      "user",
+      todo.userId,
+      "todos",
+    );
+    const userTodosByDateKey = this.redisService.generateKey(
+      "user",
+      todo.userId,
+      "todos",
+      "bydate",
+    );
+    const userCategoryKey = this.redisService.generateKey(
+      "user",
+      todo.userId,
+      "category",
+      todo.category.id,
+    );
+    const userCompletedKey = this.redisService.generateKey(
+      "user",
+      todo.userId,
+      "completed",
+      todo.completed.toString(),
+    );
+
+    const todoHashData = {
+      id: todo.id,
+      title: todo.title,
+      description: todo.description || "",
+      completed: todo.completed.toString(),
+      priority: todo.priority,
+      category: this.redisService.serializeData(todo.category),
+      dueDate: todo.dueDate.toISOString(),
+      createdAt: todo.createdAt.toISOString(),
+      updatedAt: todo.updatedAt.toISOString(),
+      userId: todo.userId,
+    };
+
+    await this.redisService.hmset(todoKey, todoHashData);
+    await this.redisService.zadd(
+      userTodosKey,
+      todo.createdAt.getTime(),
+      todo.id,
+    );
+    await this.redisService.zadd(
+      userTodosByDateKey,
+      Math.floor(todo.dueDate.getTime() / 1000),
+      todo.id,
+    );
+    await this.redisService.zadd(
+      userCategoryKey,
+      todo.createdAt.getTime(),
+      todo.id,
+    );
+    await this.redisService.zadd(
+      userCompletedKey,
+      todo.createdAt.getTime(),
+      todo.id,
+    );
+
     return todo;
   }
 
@@ -59,35 +215,182 @@ export class TodoRepository {
     id: string,
     updateData: Partial<TodoEntity>,
   ): Promise<TodoEntity | null> {
-    const todoIndex = this.todos.findIndex((todo) => todo.id === id);
-    if (todoIndex === -1) {
+    const existingTodo = await this.findById(id);
+    if (!existingTodo) {
       return null;
     }
 
-    this.todos[todoIndex].update(updateData);
-    return this.todos[todoIndex];
+    const oldCompleted = existingTodo.completed;
+    const oldCategory = existingTodo.category;
+
+    existingTodo.update(updateData);
+
+    const todoKey = this.redisService.generateKey("todo", id);
+    const todoHashData = {
+      id: existingTodo.id,
+      title: existingTodo.title,
+      description: existingTodo.description || "",
+      completed: existingTodo.completed.toString(),
+      priority: existingTodo.priority,
+      category: this.redisService.serializeData(existingTodo.category),
+      dueDate: existingTodo.dueDate.toISOString(),
+      createdAt: existingTodo.createdAt.toISOString(),
+      updatedAt: existingTodo.updatedAt.toISOString(),
+      userId: existingTodo.userId,
+    };
+
+    await this.redisService.hmset(todoKey, todoHashData);
+
+    // Update indices if completion status changed
+    if (oldCompleted !== existingTodo.completed) {
+      const oldCompletedKey = this.redisService.generateKey(
+        "user",
+        existingTodo.userId,
+        "completed",
+        oldCompleted.toString(),
+      );
+      const newCompletedKey = this.redisService.generateKey(
+        "user",
+        existingTodo.userId,
+        "completed",
+        existingTodo.completed.toString(),
+      );
+
+      await this.redisService.zrem(oldCompletedKey, id);
+      await this.redisService.zadd(
+        newCompletedKey,
+        existingTodo.createdAt.getTime(),
+        id,
+      );
+    }
+
+    // Update category index if category changed
+    if (oldCategory.id !== existingTodo.category.id) {
+      const oldCategoryKey = this.redisService.generateKey(
+        "user",
+        existingTodo.userId,
+        "category",
+        oldCategory.id,
+      );
+      const newCategoryKey = this.redisService.generateKey(
+        "user",
+        existingTodo.userId,
+        "category",
+        existingTodo.category.id,
+      );
+
+      await this.redisService.zrem(oldCategoryKey, id);
+      await this.redisService.zadd(
+        newCategoryKey,
+        existingTodo.createdAt.getTime(),
+        id,
+      );
+    }
+
+    return existingTodo;
   }
 
   async delete(id: string): Promise<boolean> {
-    const initialLength = this.todos.length;
-    this.todos = this.todos.filter((todo) => todo.id !== id);
-    return this.todos.length < initialLength;
+    const existingTodo = await this.findById(id);
+    if (!existingTodo) {
+      return false;
+    }
+
+    const todoKey = this.redisService.generateKey("todo", id);
+    const userTodosKey = this.redisService.generateKey(
+      "user",
+      existingTodo.userId,
+      "todos",
+    );
+    const userTodosByDateKey = this.redisService.generateKey(
+      "user",
+      existingTodo.userId,
+      "todos",
+      "bydate",
+    );
+    const userCategoryKey = this.redisService.generateKey(
+      "user",
+      existingTodo.userId,
+      "category",
+      existingTodo.category.id,
+    );
+    const userCompletedKey = this.redisService.generateKey(
+      "user",
+      existingTodo.userId,
+      "completed",
+      existingTodo.completed.toString(),
+    );
+
+    await this.redisService.del(todoKey);
+    await this.redisService.zrem(userTodosKey, id);
+    await this.redisService.zrem(userTodosByDateKey, id);
+    await this.redisService.zrem(userCategoryKey, id);
+    await this.redisService.zrem(userCompletedKey, id);
+
+    return true;
   }
 
   async deleteByUserId(userId: string): Promise<number> {
-    const initialLength = this.todos.length;
-    this.todos = this.todos.filter((todo) => todo.userId !== userId);
-    return initialLength - this.todos.length;
+    const userTodos = await this.findByUserId(userId);
+    let deletedCount = 0;
+
+    for (const todo of userTodos) {
+      const success = await this.delete(todo.id);
+      if (success) {
+        deletedCount++;
+      }
+    }
+
+    return deletedCount;
   }
 
   async toggle(id: string): Promise<TodoEntity | null> {
-    const todo = this.todos.find((todo) => todo.id === id);
-    if (!todo) {
+    const existingTodo = await this.findById(id);
+    if (!existingTodo) {
       return null;
     }
 
-    todo.toggleComplete();
-    return todo;
+    const oldCompleted = existingTodo.completed;
+    existingTodo.toggleComplete();
+
+    const todoKey = this.redisService.generateKey("todo", id);
+    const todoHashData = {
+      id: existingTodo.id,
+      title: existingTodo.title,
+      description: existingTodo.description || "",
+      completed: existingTodo.completed.toString(),
+      priority: existingTodo.priority,
+      category: this.redisService.serializeData(existingTodo.category),
+      dueDate: existingTodo.dueDate.toISOString(),
+      createdAt: existingTodo.createdAt.toISOString(),
+      updatedAt: existingTodo.updatedAt.toISOString(),
+      userId: existingTodo.userId,
+    };
+
+    await this.redisService.hmset(todoKey, todoHashData);
+
+    // Update completion indices
+    const oldCompletedKey = this.redisService.generateKey(
+      "user",
+      existingTodo.userId,
+      "completed",
+      oldCompleted.toString(),
+    );
+    const newCompletedKey = this.redisService.generateKey(
+      "user",
+      existingTodo.userId,
+      "completed",
+      existingTodo.completed.toString(),
+    );
+
+    await this.redisService.zrem(oldCompletedKey, id);
+    await this.redisService.zadd(
+      newCompletedKey,
+      existingTodo.createdAt.getTime(),
+      id,
+    );
+
+    return existingTodo;
   }
 
   async updateCategoryForUser(
@@ -95,31 +398,42 @@ export class TodoRepository {
     oldCategory: TodoCategory,
     newCategory: TodoCategory,
   ): Promise<number> {
+    const userTodos = await this.findByUserIdAndCategory(
+      userId,
+      oldCategory.id,
+    );
     let updatedCount = 0;
-    this.todos.forEach((todo) => {
-      if (todo.userId === userId && todo.category.id === oldCategory.id) {
-        todo.category = newCategory;
-        todo.updatedAt = new Date();
+
+    for (const todo of userTodos) {
+      const success = await this.update(todo.id, { category: newCategory });
+      if (success) {
         updatedCount++;
       }
-    });
+    }
+
     return updatedCount;
   }
 
   async count(): Promise<number> {
-    return this.todos.length;
+    const todoKeys = await this.redisService.keys("todo:todo:*");
+    return todoKeys.length;
   }
 
   async countByUserId(userId: string): Promise<number> {
-    return this.todos.filter((todo) => todo.userId === userId).length;
+    const userTodosKey = this.redisService.generateKey("user", userId, "todos");
+    return await this.redisService.zcard(userTodosKey);
   }
 
   async countByUserIdAndCompleted(
     userId: string,
     completed: boolean,
   ): Promise<number> {
-    return this.todos.filter(
-      (todo) => todo.userId === userId && todo.completed === completed,
-    ).length;
+    const userCompletedKey = this.redisService.generateKey(
+      "user",
+      userId,
+      "completed",
+      completed.toString(),
+    );
+    return await this.redisService.zcard(userCompletedKey);
   }
 }

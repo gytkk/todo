@@ -8,7 +8,7 @@ import { TodoEntity } from "./todo.entity";
 import { CreateTodoDto } from "./dto/create-todo.dto";
 import { UpdateTodoDto } from "./dto/update-todo.dto";
 import { TodoItem, TodoStats, TodoCategory } from "@calendar-todo/shared-types";
-import { subDays, startOfDay, endOfDay } from "date-fns";
+import { subDays, endOfDay } from "date-fns";
 
 @Injectable()
 export class TodoService {

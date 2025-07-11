@@ -7,8 +7,16 @@ import { RegisterDto } from "./dto/register.dto";
 
 describe("AuthService", () => {
   let service: AuthService;
-  let userService: jest.Mocked<UserService>;
-  let jwtAuthService: jest.Mocked<JwtAuthService>;
+  let userService: UserService;
+  let jwtAuthService: JwtAuthService;
+
+  // Spy function references
+  let createSpy: jest.SpyInstance;
+  let validatePasswordSpy: jest.SpyInstance;
+  let findByIdSpy: jest.SpyInstance;
+  let generateTokenPairSpy: jest.SpyInstance;
+  let verifyRefreshTokenSpy: jest.SpyInstance;
+  let refreshAccessTokenSpy: jest.SpyInstance;
 
   const mockUser = new User({
     id: "test-user-id",
@@ -37,7 +45,9 @@ describe("AuthService", () => {
     const mockJwtAuthService = {
       generateAccessToken: jest.fn(),
       generateRefreshToken: jest.fn(),
+      generateTokenPair: jest.fn(),
       verifyRefreshToken: jest.fn(),
+      refreshAccessToken: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -55,8 +65,18 @@ describe("AuthService", () => {
     }).compile();
 
     service = module.get<AuthService>(AuthService);
-    userService = module.get(UserService);
-    jwtAuthService = module.get(JwtAuthService);
+    userService = module.get<UserService>(UserService);
+    jwtAuthService = module.get<JwtAuthService>(JwtAuthService);
+
+    // Create spies for UserService methods
+    createSpy = jest.spyOn(userService, "create");
+    validatePasswordSpy = jest.spyOn(userService, "validatePassword");
+    findByIdSpy = jest.spyOn(userService, "findById");
+
+    // Create spies for JwtAuthService methods
+    generateTokenPairSpy = jest.spyOn(jwtAuthService, "generateTokenPair");
+    verifyRefreshTokenSpy = jest.spyOn(jwtAuthService, "verifyRefreshToken");
+    refreshAccessTokenSpy = jest.spyOn(jwtAuthService, "refreshAccessToken");
   });
 
   it("should be defined", () => {
@@ -71,26 +91,25 @@ describe("AuthService", () => {
     };
 
     it("should register a new user and return auth response", async () => {
-      userService.create.mockResolvedValue(mockUser);
-      jwtAuthService.generateAccessToken.mockReturnValue("access-token");
-      jwtAuthService.generateRefreshToken.mockReturnValue("refresh-token");
+      createSpy.mockResolvedValue(mockUser);
+      generateTokenPairSpy.mockResolvedValue({
+        accessToken: "access-token",
+        refreshToken: "refresh-token",
+      });
 
       const result = await service.register(registerDto);
 
-      expect(userService.create).toHaveBeenCalledWith(registerDto);
-      expect(jwtAuthService.generateAccessToken).toHaveBeenCalledWith(
+      expect(createSpy).toHaveBeenCalledWith(registerDto);
+      expect(generateTokenPairSpy).toHaveBeenCalledWith(
         mockUser.id,
         mockUser.email,
-      );
-      expect(jwtAuthService.generateRefreshToken).toHaveBeenCalledWith(
-        mockUser.id,
       );
       expect(result).toEqual(mockAuthResponse);
     });
 
     it("should propagate error from user creation", async () => {
       const error = new Error("이미 가입된 이메일입니다");
-      userService.create.mockRejectedValue(error);
+      createSpy.mockRejectedValue(error);
 
       await expect(service.register(registerDto)).rejects.toThrow(error);
     });
@@ -98,11 +117,11 @@ describe("AuthService", () => {
 
   describe("validateUser", () => {
     it("should return user if credentials are valid", async () => {
-      userService.validatePassword.mockResolvedValue(mockUser);
+      validatePasswordSpy.mockResolvedValue(mockUser);
 
       const result = await service.validateUser("test@example.com", "password");
 
-      expect(userService.validatePassword).toHaveBeenCalledWith(
+      expect(validatePasswordSpy).toHaveBeenCalledWith(
         "test@example.com",
         "password",
       );
@@ -110,14 +129,14 @@ describe("AuthService", () => {
     });
 
     it("should return null if credentials are invalid", async () => {
-      userService.validatePassword.mockResolvedValue(null);
+      validatePasswordSpy.mockResolvedValue(null);
 
       const result = await service.validateUser(
         "test@example.com",
         "wrong-password",
       );
 
-      expect(userService.validatePassword).toHaveBeenCalledWith(
+      expect(validatePasswordSpy).toHaveBeenCalledWith(
         "test@example.com",
         "wrong-password",
       );
@@ -127,17 +146,16 @@ describe("AuthService", () => {
 
   describe("login", () => {
     it("should generate tokens for valid user", async () => {
-      jwtAuthService.generateAccessToken.mockReturnValue("access-token");
-      jwtAuthService.generateRefreshToken.mockReturnValue("refresh-token");
+      generateTokenPairSpy.mockResolvedValue({
+        accessToken: "access-token",
+        refreshToken: "refresh-token",
+      });
 
       const result = await service.login(mockUser);
 
-      expect(jwtAuthService.generateAccessToken).toHaveBeenCalledWith(
+      expect(generateTokenPairSpy).toHaveBeenCalledWith(
         mockUser.id,
         mockUser.email,
-      );
-      expect(jwtAuthService.generateRefreshToken).toHaveBeenCalledWith(
-        mockUser.id,
       );
       expect(result).toEqual(mockAuthResponse);
     });
@@ -145,27 +163,21 @@ describe("AuthService", () => {
 
   describe("refreshToken", () => {
     it("should generate new tokens for valid refresh token", async () => {
-      jwtAuthService.verifyRefreshToken.mockReturnValue({
+      refreshAccessTokenSpy.mockResolvedValue({
+        accessToken: "new-access-token",
+        refreshToken: "new-refresh-token",
+      });
+      verifyRefreshTokenSpy.mockReturnValue({
         sub: "test-user-id",
         type: "refresh",
       });
-      userService.findById.mockResolvedValue(mockUser);
-      jwtAuthService.generateAccessToken.mockReturnValue("new-access-token");
-      jwtAuthService.generateRefreshToken.mockReturnValue("new-refresh-token");
+      findByIdSpy.mockResolvedValue(mockUser);
 
       const result = await service.refreshToken("valid-refresh-token");
 
-      expect(jwtAuthService.verifyRefreshToken).toHaveBeenCalledWith(
-        "valid-refresh-token",
-      );
-      expect(userService.findById).toHaveBeenCalledWith("test-user-id");
-      expect(jwtAuthService.generateAccessToken).toHaveBeenCalledWith(
-        mockUser.id,
-        mockUser.email,
-      );
-      expect(jwtAuthService.generateRefreshToken).toHaveBeenCalledWith(
-        mockUser.id,
-      );
+      expect(refreshAccessTokenSpy).toHaveBeenCalledWith("valid-refresh-token");
+      expect(verifyRefreshTokenSpy).toHaveBeenCalledWith("new-refresh-token");
+      expect(findByIdSpy).toHaveBeenCalledWith("test-user-id");
       expect(result).toEqual({
         accessToken: "new-access-token",
         refreshToken: "new-refresh-token",
@@ -174,7 +186,7 @@ describe("AuthService", () => {
     });
 
     it("should throw error for invalid refresh token", async () => {
-      jwtAuthService.verifyRefreshToken.mockImplementation(() => {
+      verifyRefreshTokenSpy.mockImplementation(() => {
         throw new Error("Invalid token");
       });
 
@@ -184,11 +196,11 @@ describe("AuthService", () => {
     });
 
     it("should throw error if user not found", async () => {
-      jwtAuthService.verifyRefreshToken.mockReturnValue({
+      verifyRefreshTokenSpy.mockReturnValue({
         sub: "non-existent-user-id",
         type: "refresh",
       });
-      userService.findById.mockResolvedValue(null);
+      findByIdSpy.mockResolvedValue(null);
 
       await expect(service.refreshToken("valid-refresh-token")).rejects.toThrow(
         "Invalid refresh token",
@@ -197,11 +209,11 @@ describe("AuthService", () => {
 
     it("should throw error if user is inactive", async () => {
       const inactiveUser = new User({ ...mockUser, isActive: false });
-      jwtAuthService.verifyRefreshToken.mockReturnValue({
+      verifyRefreshTokenSpy.mockReturnValue({
         sub: "test-user-id",
         type: "refresh",
       });
-      userService.findById.mockResolvedValue(inactiveUser);
+      findByIdSpy.mockResolvedValue(inactiveUser);
 
       await expect(service.refreshToken("valid-refresh-token")).rejects.toThrow(
         "Invalid refresh token",

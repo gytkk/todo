@@ -80,7 +80,7 @@ describe("PasswordService", () => {
     });
 
     it("should return false for non-matching passwords", async () => {
-      const password = "TestPassword123";
+      const _password = "TestPassword123";
       const wrongPassword = "WrongPassword123";
       const hashedPassword = "hashed-password";
 

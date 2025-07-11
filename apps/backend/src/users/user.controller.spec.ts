@@ -8,7 +8,12 @@ import { UserProfile } from "@calendar-todo/shared-types";
 
 describe("UserController", () => {
   let controller: UserController;
-  let userService: jest.Mocked<UserService>;
+  let userService: UserService;
+
+  // Spy function references
+  let updateSpy: jest.SpyInstance;
+  let changePasswordSpy: jest.SpyInstance;
+  let deleteSpy: jest.SpyInstance;
 
   const mockUser = new User({
     id: "test-user-id",
@@ -47,7 +52,12 @@ describe("UserController", () => {
     }).compile();
 
     controller = module.get<UserController>(UserController);
-    userService = module.get(UserService);
+    userService = module.get<UserService>(UserService);
+
+    // Create spies for UserService methods
+    updateSpy = jest.spyOn(userService, "update");
+    changePasswordSpy = jest.spyOn(userService, "changePassword");
+    deleteSpy = jest.spyOn(userService, "delete");
   });
 
   it("should be defined", () => {
@@ -85,23 +95,20 @@ describe("UserController", () => {
     };
 
     it("should update user profile successfully", async () => {
-      userService.update.mockResolvedValue(updatedProfile);
+      updateSpy.mockResolvedValue(updatedProfile);
 
       const result = await controller.updateProfile(
         "test-user-id",
         updateUserDto,
       );
 
-      expect(userService.update).toHaveBeenCalledWith(
-        "test-user-id",
-        updateUserDto,
-      );
+      expect(updateSpy).toHaveBeenCalledWith("test-user-id", updateUserDto);
       expect(result).toEqual(updatedProfile);
     });
 
     it("should propagate service errors", async () => {
       const error = new Error("User not found");
-      userService.update.mockRejectedValue(error);
+      updateSpy.mockRejectedValue(error);
 
       await expect(
         controller.updateProfile("test-user-id", updateUserDto),
@@ -116,11 +123,11 @@ describe("UserController", () => {
     };
 
     it("should change password successfully", async () => {
-      userService.changePassword.mockResolvedValue(undefined);
+      changePasswordSpy.mockResolvedValue(undefined);
 
       await controller.changePassword("test-user-id", changePasswordDto);
 
-      expect(userService.changePassword).toHaveBeenCalledWith(
+      expect(changePasswordSpy).toHaveBeenCalledWith(
         "test-user-id",
         changePasswordDto,
       );
@@ -128,7 +135,7 @@ describe("UserController", () => {
 
     it("should propagate service errors", async () => {
       const error = new Error("Current password is incorrect");
-      userService.changePassword.mockRejectedValue(error);
+      changePasswordSpy.mockRejectedValue(error);
 
       await expect(
         controller.changePassword("test-user-id", changePasswordDto),
@@ -138,16 +145,16 @@ describe("UserController", () => {
 
   describe("deleteAccount", () => {
     it("should delete account successfully", async () => {
-      userService.delete.mockResolvedValue(undefined);
+      deleteSpy.mockResolvedValue(undefined);
 
       await controller.deleteAccount("test-user-id");
 
-      expect(userService.delete).toHaveBeenCalledWith("test-user-id");
+      expect(deleteSpy).toHaveBeenCalledWith("test-user-id");
     });
 
     it("should propagate service errors", async () => {
       const error = new Error("User not found");
-      userService.delete.mockRejectedValue(error);
+      deleteSpy.mockRejectedValue(error);
 
       await expect(controller.deleteAccount("test-user-id")).rejects.toThrow(
         error,

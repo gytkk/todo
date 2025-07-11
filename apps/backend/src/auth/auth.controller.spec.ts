@@ -8,7 +8,12 @@ import { AuthResponse, RefreshTokenRequest } from "@calendar-todo/shared-types";
 
 describe("AuthController", () => {
   let controller: AuthController;
-  let authService: jest.Mocked<AuthService>;
+  let authService: AuthService;
+
+  // Spy function references
+  let registerSpy: jest.SpyInstance;
+  let loginSpy: jest.SpyInstance;
+  let refreshTokenSpy: jest.SpyInstance;
 
   const mockUser = new User({
     id: "test-user-id",
@@ -51,7 +56,12 @@ describe("AuthController", () => {
     }).compile();
 
     controller = module.get<AuthController>(AuthController);
-    authService = module.get(AuthService);
+    authService = module.get<AuthService>(AuthService);
+
+    // Create spies for AuthService methods
+    registerSpy = jest.spyOn(authService, "register");
+    loginSpy = jest.spyOn(authService, "login");
+    refreshTokenSpy = jest.spyOn(authService, "refreshToken");
   });
 
   it("should be defined", () => {
@@ -66,17 +76,17 @@ describe("AuthController", () => {
     };
 
     it("should register a new user successfully", async () => {
-      authService.register.mockResolvedValue(mockAuthResponse);
+      registerSpy.mockResolvedValue(mockAuthResponse);
 
       const result = await controller.register(registerDto);
 
-      expect(authService.register).toHaveBeenCalledWith(registerDto);
+      expect(registerSpy).toHaveBeenCalledWith(registerDto);
       expect(result).toEqual(mockAuthResponse);
     });
 
     it("should propagate registration errors", async () => {
       const error = new Error("이미 가입된 이메일입니다");
-      authService.register.mockRejectedValue(error);
+      registerSpy.mockRejectedValue(error);
 
       await expect(controller.register(registerDto)).rejects.toThrow(error);
     });
@@ -89,11 +99,11 @@ describe("AuthController", () => {
     };
 
     it("should login user successfully", async () => {
-      authService.login.mockResolvedValue(mockAuthResponse);
+      loginSpy.mockResolvedValue(mockAuthResponse);
 
       const result = await controller.login(loginDto, mockUser);
 
-      expect(authService.login).toHaveBeenCalledWith(mockUser);
+      expect(loginSpy).toHaveBeenCalledWith(mockUser);
       expect(result).toEqual(mockAuthResponse);
     });
 
@@ -104,17 +114,17 @@ describe("AuthController", () => {
         user: { ...mockAuthResponse.user, id: "different-user-id" },
       };
 
-      authService.login.mockResolvedValue(differentAuthResponse);
+      loginSpy.mockResolvedValue(differentAuthResponse);
 
       const result = await controller.login(loginDto, differentUser);
 
-      expect(authService.login).toHaveBeenCalledWith(differentUser);
+      expect(loginSpy).toHaveBeenCalledWith(differentUser);
       expect(result).toEqual(differentAuthResponse);
     });
 
     it("should propagate login errors", async () => {
       const error = new Error("Invalid credentials");
-      authService.login.mockRejectedValue(error);
+      loginSpy.mockRejectedValue(error);
 
       await expect(controller.login(loginDto, mockUser)).rejects.toThrow(error);
     });
@@ -132,19 +142,17 @@ describe("AuthController", () => {
         user: mockAuthResponse.user,
       };
 
-      authService.refreshToken.mockResolvedValue(newAuthResponse);
+      refreshTokenSpy.mockResolvedValue(newAuthResponse);
 
       const result = await controller.refresh(refreshTokenRequest);
 
-      expect(authService.refreshToken).toHaveBeenCalledWith(
-        "valid-refresh-token",
-      );
+      expect(refreshTokenSpy).toHaveBeenCalledWith("valid-refresh-token");
       expect(result).toEqual(newAuthResponse);
     });
 
     it("should propagate refresh errors", async () => {
       const error = new Error("Invalid refresh token");
-      authService.refreshToken.mockRejectedValue(error);
+      refreshTokenSpy.mockRejectedValue(error);
 
       await expect(controller.refresh(refreshTokenRequest)).rejects.toThrow(
         error,
@@ -153,16 +161,16 @@ describe("AuthController", () => {
   });
 
   describe("logout", () => {
-    it("should return success message", async () => {
-      const result = await controller.logout();
+    it("should return success message", () => {
+      const result = controller.logout();
 
       expect(result).toEqual({ message: "Logged out successfully" });
     });
 
-    it("should always succeed", async () => {
+    it("should always succeed", () => {
       // Test multiple calls to ensure consistency
-      const result1 = await controller.logout();
-      const result2 = await controller.logout();
+      const result1 = controller.logout();
+      const result2 = controller.logout();
 
       expect(result1).toEqual({ message: "Logged out successfully" });
       expect(result2).toEqual({ message: "Logged out successfully" });

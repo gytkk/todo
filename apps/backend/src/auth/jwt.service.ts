@@ -2,12 +2,14 @@ import { Injectable } from "@nestjs/common";
 import { JwtService as NestJwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import { JwtPayload } from "@calendar-todo/shared-types";
+import { RedisService } from "../redis/redis.service";
 
 @Injectable()
 export class JwtAuthService {
   constructor(
     private readonly jwtService: NestJwtService,
     private readonly configService: ConfigService,
+    private readonly redisService: RedisService,
   ) {}
 
   generateAccessToken(userId: string, email: string): string {
@@ -32,6 +34,27 @@ export class JwtAuthService {
     );
   }
 
+  async generateTokenPair(
+    userId: string,
+    email: string,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    const accessToken = this.generateAccessToken(userId, email);
+    const refreshToken = this.generateRefreshToken(userId);
+
+    // Store refresh token in Redis with expiration
+    const refreshTokenKey = this.redisService.generateKey(
+      "refresh_token",
+      userId,
+    );
+    await this.redisService.set(
+      refreshTokenKey,
+      refreshToken,
+      7 * 24 * 60 * 60,
+    ); // 7 days
+
+    return { accessToken, refreshToken };
+  }
+
   verifyAccessToken(token: string): JwtPayload {
     return this.jwtService.verify(token, {
       secret: this.configService.get<string>("JWT_SECRET"),
@@ -42,6 +65,68 @@ export class JwtAuthService {
     return this.jwtService.verify(token, {
       secret: this.configService.get<string>("JWT_REFRESH_SECRET"),
     });
+  }
+
+  async isRefreshTokenValid(userId: string, token: string): Promise<boolean> {
+    const refreshTokenKey = this.redisService.generateKey(
+      "refresh_token",
+      userId,
+    );
+    const storedToken = await this.redisService.get(refreshTokenKey);
+
+    return storedToken === token;
+  }
+
+  async revokeRefreshToken(userId: string): Promise<void> {
+    const refreshTokenKey = this.redisService.generateKey(
+      "refresh_token",
+      userId,
+    );
+    await this.redisService.del(refreshTokenKey);
+  }
+
+  async blacklistToken(token: string): Promise<void> {
+    const decoded = this.jwtService.decode(token);
+    if (decoded && decoded.exp) {
+      const ttl = decoded.exp - Math.floor(Date.now() / 1000);
+      if (ttl > 0) {
+        const blacklistKey = this.redisService.generateKey("blacklist", token);
+        await this.redisService.set(blacklistKey, "1", ttl);
+      }
+    }
+  }
+
+  async isTokenBlacklisted(token: string): Promise<boolean> {
+    const blacklistKey = this.redisService.generateKey("blacklist", token);
+    return await this.redisService.exists(blacklistKey);
+  }
+
+  async refreshAccessToken(
+    refreshToken: string,
+  ): Promise<{ accessToken: string; refreshToken: string } | null> {
+    try {
+      const decoded = this.verifyRefreshToken(refreshToken);
+      const userId = decoded.sub;
+
+      // Check if refresh token is still valid in Redis
+      const isValid = await this.isRefreshTokenValid(userId, refreshToken);
+      if (!isValid) {
+        return null;
+      }
+
+      // Get user info to generate new access token
+      const userKey = this.redisService.generateKey("user", userId);
+      const userData = await this.redisService.hgetall(userKey);
+
+      if (!userData || !userData.email) {
+        return null;
+      }
+
+      // Generate new token pair
+      return await this.generateTokenPair(userId, userData.email);
+    } catch {
+      return null;
+    }
   }
 
   decodeToken(token: string): any {

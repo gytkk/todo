@@ -11,11 +11,22 @@ import { User } from "./user.entity";
 import { RegisterDto } from "../auth/dto/register.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { ChangePasswordDto } from "./dto/change-password.dto";
+import { RedisService } from "../redis/redis.service";
 
 describe("UserService", () => {
   let service: UserService;
-  let userRepository: jest.Mocked<UserRepository>;
-  let passwordService: jest.Mocked<PasswordService>;
+  let userRepository: UserRepository;
+  let passwordService: PasswordService;
+
+  // Spy function references
+  let findByEmailSpy: jest.SpyInstance;
+  let findByIdSpy: jest.SpyInstance;
+  let createSpy: jest.SpyInstance;
+  let updateSpy: jest.SpyInstance;
+  let deleteSpy: jest.SpyInstance;
+  let hashPasswordSpy: jest.SpyInstance;
+  let comparePasswordSpy: jest.SpyInstance;
+  let validatePasswordStrengthSpy: jest.SpyInstance;
 
   const mockUser = new User({
     id: "test-user-id",
@@ -29,37 +40,52 @@ describe("UserService", () => {
   });
 
   beforeEach(async () => {
-    const mockUserRepository = {
-      findByEmail: jest.fn(),
-      findById: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-    };
-
-    const mockPasswordService = {
-      hashPassword: jest.fn(),
-      comparePassword: jest.fn(),
-      validatePasswordStrength: jest.fn(),
+    const mockRedisService = {
+      generateKey: jest.fn(),
+      hgetall: jest.fn(),
+      get: jest.fn(),
+      hmset: jest.fn(),
+      set: jest.fn(),
+      zadd: jest.fn(),
+      del: jest.fn(),
+      zrem: jest.fn(),
+      exists: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UserService,
+        UserRepository,
+        PasswordService,
         {
-          provide: UserRepository,
-          useValue: mockUserRepository,
-        },
-        {
-          provide: PasswordService,
-          useValue: mockPasswordService,
+          provide: RedisService,
+          useValue: mockRedisService,
         },
       ],
     }).compile();
 
     service = module.get<UserService>(UserService);
-    userRepository = module.get(UserRepository);
-    passwordService = module.get(PasswordService);
+    userRepository = module.get<UserRepository>(UserRepository);
+    passwordService = module.get<PasswordService>(PasswordService);
+
+    // Create spies for UserRepository methods
+    findByEmailSpy = jest.spyOn(userRepository, "findByEmail");
+    findByIdSpy = jest.spyOn(userRepository, "findById");
+    createSpy = jest.spyOn(userRepository, "create");
+    updateSpy = jest.spyOn(userRepository, "update");
+    deleteSpy = jest.spyOn(userRepository, "delete");
+
+    // Create spies for PasswordService methods
+    hashPasswordSpy = jest.spyOn(passwordService, "hashPassword");
+    comparePasswordSpy = jest.spyOn(passwordService, "comparePassword");
+    validatePasswordStrengthSpy = jest.spyOn(
+      passwordService,
+      "validatePasswordStrength",
+    );
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   it("should be defined", () => {
@@ -74,29 +100,25 @@ describe("UserService", () => {
     };
 
     beforeEach(() => {
-      passwordService.validatePasswordStrength.mockReturnValue({
+      validatePasswordStrengthSpy.mockReturnValue({
         isValid: true,
         errors: [],
       });
-      passwordService.hashPassword.mockResolvedValue("hashed-password");
-      userRepository.create.mockResolvedValue(mockUser);
+      hashPasswordSpy.mockResolvedValue("hashed-password");
+      createSpy.mockResolvedValue(mockUser);
     });
 
     it("should create a new user successfully", async () => {
-      userRepository.findByEmail.mockResolvedValue(null);
+      findByEmailSpy.mockResolvedValue(null);
 
       const result = await service.create(registerDto);
 
-      expect(userRepository.findByEmail).toHaveBeenCalledWith(
-        registerDto.email,
-      );
-      expect(passwordService.validatePasswordStrength).toHaveBeenCalledWith(
+      expect(findByEmailSpy).toHaveBeenCalledWith(registerDto.email);
+      expect(validatePasswordStrengthSpy).toHaveBeenCalledWith(
         registerDto.password,
       );
-      expect(passwordService.hashPassword).toHaveBeenCalledWith(
-        registerDto.password,
-      );
-      expect(userRepository.create).toHaveBeenCalledWith({
+      expect(hashPasswordSpy).toHaveBeenCalledWith(registerDto.password);
+      expect(createSpy).toHaveBeenCalledWith({
         email: registerDto.email,
         passwordHash: "hashed-password",
         name: registerDto.name,
@@ -107,21 +129,17 @@ describe("UserService", () => {
     });
 
     it("should throw ConflictException if email already exists", async () => {
-      userRepository.findByEmail.mockResolvedValue(mockUser);
+      findByEmailSpy.mockResolvedValue(mockUser);
 
       await expect(service.create(registerDto)).rejects.toThrow(
         ConflictException,
       );
-      expect(userRepository.findByEmail).toHaveBeenCalledWith(
-        registerDto.email,
-      );
+      expect(findByEmailSpy).toHaveBeenCalledWith(registerDto.email);
     });
 
-    // Username conflict test removed as username field doesn't exist in current implementation
-
     it("should throw BadRequestException if password is weak", async () => {
-      userRepository.findByEmail.mockResolvedValue(null);
-      passwordService.validatePasswordStrength.mockReturnValue({
+      findByEmailSpy.mockResolvedValue(null);
+      validatePasswordStrengthSpy.mockReturnValue({
         isValid: false,
         errors: ["Password is too weak"],
       });
@@ -129,54 +147,48 @@ describe("UserService", () => {
       await expect(service.create(registerDto)).rejects.toThrow(
         BadRequestException,
       );
-      expect(passwordService.validatePasswordStrength).toHaveBeenCalledWith(
+      expect(validatePasswordStrengthSpy).toHaveBeenCalledWith(
         registerDto.password,
       );
     });
-
-    // Username-related test removed as username field doesn't exist in current implementation
   });
 
   describe("findById", () => {
     it("should return user if found", async () => {
-      userRepository.findById.mockResolvedValue(mockUser);
+      findByIdSpy.mockResolvedValue(mockUser);
 
       const result = await service.findById("test-user-id");
 
-      expect(userRepository.findById).toHaveBeenCalledWith("test-user-id");
+      expect(findByIdSpy).toHaveBeenCalledWith("test-user-id");
       expect(result).toEqual(mockUser);
     });
 
     it("should return null if user not found", async () => {
-      userRepository.findById.mockResolvedValue(null);
+      findByIdSpy.mockResolvedValue(null);
 
       const result = await service.findById("non-existent-id");
 
-      expect(userRepository.findById).toHaveBeenCalledWith("non-existent-id");
+      expect(findByIdSpy).toHaveBeenCalledWith("non-existent-id");
       expect(result).toBeNull();
     });
   });
 
   describe("findByEmail", () => {
     it("should return user if found", async () => {
-      userRepository.findByEmail.mockResolvedValue(mockUser);
+      findByEmailSpy.mockResolvedValue(mockUser);
 
       const result = await service.findByEmail("test@example.com");
 
-      expect(userRepository.findByEmail).toHaveBeenCalledWith(
-        "test@example.com",
-      );
+      expect(findByEmailSpy).toHaveBeenCalledWith("test@example.com");
       expect(result).toEqual(mockUser);
     });
 
     it("should return null if user not found", async () => {
-      userRepository.findByEmail.mockResolvedValue(null);
+      findByEmailSpy.mockResolvedValue(null);
 
       const result = await service.findByEmail("nonexistent@example.com");
 
-      expect(userRepository.findByEmail).toHaveBeenCalledWith(
-        "nonexistent@example.com",
-      );
+      expect(findByEmailSpy).toHaveBeenCalledWith("nonexistent@example.com");
       expect(result).toBeNull();
     });
   });
@@ -188,30 +200,23 @@ describe("UserService", () => {
 
     it("should update user successfully", async () => {
       const updatedUser = new User({ ...mockUser, ...updateUserDto });
-      userRepository.findById.mockResolvedValue(mockUser);
-      userRepository.update.mockResolvedValue(updatedUser);
+      findByIdSpy.mockResolvedValue(mockUser);
+      updateSpy.mockResolvedValue(updatedUser);
 
       const result = await service.update("test-user-id", updateUserDto);
 
-      expect(userRepository.findById).toHaveBeenCalledWith("test-user-id");
-      expect(userRepository.update).toHaveBeenCalledWith(
-        "test-user-id",
-        updateUserDto,
-      );
+      expect(findByIdSpy).toHaveBeenCalledWith("test-user-id");
+      expect(updateSpy).toHaveBeenCalledWith("test-user-id", updateUserDto);
       expect(result).toEqual(updatedUser.toProfile());
     });
 
     it("should throw NotFoundException if user not found", async () => {
-      userRepository.findById.mockResolvedValue(null);
+      findByIdSpy.mockResolvedValue(null);
 
       await expect(
         service.update("non-existent-id", updateUserDto),
       ).rejects.toThrow(NotFoundException);
     });
-
-    // Username conflict test removed as username field doesn't exist in current implementation
-
-    // Username-related test removed as username field doesn't exist in current implementation
   });
 
   describe("changePassword", () => {
@@ -221,35 +226,35 @@ describe("UserService", () => {
     };
 
     it("should change password successfully", async () => {
-      userRepository.findById.mockResolvedValue(mockUser);
-      passwordService.comparePassword.mockResolvedValue(true);
-      passwordService.validatePasswordStrength.mockReturnValue({
+      findByIdSpy.mockResolvedValue(mockUser);
+      comparePasswordSpy.mockResolvedValue(true);
+      validatePasswordStrengthSpy.mockReturnValue({
         isValid: true,
         errors: [],
       });
-      passwordService.hashPassword.mockResolvedValue("new-hashed-password");
-      userRepository.update.mockResolvedValue(mockUser);
+      hashPasswordSpy.mockResolvedValue("new-hashed-password");
+      updateSpy.mockResolvedValue(mockUser);
 
       await service.changePassword("test-user-id", changePasswordDto);
 
-      expect(userRepository.findById).toHaveBeenCalledWith("test-user-id");
-      expect(passwordService.comparePassword).toHaveBeenCalledWith(
+      expect(findByIdSpy).toHaveBeenCalledWith("test-user-id");
+      expect(comparePasswordSpy).toHaveBeenCalledWith(
         changePasswordDto.currentPassword,
         mockUser.passwordHash,
       );
-      expect(passwordService.validatePasswordStrength).toHaveBeenCalledWith(
+      expect(validatePasswordStrengthSpy).toHaveBeenCalledWith(
         changePasswordDto.newPassword,
       );
-      expect(passwordService.hashPassword).toHaveBeenCalledWith(
+      expect(hashPasswordSpy).toHaveBeenCalledWith(
         changePasswordDto.newPassword,
       );
-      expect(userRepository.update).toHaveBeenCalledWith("test-user-id", {
+      expect(updateSpy).toHaveBeenCalledWith("test-user-id", {
         passwordHash: "new-hashed-password",
       });
     });
 
     it("should throw NotFoundException if user not found", async () => {
-      userRepository.findById.mockResolvedValue(null);
+      findByIdSpy.mockResolvedValue(null);
 
       await expect(
         service.changePassword("non-existent-id", changePasswordDto),
@@ -257,8 +262,8 @@ describe("UserService", () => {
     });
 
     it("should throw BadRequestException if current password is incorrect", async () => {
-      userRepository.findById.mockResolvedValue(mockUser);
-      passwordService.comparePassword.mockResolvedValue(false);
+      findByIdSpy.mockResolvedValue(mockUser);
+      comparePasswordSpy.mockResolvedValue(false);
 
       await expect(
         service.changePassword("test-user-id", changePasswordDto),
@@ -266,9 +271,9 @@ describe("UserService", () => {
     });
 
     it("should throw BadRequestException if new password is weak", async () => {
-      userRepository.findById.mockResolvedValue(mockUser);
-      passwordService.comparePassword.mockResolvedValue(true);
-      passwordService.validatePasswordStrength.mockReturnValue({
+      findByIdSpy.mockResolvedValue(mockUser);
+      comparePasswordSpy.mockResolvedValue(true);
+      validatePasswordStrengthSpy.mockReturnValue({
         isValid: false,
         errors: ["Password is too weak"],
       });
@@ -281,15 +286,15 @@ describe("UserService", () => {
 
   describe("delete", () => {
     it("should delete user successfully", async () => {
-      userRepository.delete.mockResolvedValue(true);
+      deleteSpy.mockResolvedValue(true);
 
       await service.delete("test-user-id");
 
-      expect(userRepository.delete).toHaveBeenCalledWith("test-user-id");
+      expect(deleteSpy).toHaveBeenCalledWith("test-user-id");
     });
 
     it("should throw NotFoundException if user not found", async () => {
-      userRepository.delete.mockResolvedValue(false);
+      deleteSpy.mockResolvedValue(false);
 
       await expect(service.delete("non-existent-id")).rejects.toThrow(
         NotFoundException,
@@ -299,18 +304,16 @@ describe("UserService", () => {
 
   describe("validatePassword", () => {
     it("should return user if credentials are valid", async () => {
-      userRepository.findByEmail.mockResolvedValue(mockUser);
-      passwordService.comparePassword.mockResolvedValue(true);
+      findByEmailSpy.mockResolvedValue(mockUser);
+      comparePasswordSpy.mockResolvedValue(true);
 
       const result = await service.validatePassword(
         "test@example.com",
         "correct-password",
       );
 
-      expect(userRepository.findByEmail).toHaveBeenCalledWith(
-        "test@example.com",
-      );
-      expect(passwordService.comparePassword).toHaveBeenCalledWith(
+      expect(findByEmailSpy).toHaveBeenCalledWith("test@example.com");
+      expect(comparePasswordSpy).toHaveBeenCalledWith(
         "correct-password",
         mockUser.passwordHash,
       );
@@ -318,7 +321,7 @@ describe("UserService", () => {
     });
 
     it("should return null if user not found", async () => {
-      userRepository.findByEmail.mockResolvedValue(null);
+      findByEmailSpy.mockResolvedValue(null);
 
       const result = await service.validatePassword(
         "nonexistent@example.com",
@@ -330,7 +333,7 @@ describe("UserService", () => {
 
     it("should return null if user is inactive", async () => {
       const inactiveUser = new User({ ...mockUser, isActive: false });
-      userRepository.findByEmail.mockResolvedValue(inactiveUser);
+      findByEmailSpy.mockResolvedValue(inactiveUser);
 
       const result = await service.validatePassword(
         "test@example.com",
@@ -341,8 +344,8 @@ describe("UserService", () => {
     });
 
     it("should return null if password is incorrect", async () => {
-      userRepository.findByEmail.mockResolvedValue(mockUser);
-      passwordService.comparePassword.mockResolvedValue(false);
+      findByEmailSpy.mockResolvedValue(mockUser);
+      comparePasswordSpy.mockResolvedValue(false);
 
       const result = await service.validatePassword(
         "test@example.com",

@@ -26,6 +26,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Use TypeScript with strong typing; avoid `any` when possible
 - Use camelCase for variables/functions, PascalCase for components/classes
 - Imports: group React imports first, then external libs, then internal modules
+- Always run lint before completing a task
 - Error handling: prefer early returns over deep nesting
 - Keep components focused on a single responsibility
 

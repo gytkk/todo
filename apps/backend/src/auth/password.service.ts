@@ -27,9 +27,7 @@ export class PasswordService {
     }
 
     // ASCII 문자만 허용 (영문 대소문자, 숫자, 특수문자, 공백)
-    if (
-      !/^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~ ]+$/.test(password)
-    ) {
+    if (!/^[a-zA-Z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?`~ ]+$/.test(password)) {
       errors.push(
         "Password can only contain English letters, numbers, and basic special characters",
       );

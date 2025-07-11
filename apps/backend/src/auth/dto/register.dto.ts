@@ -1,10 +1,4 @@
-import {
-  IsEmail,
-  IsString,
-  MinLength,
-  IsOptional,
-  Matches,
-} from "class-validator";
+import { IsEmail, IsString, MinLength, Matches } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { RegisterRequest } from "@calendar-todo/shared-types";
 
@@ -26,7 +20,7 @@ export class RegisterDto implements RegisterRequest {
   })
   @IsString()
   @MinLength(8, { message: "Password must be at least 8 characters long" })
-  @Matches(/^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~ ]+$/, {
+  @Matches(/^[a-zA-Z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?`~ ]+$/, {
     message:
       "Password can only contain English letters, numbers, and basic special characters",
   })
