@@ -1,6 +1,5 @@
 import { Injectable } from "@nestjs/common";
 import { TodoEntity } from "./todo.entity";
-import { TodoCategory } from "@calendar-todo/shared-types";
 import { RedisService } from "../redis/redis.service";
 
 @Injectable()
@@ -30,23 +29,13 @@ export class TodoRepository {
       return null;
     }
 
-    const category = this.redisService.deserializeData<TodoCategory>(
-      todoData.category,
-    );
-
     return new TodoEntity({
       id: todoData.id,
       title: todoData.title,
       description: todoData.description,
       completed: todoData.completed === "true",
       priority: todoData.priority as "high" | "medium" | "low",
-      category: category || {
-        id: "default",
-        name: "일반",
-        color: "#3B82F6",
-        isDefault: true,
-        createdAt: new Date(),
-      },
+      categoryId: todoData.categoryId || "default",
       dueDate: new Date(todoData.dueDate),
       createdAt: new Date(todoData.createdAt),
       updatedAt: new Date(todoData.updatedAt),
@@ -164,7 +153,7 @@ export class TodoRepository {
       "user",
       todo.userId,
       "category",
-      todo.category.id,
+      todo.categoryId,
     );
     const userCompletedKey = this.redisService.generateKey(
       "user",
@@ -179,7 +168,7 @@ export class TodoRepository {
       description: todo.description || "",
       completed: todo.completed.toString(),
       priority: todo.priority,
-      category: this.redisService.serializeData(todo.category),
+      categoryId: todo.categoryId,
       dueDate: todo.dueDate.toISOString(),
       createdAt: todo.createdAt.toISOString(),
       updatedAt: todo.updatedAt.toISOString(),
@@ -221,7 +210,7 @@ export class TodoRepository {
     }
 
     const oldCompleted = existingTodo.completed;
-    const oldCategory = existingTodo.category;
+    const oldCategoryId = existingTodo.categoryId;
 
     existingTodo.update(updateData);
 
@@ -232,7 +221,7 @@ export class TodoRepository {
       description: existingTodo.description || "",
       completed: existingTodo.completed.toString(),
       priority: existingTodo.priority,
-      category: this.redisService.serializeData(existingTodo.category),
+      categoryId: existingTodo.categoryId,
       dueDate: existingTodo.dueDate.toISOString(),
       createdAt: existingTodo.createdAt.toISOString(),
       updatedAt: existingTodo.updatedAt.toISOString(),
@@ -265,18 +254,18 @@ export class TodoRepository {
     }
 
     // Update category index if category changed
-    if (oldCategory.id !== existingTodo.category.id) {
+    if (oldCategoryId !== existingTodo.categoryId) {
       const oldCategoryKey = this.redisService.generateKey(
         "user",
         existingTodo.userId,
         "category",
-        oldCategory.id,
+        oldCategoryId,
       );
       const newCategoryKey = this.redisService.generateKey(
         "user",
         existingTodo.userId,
         "category",
-        existingTodo.category.id,
+        existingTodo.categoryId,
       );
 
       await this.redisService.zrem(oldCategoryKey, id);
@@ -312,7 +301,7 @@ export class TodoRepository {
       "user",
       existingTodo.userId,
       "category",
-      existingTodo.category.id,
+      existingTodo.categoryId,
     );
     const userCompletedKey = this.redisService.generateKey(
       "user",
@@ -360,7 +349,7 @@ export class TodoRepository {
       description: existingTodo.description || "",
       completed: existingTodo.completed.toString(),
       priority: existingTodo.priority,
-      category: this.redisService.serializeData(existingTodo.category),
+      categoryId: existingTodo.categoryId,
       dueDate: existingTodo.dueDate.toISOString(),
       createdAt: existingTodo.createdAt.toISOString(),
       updatedAt: existingTodo.updatedAt.toISOString(),
@@ -395,17 +384,14 @@ export class TodoRepository {
 
   async updateCategoryForUser(
     userId: string,
-    oldCategory: TodoCategory,
-    newCategory: TodoCategory,
+    oldCategoryId: string,
+    newCategoryId: string,
   ): Promise<number> {
-    const userTodos = await this.findByUserIdAndCategory(
-      userId,
-      oldCategory.id,
-    );
+    const userTodos = await this.findByUserIdAndCategory(userId, oldCategoryId);
     let updatedCount = 0;
 
     for (const todo of userTodos) {
-      const success = await this.update(todo.id, { category: newCategory });
+      const success = await this.update(todo.id, { categoryId: newCategoryId });
       if (success) {
         updatedCount++;
       }

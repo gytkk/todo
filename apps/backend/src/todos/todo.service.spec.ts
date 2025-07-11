@@ -25,7 +25,7 @@ describe("TodoService", () => {
     description: "테스트 설명",
     completed: false,
     priority: "high",
-    category: mockCategory,
+    categoryId: mockCategory.id,
     dueDate: new Date("2024-01-15"),
     createdAt: new Date("2023-01-01"),
     updatedAt: new Date("2023-01-01"),
@@ -446,14 +446,14 @@ describe("TodoService", () => {
 
       const result = await service.updateCategoryForUser(
         "user-1",
-        oldCategory,
-        newCategory,
+        oldCategory.id,
+        newCategory.id,
       );
 
       expect(mockRepository.updateCategoryForUser).toHaveBeenCalledWith(
         "user-1",
-        oldCategory,
-        newCategory,
+        oldCategory.id,
+        newCategory.id,
       );
       expect(result).toBe(3);
     });

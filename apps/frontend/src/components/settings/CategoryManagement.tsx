@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Card,
   CardContent,
@@ -20,10 +20,18 @@ export const CategoryManagement: React.FC = () => {
   const [selectedColor, setSelectedColor] = useState('');
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
+  const [availableColors, setAvailableColors] = useState<string[]>([]);
 
-  const availableColors = getAvailableColors();
+  // Load available colors
+  useEffect(() => {
+    const loadAvailableColors = async () => {
+      const colors = await getAvailableColors();
+      setAvailableColors(colors);
+    };
+    loadAvailableColors();
+  }, [getAvailableColors, categories]); // Re-load when categories change
 
-  const handleAddCategory = () => {
+  const handleAddCategory = async () => {
     if (newCategoryName.trim() && selectedColor) {
       // 중복 이름 체크
       const nameExists = categories.some(cat =>
@@ -35,20 +43,22 @@ export const CategoryManagement: React.FC = () => {
         return;
       }
 
-      addCategory(newCategoryName.trim(), selectedColor);
-      setNewCategoryName('');
-      setSelectedColor('');
+      const result = await addCategory(newCategoryName.trim(), selectedColor);
+      if (result) {
+        setNewCategoryName('');
+        setSelectedColor('');
+      }
     }
   };
 
-  const handleDeleteCategory = (categoryId: string) => {
+  const handleDeleteCategory = async (categoryId: string) => {
     const category = categories.find(cat => cat.id === categoryId);
     if (category?.isDefault) {
       alert('기본 카테고리는 삭제할 수 없습니다.');
       return;
     }
     
-    deleteCategory(categoryId, []);
+    await deleteCategory(categoryId, []);
   };
 
   const startEdit = (category: TodoCategory) => {
@@ -56,7 +66,7 @@ export const CategoryManagement: React.FC = () => {
     setEditName(category.name);
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (editingCategory && editName.trim()) {
       // 중복 이름 체크 (현재 편집 중인 카테고리 제외)
       const nameExists = categories.some(cat =>
@@ -69,9 +79,11 @@ export const CategoryManagement: React.FC = () => {
         return;
       }
 
-      updateCategory(editingCategory, { name: editName.trim() });
-      setEditingCategory(null);
-      setEditName('');
+      const result = await updateCategory(editingCategory, { name: editName.trim() });
+      if (result) {
+        setEditingCategory(null);
+        setEditName('');
+      }
     }
   };
 

@@ -7,7 +7,7 @@ export class TodoEntity {
   description?: string;
   completed: boolean;
   priority: "high" | "medium" | "low";
-  category: TodoCategory;
+  categoryId: string;
   dueDate: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -19,27 +19,27 @@ export class TodoEntity {
     this.description = data.description;
     this.completed = data.completed || false;
     this.priority = data.priority || "medium";
-    this.category = data.category || {
-      id: "personal",
-      name: "개인",
-      color: "#f59e0b",
-      isDefault: true,
-      createdAt: new Date(),
-    };
+    this.categoryId = data.categoryId || "personal";
     this.dueDate = data.dueDate || new Date();
     this.createdAt = data.createdAt || new Date();
     this.updatedAt = data.updatedAt || new Date();
     this.userId = data.userId || "";
   }
 
-  // Convert to TodoItem for frontend
-  toTodoItem(): TodoItem {
+  // Convert to TodoItem for frontend (category will be resolved by service)
+  toTodoItem(category?: TodoCategory): TodoItem {
     return {
       id: this.id,
       title: this.title,
       date: this.dueDate,
       completed: this.completed,
-      category: this.category,
+      category: category || {
+        id: this.categoryId,
+        name: "Unknown",
+        color: "#64748b",
+        isDefault: false,
+        createdAt: new Date(),
+      },
       userId: this.userId,
     };
   }
@@ -50,7 +50,7 @@ export class TodoEntity {
     if (data.description !== undefined) this.description = data.description;
     if (data.completed !== undefined) this.completed = data.completed;
     if (data.priority !== undefined) this.priority = data.priority;
-    if (data.category !== undefined) this.category = data.category;
+    if (data.categoryId !== undefined) this.categoryId = data.categoryId;
     if (data.dueDate !== undefined) this.dueDate = data.dueDate;
 
     this.updatedAt = new Date();

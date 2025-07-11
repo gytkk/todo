@@ -91,7 +91,7 @@ describe("TodoRepository (Redis)", () => {
         description: "Test Description",
         completed: "false",
         priority: "medium",
-        category: JSON.stringify(mockCategory),
+        categoryId: mockCategory.id,
         dueDate: "2023-12-01T00:00:00.000Z",
         createdAt: "2023-01-01T00:00:00.000Z",
         updatedAt: "2023-01-01T00:00:00.000Z",
@@ -108,7 +108,7 @@ describe("TodoRepository (Redis)", () => {
       expect(result?.id).toBe(todoId);
       expect(result?.title).toBe("Test Todo");
       expect(result?.completed).toBe(false);
-      expect(result?.category).toEqual(mockCategory);
+      expect(result?.categoryId).toBe(mockCategory.id);
       expect(generateKeySpy).toHaveBeenCalledWith("todo", todoId);
       expect(hgetallSpy).toHaveBeenCalledWith(`todo:todo:${todoId}`);
     });
@@ -134,7 +134,7 @@ describe("TodoRepository (Redis)", () => {
         description: "Description 1",
         completed: "false",
         priority: "high",
-        category: JSON.stringify(mockCategory),
+        categoryId: mockCategory.id,
         dueDate: "2023-12-01T00:00:00.000Z",
         createdAt: "2023-01-01T00:00:00.000Z",
         updatedAt: "2023-01-01T00:00:00.000Z",
@@ -146,7 +146,7 @@ describe("TodoRepository (Redis)", () => {
         description: "Description 2",
         completed: "true",
         priority: "low",
-        category: JSON.stringify(mockCategory),
+        categoryId: mockCategory.id,
         dueDate: "2023-12-02T00:00:00.000Z",
         createdAt: "2023-01-02T00:00:00.000Z",
         updatedAt: "2023-01-02T00:00:00.000Z",
@@ -195,7 +195,7 @@ describe("TodoRepository (Redis)", () => {
         description: "Description 1",
         completed: "false",
         priority: "high",
-        category: JSON.stringify(mockCategory),
+        categoryId: mockCategory.id,
         dueDate: "2023-12-15T00:00:00.000Z",
         createdAt: "2023-01-01T00:00:00.000Z",
         updatedAt: "2023-01-01T00:00:00.000Z",
@@ -241,7 +241,7 @@ describe("TodoRepository (Redis)", () => {
         description: "Description 1",
         completed: "false",
         priority: "high",
-        category: JSON.stringify(mockCategory),
+        categoryId: mockCategory.id,
         dueDate: "2023-12-15T00:00:00.000Z",
         createdAt: "2023-01-01T00:00:00.000Z",
         updatedAt: "2023-01-01T00:00:00.000Z",
@@ -264,7 +264,7 @@ describe("TodoRepository (Redis)", () => {
       expect(result).toHaveLength(1);
       expect(result[0]).toBeInstanceOf(TodoEntity);
       expect(result[0].id).toBe("todo-1");
-      expect(result[0].category.id).toBe(categoryId);
+      expect(result[0].categoryId).toBe(categoryId);
     });
   });
 
@@ -279,7 +279,7 @@ describe("TodoRepository (Redis)", () => {
         description: "Description 1",
         completed: "true",
         priority: "high",
-        category: JSON.stringify(mockCategory),
+        categoryId: mockCategory.id,
         dueDate: "2023-12-15T00:00:00.000Z",
         createdAt: "2023-01-01T00:00:00.000Z",
         updatedAt: "2023-01-01T00:00:00.000Z",
@@ -312,7 +312,7 @@ describe("TodoRepository (Redis)", () => {
         title: "New Todo",
         description: "New Description",
         userId: "user-123",
-        category: mockCategory,
+        categoryId: mockCategory.id,
         dueDate: new Date("2023-12-01"),
         priority: "high" as const,
       };
@@ -330,7 +330,7 @@ describe("TodoRepository (Redis)", () => {
       expect(result.title).toBe(todoData.title);
       expect(result.description).toBe(todoData.description);
       expect(result.userId).toBe(todoData.userId);
-      expect(result.category).toEqual(mockCategory);
+      expect(result.categoryId).toBe(mockCategory.id);
       expect(result.id).toBeDefined();
       expect(result.createdAt).toBeDefined();
       expect(result.updatedAt).toBeDefined();
@@ -344,7 +344,7 @@ describe("TodoRepository (Redis)", () => {
           description: todoData.description,
           completed: "false",
           priority: "high",
-          category: JSON.stringify(mockCategory),
+          categoryId: mockCategory.id,
           userId: todoData.userId,
           dueDate: expect.any(String) as string,
           createdAt: expect.any(String) as string,
@@ -363,7 +363,7 @@ describe("TodoRepository (Redis)", () => {
         description: "Original Description",
         completed: "false",
         priority: "medium",
-        category: JSON.stringify(mockCategory),
+        categoryId: mockCategory.id,
         dueDate: "2023-12-01T00:00:00.000Z",
         createdAt: "2023-01-01T00:00:00.000Z",
         updatedAt: "2023-01-01T00:00:00.000Z",
@@ -423,7 +423,7 @@ describe("TodoRepository (Redis)", () => {
         description: "Test Description",
         completed: "false",
         priority: "medium",
-        category: JSON.stringify(mockCategory),
+        categoryId: mockCategory.id,
         dueDate: "2023-12-01T00:00:00.000Z",
         createdAt: "2023-01-01T00:00:00.000Z",
         updatedAt: "2023-01-01T00:00:00.000Z",
@@ -480,7 +480,7 @@ describe("TodoRepository (Redis)", () => {
         description: "Test Description",
         completed: "false",
         priority: "medium",
-        category: JSON.stringify(mockCategory),
+        categoryId: mockCategory.id,
         dueDate: "2023-12-01T00:00:00.000Z",
         createdAt: "2023-01-01T00:00:00.000Z",
         updatedAt: "2023-01-01T00:00:00.000Z",

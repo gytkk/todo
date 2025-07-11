@@ -8,13 +8,16 @@ interface CategoryContextType {
   // Category related
   categories: TodoCategory[];
   categoryFilter: CategoryFilter;
-  toggleCategoryFilter: (categoryId: string) => void;
+  loading: boolean;
+  setCategoryFilter: React.Dispatch<React.SetStateAction<CategoryFilter>>;
+  toggleCategoryFilter: (categoryId: string) => Promise<boolean>;
   getFilteredTodos: (todos: TodoItem[]) => TodoItem[];
-  addCategory: (name: string, color: string) => TodoCategory;
-  updateCategory: (id: string, updates: Partial<TodoCategory>) => void;
-  deleteCategory: (id: string, todos: TodoItem[]) => boolean;
+  addCategory: (name: string, color: string) => Promise<TodoCategory | null>;
+  updateCategory: (id: string, updates: { name?: string; color?: string }) => Promise<boolean>;
+  deleteCategory: (id: string, todos: TodoItem[]) => Promise<boolean>;
   getCategoryById: (id: string) => TodoCategory | undefined;
-  getAvailableColors: () => string[];
+  getAvailableColors: () => Promise<string[]>;
+  loadCategories: () => Promise<void>;
 }
 
 const CategoryContext = createContext<CategoryContextType | undefined>(undefined);

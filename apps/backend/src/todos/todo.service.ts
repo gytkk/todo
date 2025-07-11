@@ -9,11 +9,15 @@ import { CreateTodoDto } from "./dto/create-todo.dto";
 import { UpdateTodoDto } from "./dto/update-todo.dto";
 import { TodoCategoryDto } from "./dto/todo-category.dto";
 import { TodoItem, TodoStats, TodoCategory } from "@calendar-todo/shared-types";
+import { UserSettingsService } from "../user-settings/user-settings.service";
 import { subDays } from "date-fns";
 
 @Injectable()
 export class TodoService {
-  constructor(private readonly todoRepository: TodoRepository) {}
+  constructor(
+    private readonly todoRepository: TodoRepository,
+    private readonly userSettingsService: UserSettingsService,
+  ) {}
 
   private convertCategoryDtoToCategory(
     categoryDto: TodoCategoryDto,
@@ -32,17 +36,30 @@ export class TodoService {
     createTodoDto: CreateTodoDto,
     userId: string,
   ): Promise<TodoItem> {
+    const category = this.convertCategoryDtoToCategory(createTodoDto.category);
+
+    // Verify category belongs to user
+    const userCategory = await this.userSettingsService.getCategoryById(
+      userId,
+      category.id,
+    );
+    if (!userCategory) {
+      throw new NotFoundException(
+        "Category not found or does not belong to user",
+      );
+    }
+
     const todoData = {
       title: createTodoDto.title,
       description: createTodoDto.description,
       priority: createTodoDto.priority || "medium",
-      category: this.convertCategoryDtoToCategory(createTodoDto.category),
+      categoryId: category.id,
       dueDate: new Date(createTodoDto.date),
       userId,
     };
 
     const todo = await this.todoRepository.create(todoData);
-    return todo.toTodoItem();
+    return todo.toTodoItem(userCategory);
   }
 
   async findAll(
@@ -74,7 +91,15 @@ export class TodoService {
       todos = await this.todoRepository.findByUserId(userId);
     }
 
-    return todos.map((todo) => todo.toTodoItem());
+    // Get user categories to resolve category information
+    const userCategories =
+      await this.userSettingsService.getUserCategories(userId);
+    const categoryMap = new Map(userCategories.map((cat) => [cat.id, cat]));
+
+    return todos.map((todo) => {
+      const category = categoryMap.get(todo.categoryId);
+      return todo.toTodoItem(category);
+    });
   }
 
   async findOne(id: string, userId: string): Promise<TodoItem> {
@@ -87,7 +112,11 @@ export class TodoService {
       throw new ForbiddenException("해당 할일에 접근할 권한이 없습니다");
     }
 
-    return todo.toTodoItem();
+    const category = await this.userSettingsService.getCategoryById(
+      userId,
+      todo.categoryId,
+    );
+    return todo.toTodoItem(category || undefined);
   }
 
   async update(
@@ -115,15 +144,32 @@ export class TodoService {
     if (updateTodoDto.priority !== undefined)
       updateData.priority = updateTodoDto.priority;
     if (updateTodoDto.category !== undefined) {
-      updateData.category = this.convertCategoryDtoToCategory(
+      const category = this.convertCategoryDtoToCategory(
         updateTodoDto.category,
       );
+
+      // Verify category belongs to user
+      const userCategory = await this.userSettingsService.getCategoryById(
+        userId,
+        category.id,
+      );
+      if (!userCategory) {
+        throw new NotFoundException(
+          "Category not found or does not belong to user",
+        );
+      }
+
+      updateData.categoryId = category.id;
     }
     if (updateTodoDto.date !== undefined)
       updateData.dueDate = new Date(updateTodoDto.date);
 
     const updatedTodo = await this.todoRepository.update(id, updateData);
-    return updatedTodo!.toTodoItem();
+    const category = await this.userSettingsService.getCategoryById(
+      userId,
+      updatedTodo!.categoryId,
+    );
+    return updatedTodo!.toTodoItem(category || undefined);
   }
 
   async remove(
@@ -154,7 +200,11 @@ export class TodoService {
     }
 
     const updatedTodo = await this.todoRepository.toggle(id);
-    return updatedTodo!.toTodoItem();
+    const category = await this.userSettingsService.getCategoryById(
+      userId,
+      updatedTodo!.categoryId,
+    );
+    return updatedTodo!.toTodoItem(category || undefined);
   }
 
   async getStats(userId: string): Promise<TodoStats> {
@@ -189,13 +239,13 @@ export class TodoService {
 
   async updateCategoryForUser(
     userId: string,
-    oldCategory: TodoCategory,
-    newCategory: TodoCategory,
+    oldCategoryId: string,
+    newCategoryId: string,
   ): Promise<number> {
     return await this.todoRepository.updateCategoryForUser(
       userId,
-      oldCategory,
-      newCategory,
+      oldCategoryId,
+      newCategoryId,
     );
   }
 
