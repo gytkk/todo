@@ -22,7 +22,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { EyeIcon, EyeOffIcon, Loader2 } from "lucide-react";
 import { RegisterRequest } from "@calendar-todo/shared-types";
 
 const FormSchema = z.object({
@@ -186,6 +186,7 @@ export function RegisterForm() {
                         className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                         onClick={() => setShowPassword(!showPassword)}
                         disabled={isLoading}
+                        tabIndex={-1}
                       >
                         {showPassword ? (
                           <EyeOffIcon className="h-4 w-4" />
@@ -226,6 +227,7 @@ export function RegisterForm() {
                         className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         disabled={isLoading}
+                        tabIndex={-1}
                       >
                         {showConfirmPassword ? (
                           <EyeOffIcon className="h-4 w-4" />
@@ -250,7 +252,14 @@ export function RegisterForm() {
             )}
 
             <Button type="submit" className="w-full h-12 text-base" disabled={isLoading}>
-              {isLoading ? "회원가입 중..." : "회원가입"}
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  회원가입 중...
+                </>
+              ) : (
+                "회원가입"
+              )}
             </Button>
           </form>
         </Form>

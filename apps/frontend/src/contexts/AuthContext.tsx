@@ -101,6 +101,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     
     // 상태 초기화
     setUser(null);
+    
+    // 로그인 페이지로 리다이렉트
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    }
   };
 
   const updateUser = (updatedUser: User) => {
