@@ -122,12 +122,12 @@ export const useCategories = () => {
 
     // 필터에서도 제거
     setCategoryFilter(prev => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { [id]: _removed, ...rest } = prev;
+      const updated = { ...prev };
+      delete updated[id];
       if (typeof window !== 'undefined') {
-        localStorage.setItem(STORAGE_KEYS.CATEGORY_FILTER, JSON.stringify(rest));
+        localStorage.setItem(STORAGE_KEYS.CATEGORY_FILTER, JSON.stringify(updated));
       }
-      return rest;
+      return updated;
     });
 
     return true;
