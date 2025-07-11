@@ -85,9 +85,32 @@ export class JwtAuthService {
     await this.redisService.del(refreshTokenKey);
   }
 
+  private isJwtPayload(decoded: unknown): decoded is JwtPayload {
+    if (typeof decoded !== "object" || decoded === null) {
+      return false;
+    }
+
+    const obj = decoded as Record<string, unknown>;
+    return (
+      typeof obj.sub === "string" &&
+      typeof obj.email === "string" &&
+      typeof obj.iat === "number" &&
+      typeof obj.exp === "number"
+    );
+  }
+
+  private safeDecodeToken(token: string): JwtPayload | null {
+    try {
+      const decoded: unknown = this.jwtService.decode(token);
+      return this.isJwtPayload(decoded) ? decoded : null;
+    } catch {
+      return null;
+    }
+  }
+
   async blacklistToken(token: string): Promise<void> {
-    const decoded = this.jwtService.decode(token);
-    if (decoded && decoded.exp) {
+    const decoded = this.safeDecodeToken(token);
+    if (decoded) {
       const ttl = decoded.exp - Math.floor(Date.now() / 1000);
       if (ttl > 0) {
         const blacklistKey = this.redisService.generateKey("blacklist", token);
@@ -129,7 +152,7 @@ export class JwtAuthService {
     }
   }
 
-  decodeToken(token: string): any {
-    return this.jwtService.decode(token);
+  decodeToken(token: string): JwtPayload | null {
+    return this.safeDecodeToken(token);
   }
 }

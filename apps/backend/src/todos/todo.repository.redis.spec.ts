@@ -8,6 +8,15 @@ describe("TodoRepository (Redis)", () => {
   let repository: TodoRepository;
   let mockRedisService: jest.Mocked<RedisService>;
 
+  // Spy function references
+  let generateKeySpy: jest.SpyInstance;
+  let hgetallSpy: jest.SpyInstance;
+  let hmsetSpy: jest.SpyInstance;
+  let delSpy: jest.SpyInstance;
+  let zremSpy: jest.SpyInstance;
+  let zrangebyscoreSpy: jest.SpyInstance;
+  let zcardSpy: jest.SpyInstance;
+
   const mockCategory: TodoCategory = {
     id: "category-1",
     name: "일반",
@@ -58,6 +67,15 @@ describe("TodoRepository (Redis)", () => {
     mockRedisService = module.get<RedisService>(
       RedisService,
     ) as jest.Mocked<RedisService>;
+
+    // Create spies for RedisService methods
+    generateKeySpy = jest.spyOn(mockRedisService, "generateKey");
+    hgetallSpy = jest.spyOn(mockRedisService, "hgetall");
+    hmsetSpy = jest.spyOn(mockRedisService, "hmset");
+    delSpy = jest.spyOn(mockRedisService, "del");
+    zremSpy = jest.spyOn(mockRedisService, "zrem");
+    zrangebyscoreSpy = jest.spyOn(mockRedisService, "zrangebyscore");
+    zcardSpy = jest.spyOn(mockRedisService, "zcard");
   });
 
   afterEach(() => {
@@ -91,10 +109,8 @@ describe("TodoRepository (Redis)", () => {
       expect(result?.title).toBe("Test Todo");
       expect(result?.completed).toBe(false);
       expect(result?.category).toEqual(mockCategory);
-      expect(mockRedisService.generateKey).toHaveBeenCalledWith("todo", todoId);
-      expect(mockRedisService.hgetall).toHaveBeenCalledWith(
-        `todo:todo:${todoId}`,
-      );
+      expect(generateKeySpy).toHaveBeenCalledWith("todo", todoId);
+      expect(hgetallSpy).toHaveBeenCalledWith(`todo:todo:${todoId}`);
     });
 
     it("should return null for non-existent todo", async () => {
@@ -206,7 +222,7 @@ describe("TodoRepository (Redis)", () => {
       expect(result).toHaveLength(1);
       expect(result[0]).toBeInstanceOf(TodoEntity);
       expect(result[0].id).toBe("todo-1");
-      expect(mockRedisService.zrangebyscore).toHaveBeenCalledWith(
+      expect(zrangebyscoreSpy).toHaveBeenCalledWith(
         `todo:user:${userId}:todos:bydate`,
         startTimestamp,
         endTimestamp,
@@ -320,7 +336,7 @@ describe("TodoRepository (Redis)", () => {
       expect(result.updatedAt).toBeDefined();
       expect(result.completed).toBe(false);
 
-      expect(mockRedisService.hmset).toHaveBeenCalledWith(
+      expect(hmsetSpy).toHaveBeenCalledWith(
         "mocked-key",
         expect.objectContaining({
           id: result.id,
@@ -330,9 +346,9 @@ describe("TodoRepository (Redis)", () => {
           priority: "high",
           category: JSON.stringify(mockCategory),
           userId: todoData.userId,
-          dueDate: expect.any(String),
-          createdAt: expect.any(String),
-          updatedAt: expect.any(String),
+          dueDate: expect.any(String) as string,
+          createdAt: expect.any(String) as string,
+          updatedAt: expect.any(String) as string,
         }),
       );
     });
@@ -376,7 +392,7 @@ describe("TodoRepository (Redis)", () => {
       expect(result?.priority).toBe(updateData.priority);
       expect(result?.updatedAt).not.toEqual(new Date(existingData.updatedAt));
 
-      expect(mockRedisService.hmset).toHaveBeenCalledWith(
+      expect(hmsetSpy).toHaveBeenCalledWith(
         `todo:todo:${todoId}`,
         expect.objectContaining({
           title: updateData.title,
@@ -394,7 +410,7 @@ describe("TodoRepository (Redis)", () => {
       const result = await repository.update(todoId, { title: "Updated" });
 
       expect(result).toBeNull();
-      expect(mockRedisService.hmset).not.toHaveBeenCalled();
+      expect(hmsetSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -436,8 +452,8 @@ describe("TodoRepository (Redis)", () => {
       const result = await repository.delete(todoId);
 
       expect(result).toBe(true);
-      expect(mockRedisService.del).toHaveBeenCalledWith(`todo:todo:${todoId}`);
-      expect(mockRedisService.zrem).toHaveBeenCalledWith(
+      expect(delSpy).toHaveBeenCalledWith(`todo:todo:${todoId}`);
+      expect(zremSpy).toHaveBeenCalledWith(
         `todo:user:${todoData.userId}:todos`,
         todoId,
       );
@@ -451,7 +467,7 @@ describe("TodoRepository (Redis)", () => {
       const result = await repository.delete(todoId);
 
       expect(result).toBe(false);
-      expect(mockRedisService.del).not.toHaveBeenCalled();
+      expect(delSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -487,7 +503,7 @@ describe("TodoRepository (Redis)", () => {
       expect(result?.completed).toBe(true);
       expect(result?.updatedAt).not.toEqual(new Date(todoData.updatedAt));
 
-      expect(mockRedisService.hmset).toHaveBeenCalledWith(
+      expect(hmsetSpy).toHaveBeenCalledWith(
         `todo:todo:${todoId}`,
         expect.objectContaining({
           completed: "true",
@@ -505,9 +521,7 @@ describe("TodoRepository (Redis)", () => {
       const result = await repository.countByUserId(userId);
 
       expect(result).toBe(5);
-      expect(mockRedisService.zcard).toHaveBeenCalledWith(
-        `todo:user:${userId}:todos`,
-      );
+      expect(zcardSpy).toHaveBeenCalledWith(`todo:user:${userId}:todos`);
     });
 
     it("should count todos by user id and completion status", async () => {
@@ -524,7 +538,7 @@ describe("TodoRepository (Redis)", () => {
       );
 
       expect(result).toBe(3);
-      expect(mockRedisService.zcard).toHaveBeenCalledWith(
+      expect(zcardSpy).toHaveBeenCalledWith(
         `todo:user:${userId}:completed:${completed}`,
       );
     });

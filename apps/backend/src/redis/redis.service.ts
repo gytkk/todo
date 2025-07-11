@@ -30,8 +30,8 @@ export class RedisService implements OnModuleDestroy {
     });
   }
 
-  async onModuleDestroy() {
-    void this.redis.disconnect();
+  onModuleDestroy() {
+    this.redis.disconnect();
   }
 
   // Health check

@@ -1,4 +1,4 @@
-import { IsString, IsOptional, MinLength, Matches } from "class-validator";
+import { IsString, IsOptional, MinLength } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { UpdateUserRequest } from "@calendar-todo/shared-types";
 

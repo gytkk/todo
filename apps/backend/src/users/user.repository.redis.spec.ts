@@ -7,6 +7,17 @@ describe("UserRepository (Redis)", () => {
   let repository: UserRepository;
   let mockRedisService: jest.Mocked<RedisService>;
 
+  // Spy function references
+  let generateKeySpy: jest.SpyInstance;
+  let hgetallSpy: jest.SpyInstance;
+  let hmsetSpy: jest.SpyInstance;
+  let delSpy: jest.SpyInstance;
+  let zaddSpy: jest.SpyInstance;
+  let zremSpy: jest.SpyInstance;
+  let existsSpy: jest.SpyInstance;
+  let getSpy: jest.SpyInstance;
+  let setSpy: jest.SpyInstance;
+
   beforeEach(async () => {
     const mockRedis = {
       generateKey: jest.fn(),
@@ -47,6 +58,17 @@ describe("UserRepository (Redis)", () => {
     mockRedisService = module.get<RedisService>(
       RedisService,
     ) as jest.Mocked<RedisService>;
+
+    // Create spies for RedisService methods
+    generateKeySpy = jest.spyOn(mockRedisService, "generateKey");
+    hgetallSpy = jest.spyOn(mockRedisService, "hgetall");
+    hmsetSpy = jest.spyOn(mockRedisService, "hmset");
+    delSpy = jest.spyOn(mockRedisService, "del");
+    zaddSpy = jest.spyOn(mockRedisService, "zadd");
+    zremSpy = jest.spyOn(mockRedisService, "zrem");
+    existsSpy = jest.spyOn(mockRedisService, "exists");
+    getSpy = jest.spyOn(mockRedisService, "get");
+    setSpy = jest.spyOn(mockRedisService, "set");
   });
 
   afterEach(() => {
@@ -56,16 +78,6 @@ describe("UserRepository (Redis)", () => {
   describe("findById", () => {
     it("should find user by id", async () => {
       const userId = "user-123";
-      const _userData = {
-        id: userId,
-        email: "test@example.com",
-        name: "Test User",
-        passwordHash: "hashedPassword",
-        emailVerified: true,
-        isActive: true,
-        createdAt: new Date("2023-01-01"),
-        updatedAt: new Date("2023-01-01"),
-      };
 
       mockRedisService.generateKey.mockReturnValue(`todo:user:${userId}`);
       mockRedisService.hgetall.mockResolvedValue({
@@ -87,10 +99,8 @@ describe("UserRepository (Redis)", () => {
       expect(result?.name).toBe("Test User");
       expect(result?.emailVerified).toBe(true);
       expect(result?.isActive).toBe(true);
-      expect(mockRedisService.generateKey).toHaveBeenCalledWith("user", userId);
-      expect(mockRedisService.hgetall).toHaveBeenCalledWith(
-        `todo:user:${userId}`,
-      );
+      expect(generateKeySpy).toHaveBeenCalledWith("user", userId);
+      expect(hgetallSpy).toHaveBeenCalledWith(`todo:user:${userId}`);
     });
 
     it("should return null for non-existent user", async () => {
@@ -101,10 +111,8 @@ describe("UserRepository (Redis)", () => {
       const result = await repository.findById(userId);
 
       expect(result).toBeNull();
-      expect(mockRedisService.generateKey).toHaveBeenCalledWith("user", userId);
-      expect(mockRedisService.hgetall).toHaveBeenCalledWith(
-        `todo:user:${userId}`,
-      );
+      expect(generateKeySpy).toHaveBeenCalledWith("user", userId);
+      expect(hgetallSpy).toHaveBeenCalledWith(`todo:user:${userId}`);
     });
   });
 
@@ -135,18 +143,10 @@ describe("UserRepository (Redis)", () => {
       expect(result).toBeInstanceOf(User);
       expect(result?.email).toBe(email);
       expect(result?.id).toBe(userId);
-      expect(mockRedisService.generateKey).toHaveBeenCalledWith(
-        "user",
-        "email",
-        email,
-      );
-      expect(mockRedisService.get).toHaveBeenCalledWith(
-        `todo:user:email:${email}`,
-      );
-      expect(mockRedisService.generateKey).toHaveBeenCalledWith("user", userId);
-      expect(mockRedisService.hgetall).toHaveBeenCalledWith(
-        `todo:user:${userId}`,
-      );
+      expect(generateKeySpy).toHaveBeenCalledWith("user", "email", email);
+      expect(getSpy).toHaveBeenCalledWith(`todo:user:email:${email}`);
+      expect(generateKeySpy).toHaveBeenCalledWith("user", userId);
+      expect(hgetallSpy).toHaveBeenCalledWith(`todo:user:${userId}`);
     });
 
     it("should return null for non-existent email", async () => {
@@ -157,14 +157,8 @@ describe("UserRepository (Redis)", () => {
       const result = await repository.findByEmail(email);
 
       expect(result).toBeNull();
-      expect(mockRedisService.generateKey).toHaveBeenCalledWith(
-        "user",
-        "email",
-        email,
-      );
-      expect(mockRedisService.get).toHaveBeenCalledWith(
-        `todo:user:email:${email}`,
-      );
+      expect(generateKeySpy).toHaveBeenCalledWith("user", "email", email);
+      expect(getSpy).toHaveBeenCalledWith(`todo:user:email:${email}`);
     });
   });
 
@@ -193,7 +187,7 @@ describe("UserRepository (Redis)", () => {
       expect(result.emailVerified).toBe(false);
       expect(result.isActive).toBe(true);
 
-      expect(mockRedisService.hmset).toHaveBeenCalledWith(
+      expect(hmsetSpy).toHaveBeenCalledWith(
         "mocked-key",
         expect.objectContaining({
           id: result.id,
@@ -203,17 +197,14 @@ describe("UserRepository (Redis)", () => {
           emailVerified: "false",
           isActive: "true",
           profileImage: "",
-          createdAt: expect.any(String),
-          updatedAt: expect.any(String),
+          createdAt: expect.any(String) as string,
+          updatedAt: expect.any(String) as string,
         }),
       );
-      expect(mockRedisService.set).toHaveBeenCalledWith(
+      expect(setSpy).toHaveBeenCalledWith("mocked-key", result.id);
+      expect(zaddSpy).toHaveBeenCalledWith(
         "mocked-key",
-        result.id,
-      );
-      expect(mockRedisService.zadd).toHaveBeenCalledWith(
-        "mocked-key",
-        expect.any(Number),
+        expect.any(Number) as number,
         result.id,
       );
     });
@@ -249,7 +240,7 @@ describe("UserRepository (Redis)", () => {
       expect(result?.profileImage).toBe(updateData.profileImage);
       expect(result?.updatedAt).not.toEqual(new Date(existingData.updatedAt));
 
-      expect(mockRedisService.hmset).toHaveBeenCalledWith(
+      expect(hmsetSpy).toHaveBeenCalledWith(
         `todo:user:${userId}`,
         expect.objectContaining({
           name: updateData.name,
@@ -266,7 +257,7 @@ describe("UserRepository (Redis)", () => {
       const result = await repository.update(userId, { name: "Updated" });
 
       expect(result).toBeNull();
-      expect(mockRedisService.hmset).not.toHaveBeenCalled();
+      expect(hmsetSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -298,14 +289,9 @@ describe("UserRepository (Redis)", () => {
       const result = await repository.delete(userId);
 
       expect(result).toBe(true);
-      expect(mockRedisService.del).toHaveBeenCalledWith(`todo:user:${userId}`);
-      expect(mockRedisService.del).toHaveBeenCalledWith(
-        `todo:user:email:${email}`,
-      );
-      expect(mockRedisService.zrem).toHaveBeenCalledWith(
-        "todo:user:list",
-        userId,
-      );
+      expect(delSpy).toHaveBeenCalledWith(`todo:user:${userId}`);
+      expect(delSpy).toHaveBeenCalledWith(`todo:user:email:${email}`);
+      expect(zremSpy).toHaveBeenCalledWith("todo:user:list", userId);
     });
 
     it("should return false for non-existent user", async () => {
@@ -316,7 +302,7 @@ describe("UserRepository (Redis)", () => {
       const result = await repository.delete(userId);
 
       expect(result).toBe(false);
-      expect(mockRedisService.del).not.toHaveBeenCalled();
+      expect(delSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -329,14 +315,8 @@ describe("UserRepository (Redis)", () => {
       const result = await repository.exists(email);
 
       expect(result).toBe(true);
-      expect(mockRedisService.generateKey).toHaveBeenCalledWith(
-        "user",
-        "email",
-        email,
-      );
-      expect(mockRedisService.exists).toHaveBeenCalledWith(
-        `todo:user:email:${email}`,
-      );
+      expect(generateKeySpy).toHaveBeenCalledWith("user", "email", email);
+      expect(existsSpy).toHaveBeenCalledWith(`todo:user:email:${email}`);
     });
 
     it("should return false for non-existent email", async () => {
@@ -347,14 +327,8 @@ describe("UserRepository (Redis)", () => {
       const result = await repository.exists(email);
 
       expect(result).toBe(false);
-      expect(mockRedisService.generateKey).toHaveBeenCalledWith(
-        "user",
-        "email",
-        email,
-      );
-      expect(mockRedisService.exists).toHaveBeenCalledWith(
-        `todo:user:email:${email}`,
-      );
+      expect(generateKeySpy).toHaveBeenCalledWith("user", "email", email);
+      expect(existsSpy).toHaveBeenCalledWith(`todo:user:email:${email}`);
     });
   });
 

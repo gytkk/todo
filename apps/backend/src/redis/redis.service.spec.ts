@@ -47,7 +47,6 @@ jest.mock("ioredis", () => {
 
 describe("RedisService", () => {
   let service: RedisService;
-  let _configService: ConfigService;
 
   beforeEach(async () => {
     // Clear all mock calls before each test
@@ -74,7 +73,6 @@ describe("RedisService", () => {
     }).compile();
 
     service = module.get<RedisService>(RedisService);
-    _configService = module.get<ConfigService>(ConfigService);
   });
 
   describe("initialization", () => {
@@ -403,10 +401,10 @@ describe("RedisService", () => {
   });
 
   describe("cleanup", () => {
-    it("should disconnect Redis connection", async () => {
+    it("should disconnect Redis connection", () => {
       mockRedis.disconnect.mockResolvedValue(undefined);
 
-      await service.onModuleDestroy();
+      service.onModuleDestroy();
 
       expect(mockRedis.disconnect).toHaveBeenCalled();
     });

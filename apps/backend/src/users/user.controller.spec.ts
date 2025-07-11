@@ -77,7 +77,7 @@ describe("UserController", () => {
         toProfile: jest.fn().mockReturnValue(mockUserProfile),
       };
 
-      const result = controller.getProfile(userWithSpy as any);
+      const result = controller.getProfile(userWithSpy as User);
 
       expect(userWithSpy.toProfile).toHaveBeenCalled();
       expect(result).toEqual(mockUserProfile);
