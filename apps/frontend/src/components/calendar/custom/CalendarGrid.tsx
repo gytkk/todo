@@ -1,7 +1,7 @@
 import React from 'react';
 import { CalendarGridProps } from './types/calendar';
 import { CalendarCell } from './CalendarCell';
-import { createCalendarDates } from './utils/calendarUtils';
+import { createCalendarDates, getCategoryColorWithOpacity, getPrimaryCategoryColor } from './utils/calendarUtils';
 import { getWeekdayNames } from './utils/dateUtils';
 
 export const CalendarGrid: React.FC<CalendarGridProps> = ({
@@ -11,7 +11,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   onDateSelect,
   view,
 }) => {
-  const calendarDates = createCalendarDates(currentDate, selectedDate, todos, view);
+  const calendarDates = createCalendarDates(currentDate, selectedDate, todos);
   const weekdayNames = getWeekdayNames();
 
   if (view === 'month') {
@@ -95,7 +95,10 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                   {calendarDate.todos.length > 0 && (
                     <div className="flex items-center gap-1">
                       {calendarDate.todos.some(t => !t.completed) && (
-                        <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                        <div 
+                          className="w-2 h-2 rounded-full" 
+                          style={{ backgroundColor: getPrimaryCategoryColor(calendarDate.todos.filter(t => !t.completed)) }}
+                        />
                       )}
                       <div className="text-xs text-gray-500">
                         {calendarDate.todos.filter(t => t.completed).length}/{calendarDate.todos.length}
@@ -111,8 +114,12 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                     key={todo.id}
                     className={`text-xs px-2 py-1 rounded-sm truncate ${todo.completed
                       ? 'bg-gray-100 text-gray-500 line-through'
-                      : 'bg-blue-100 text-blue-800'
+                      : ''
                       }`}
+                    style={todo.completed ? {} : {
+                      backgroundColor: getCategoryColorWithOpacity(todo.category.color, 0.15),
+                      color: todo.category.color
+                    }}
                     title={todo.title}
                   >
                     {todo.title}
@@ -156,13 +163,18 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                   key={todo.id}
                   className={`p-4 rounded-lg border ${todo.completed
                     ? 'bg-gray-50 border-gray-200 text-gray-500'
-                    : 'bg-blue-50 border-blue-200 text-blue-900'
+                    : ''
                     }`}
+                  style={todo.completed ? {} : {
+                    backgroundColor: getCategoryColorWithOpacity(todo.category.color, 0.1),
+                    borderColor: getCategoryColorWithOpacity(todo.category.color, 0.3),
+                    color: todo.category.color
+                  }}
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`w-3 h-3 rounded-full flex-shrink-0 ${todo.completed ? 'bg-gray-400' : 'bg-blue-500'
-                        }`}
+                      className={`w-3 h-3 rounded-full flex-shrink-0 ${todo.completed ? 'bg-gray-400' : ''}`}
+                      style={todo.completed ? {} : { backgroundColor: todo.category.color }}
                     />
                     <span className={todo.completed ? 'line-through' : ''}>{todo.title}</span>
                   </div>

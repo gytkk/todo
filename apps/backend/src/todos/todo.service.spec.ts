@@ -79,8 +79,11 @@ describe("TodoService", () => {
         title: "새 할일",
         description: "설명",
         priority: "high",
-        category: mockCategory,
-        dueDate: "2024-01-15T09:00:00.000Z",
+        category: {
+          ...mockCategory,
+          createdAt: mockCategory.createdAt.toISOString(),
+        },
+        date: "2024-01-15T09:00:00.000Z",
       };
 
       mockRepository.create.mockResolvedValue(mockTodoEntity);
@@ -92,7 +95,7 @@ describe("TodoService", () => {
         description: createTodoDto.description,
         priority: createTodoDto.priority,
         category: createTodoDto.category,
-        dueDate: new Date(createTodoDto.dueDate),
+        dueDate: new Date(createTodoDto.date),
         userId: "user-1",
       });
       expect(result).toEqual(mockTodoItem);
@@ -101,8 +104,11 @@ describe("TodoService", () => {
     it("priority가 없으면 기본값으로 medium을 설정해야 함", async () => {
       const createTodoDto: CreateTodoDto = {
         title: "새 할일",
-        category: mockCategory,
-        dueDate: "2024-01-15T09:00:00.000Z",
+        category: {
+          ...mockCategory,
+          createdAt: mockCategory.createdAt.toISOString(),
+        },
+        date: "2024-01-15T09:00:00.000Z",
       };
 
       mockRepository.create.mockResolvedValue(mockTodoEntity);
@@ -263,9 +269,9 @@ describe("TodoService", () => {
       );
     });
 
-    it("dueDate가 문자열로 제공되면 Date 객체로 변환해야 함", async () => {
+    it("date가 문자열로 제공되면 Date 객체로 변환해야 함", async () => {
       const updateTodoDto: UpdateTodoDto = {
-        dueDate: "2024-02-15T10:00:00.000Z",
+        date: "2024-02-15T10:00:00.000Z",
       };
 
       mockRepository.findById.mockResolvedValue(mockTodoEntity);

@@ -1,26 +1,21 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Button, Badge } from "@calendar-todo/ui";
-import { TodoCategory, TodoItem } from '@calendar-todo/shared-types';
+import { 
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Button,
+  Badge
+} from "@calendar-todo/ui";
+import { Palette } from 'lucide-react';
+import { useCategories } from '../../hooks/useCategories';
+import { TodoCategory } from '@calendar-todo/shared-types';
 
-interface CategoryManagementProps {
-  categories: TodoCategory[];
-  todos: TodoItem[];
-  onAddCategory: (name: string, color: string) => TodoCategory;
-  onUpdateCategory: (id: string, updates: Partial<TodoCategory>) => void;
-  onDeleteCategory: (id: string, todos: TodoItem[]) => boolean;
-  getAvailableColors: () => string[];
-}
-
-export const CategoryManagement: React.FC<CategoryManagementProps> = ({
-  categories,
-  todos,
-  onAddCategory,
-  onUpdateCategory,
-  onDeleteCategory,
-  getAvailableColors
-}) => {
+export const CategoryManagement: React.FC = () => {
+  const { categories, addCategory, updateCategory, deleteCategory, getAvailableColors } = useCategories();
   const [newCategoryName, setNewCategoryName] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
@@ -40,20 +35,20 @@ export const CategoryManagement: React.FC<CategoryManagementProps> = ({
         return;
       }
 
-      onAddCategory(newCategoryName.trim(), selectedColor);
+      addCategory(newCategoryName.trim(), selectedColor);
       setNewCategoryName('');
       setSelectedColor('');
     }
   };
 
   const handleDeleteCategory = (categoryId: string) => {
-    const success = onDeleteCategory(categoryId, todos);
-    if (!success) {
-      const category = categories.find(cat => cat.id === categoryId);
-      if (category?.isDefault) {
-        alert('기본 카테고리는 삭제할 수 없습니다.');
-      }
+    const category = categories.find(cat => cat.id === categoryId);
+    if (category?.isDefault) {
+      alert('기본 카테고리는 삭제할 수 없습니다.');
+      return;
     }
+    
+    deleteCategory(categoryId, []);
   };
 
   const startEdit = (category: TodoCategory) => {
@@ -74,7 +69,7 @@ export const CategoryManagement: React.FC<CategoryManagementProps> = ({
         return;
       }
 
-      onUpdateCategory(editingCategory, { name: editName.trim() });
+      updateCategory(editingCategory, { name: editName.trim() });
       setEditingCategory(null);
       setEditName('');
     }
@@ -86,15 +81,22 @@ export const CategoryManagement: React.FC<CategoryManagementProps> = ({
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">카테고리 관리</h3>
+    <Card id="category-management">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Palette className="h-5 w-5" />
+          카테고리 관리
+        </CardTitle>
+        <CardDescription>
+          할 일 카테고리를 관리하고 색상을 설정합니다
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div>
 
         {/* 카테고리 목록 */}
         <div className="space-y-3 mb-6">
           {categories.map(category => {
-            const relatedTodos = todos.filter(todo => todo.category?.id === category.id);
-
             return (
               <div
                 key={category.id}
@@ -119,11 +121,6 @@ export const CategoryManagement: React.FC<CategoryManagementProps> = ({
                   )}
                   {category.isDefault && (
                     <Badge variant="secondary" className="text-xs">기본</Badge>
-                  )}
-                  {relatedTodos.length > 0 && (
-                    <Badge variant="outline" className="text-xs">
-                      {relatedTodos.length}개 할일
-                    </Badge>
                   )}
                 </div>
 
@@ -221,7 +218,8 @@ export const CategoryManagement: React.FC<CategoryManagementProps> = ({
             <li>• 최대 {categories.length + availableColors.length}개의 카테고리를 만들 수 있습니다.</li>
           </ul>
         </div>
-      </div>
-    </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };

@@ -3,11 +3,12 @@ import {
   IsOptional,
   IsDateString,
   IsEnum,
-  IsObject,
   IsBoolean,
+  ValidateNested,
 } from "class-validator";
 import { ApiPropertyOptional } from "@nestjs/swagger";
-import { TodoCategory } from "@calendar-todo/shared-types";
+import { Type } from "class-transformer";
+import { TodoCategoryDto } from "./todo-category.dto";
 
 export class UpdateTodoDto {
   @ApiPropertyOptional({
@@ -44,24 +45,19 @@ export class UpdateTodoDto {
   priority?: "high" | "medium" | "low";
 
   @ApiPropertyOptional({
-    description: "할일 카테고리",
-    example: {
-      id: "personal",
-      name: "개인",
-      color: "#4ECDC4",
-      isDefault: false,
-      createdAt: "2024-01-01T00:00:00.000Z",
-    },
+    description: "할일 카테고리 정보",
+    type: TodoCategoryDto,
   })
   @IsOptional()
-  @IsObject()
-  category?: TodoCategory;
+  @ValidateNested()
+  @Type(() => TodoCategoryDto)
+  category?: TodoCategoryDto;
 
   @ApiPropertyOptional({
-    description: "마감일 (ISO 8601 형식)",
+    description: "할일 날짜 (ISO 8601 형식)",
     example: "2024-01-20T09:00:00.000Z",
   })
   @IsOptional()
   @IsDateString()
-  dueDate?: string;
+  date?: string;
 }

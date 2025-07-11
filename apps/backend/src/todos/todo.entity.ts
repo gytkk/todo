@@ -20,9 +20,9 @@ export class TodoEntity {
     this.completed = data.completed || false;
     this.priority = data.priority || "medium";
     this.category = data.category || {
-      id: "default",
-      name: "일반",
-      color: "#3B82F6",
+      id: "personal",
+      name: "개인",
+      color: "#f59e0b",
       isDefault: true,
       createdAt: new Date(),
     };

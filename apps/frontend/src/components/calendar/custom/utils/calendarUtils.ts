@@ -1,57 +1,204 @@
 import { TodoItem } from '@calendar-todo/shared-types';
-import { CalendarDate } from '../types/calendar';
-import { isToday, isSameDate, isCurrentMonth, getCalendarDates, getWeekDates } from './dateUtils';
-import { format } from 'date-fns';
 
-export const getTodosByDate = (todos: TodoItem[], date: Date): TodoItem[] => {
-  const dateString = format(date, 'yyyy-MM-dd');
-  return todos.filter(todo => {
-    const todoDate = todo.date instanceof Date ? todo.date : new Date(todo.date);
-    return format(todoDate, 'yyyy-MM-dd') === dateString;
-  });
-};
+interface CalendarDate {
+  date: Date;
+  isToday: boolean;
+  isSelected: boolean;
+  isCurrentMonth: boolean;
+  todos: TodoItem[];
+}
 
-export const createCalendarDates = (
+/**
+ * Creates calendar dates for the month view
+ */
+export function createCalendarDates(
   currentDate: Date,
   selectedDate: Date | undefined,
-  todos: TodoItem[],
-  view: 'month' | 'week' | 'day'
-): CalendarDate[] => {
-  let dates: Date[] = [];
-
-  switch (view) {
-    case 'month':
-      dates = getCalendarDates(currentDate.getFullYear(), currentDate.getMonth());
-      break;
-    case 'week':
-      dates = getWeekDates(currentDate);
-      break;
-    case 'day':
-      dates = [currentDate];
-      break;
+  todos: TodoItem[]
+): CalendarDate[] {
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const today = new Date();
+  
+  // Get first day of month and last day of month
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  
+  // Get the day of week for first day (0 = Sunday, 1 = Monday, etc.)
+  const firstDayOfWeek = firstDay.getDay();
+  
+  // Get days from previous month to fill the first week
+  const daysFromPrevMonth = firstDayOfWeek;
+  const prevMonthLastDay = new Date(year, month, 0);
+  
+  // Get days from next month to fill the last week
+  const totalCells = Math.ceil((lastDay.getDate() + daysFromPrevMonth) / 7) * 7;
+  const daysFromNextMonth = totalCells - (lastDay.getDate() + daysFromPrevMonth);
+  
+  const calendarDates: CalendarDate[] = [];
+  
+  // Add days from previous month
+  for (let i = daysFromPrevMonth - 1; i >= 0; i--) {
+    const date = new Date(prevMonthLastDay.getFullYear(), prevMonthLastDay.getMonth(), prevMonthLastDay.getDate() - i);
+    const dayTodos = todos.filter(todo => 
+      todo.date.getFullYear() === date.getFullYear() &&
+      todo.date.getMonth() === date.getMonth() &&
+      todo.date.getDate() === date.getDate()
+    );
+    
+    calendarDates.push({
+      date,
+      isToday: isSameDay(date, today),
+      isSelected: selectedDate ? isSameDay(date, selectedDate) : false,
+      isCurrentMonth: false,
+      todos: dayTodos,
+    });
   }
+  
+  // Add days from current month
+  for (let day = 1; day <= lastDay.getDate(); day++) {
+    const date = new Date(year, month, day);
+    const dayTodos = todos.filter(todo => 
+      todo.date.getFullYear() === date.getFullYear() &&
+      todo.date.getMonth() === date.getMonth() &&
+      todo.date.getDate() === date.getDate()
+    );
+    
+    calendarDates.push({
+      date,
+      isToday: isSameDay(date, today),
+      isSelected: selectedDate ? isSameDay(date, selectedDate) : false,
+      isCurrentMonth: true,
+      todos: dayTodos,
+    });
+  }
+  
+  // Add days from next month
+  for (let day = 1; day <= daysFromNextMonth; day++) {
+    const date = new Date(year, month + 1, day);
+    const dayTodos = todos.filter(todo => 
+      todo.date.getFullYear() === date.getFullYear() &&
+      todo.date.getMonth() === date.getMonth() &&
+      todo.date.getDate() === date.getDate()
+    );
+    
+    calendarDates.push({
+      date,
+      isToday: isSameDay(date, today),
+      isSelected: selectedDate ? isSameDay(date, selectedDate) : false,
+      isCurrentMonth: false,
+      todos: dayTodos,
+    });
+  }
+  
+  return calendarDates;
+}
 
-  return dates.map(date => ({
-    date,
-    isCurrentMonth: isCurrentMonth(date, currentDate),
-    isToday: isToday(date),
-    isSelected: selectedDate ? isSameDate(date, selectedDate) : false,
-    todos: getTodosByDate(todos, date),
-  }));
-};
+/**
+ * Checks if two dates are the same day
+ */
+function isSameDay(date1: Date, date2: Date): boolean {
+  return date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate();
+}
 
-export const getTodoCompletionStats = (todos: TodoItem[]): { total: number; completed: number } => {
+/**
+ * Gets completion statistics for a list of todos
+ */
+export function getTodoCompletionStats(todos: TodoItem[]): { total: number; completed: number; incomplete: number } {
   const total = todos.length;
   const completed = todos.filter(todo => todo.completed).length;
-  return { total, completed };
-};
+  const incomplete = total - completed;
+  
+  return { total, completed, incomplete };
+}
 
-export const hasIncompleteTodos = (todos: TodoItem[]): boolean => {
+/**
+ * Checks if there are any incomplete todos in the list
+ */
+export function hasIncompleteTodos(todos: TodoItem[]): boolean {
   return todos.some(todo => !todo.completed);
-};
+}
 
-export const getCompletionPercentage = (todos: TodoItem[]): number => {
-  if (todos.length === 0) return 0;
-  const completed = todos.filter(todo => todo.completed).length;
-  return Math.round((completed / todos.length) * 100);
-};
+/**
+ * Converts hex color to rgba with specified opacity
+ */
+export function getCategoryColorWithOpacity(hexColor: string, opacity: number): string {
+  // Remove # if present
+  const hex = hexColor.replace('#', '');
+  
+  // Parse hex color
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+}
+
+/**
+ * Gets the primary category color for a day's todos
+ * Prioritizes incomplete todos and returns the first one's color
+ */
+export function getPrimaryCategoryColor(todos: TodoItem[]): string {
+  if (todos.length === 0) return '#3b82f6'; // Default blue
+  
+  // Find first incomplete todo
+  const incompleteTodo = todos.find(todo => !todo.completed);
+  if (incompleteTodo) {
+    return incompleteTodo.category.color;
+  }
+  
+  // If all are completed, return the first todo's color
+  return todos[0].category.color;
+}
+
+/**
+ * Gets all unique category colors from todos
+ */
+export function getUniqueCategoryColors(todos: TodoItem[]): string[] {
+  const colors = new Set<string>();
+  todos.forEach(todo => {
+    if (!todo.completed) { // Only consider incomplete todos for mixed indicators
+      colors.add(todo.category.color);
+    }
+  });
+  return Array.from(colors);
+}
+
+/**
+ * Determines if we should show a mixed category indicator
+ */
+export function shouldShowMixedCategoryIndicator(todos: TodoItem[]): boolean {
+  const uniqueColors = getUniqueCategoryColors(todos);
+  return uniqueColors.length > 1;
+}
+
+/**
+ * Gets appropriate text color based on background color for readability
+ */
+export function getContrastTextColor(hexColor: string): string {
+  // Remove # if present
+  const hex = hexColor.replace('#', '');
+  
+  // Parse hex color
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  
+  // Calculate relative luminance
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  
+  // Return dark text for light backgrounds, light text for dark backgrounds
+  return luminance > 0.5 ? '#1f2937' : '#ffffff';
+}
+
+/**
+ * Generates a mixed color indicator for multiple categories
+ */
+export function getMixedCategoryIndicatorStyle(): React.CSSProperties {
+  return {
+    background: 'linear-gradient(45deg, #fbbf24 25%, transparent 25%, transparent 75%, #fbbf24 75%)',
+    backgroundSize: '4px 4px',
+  };
+}

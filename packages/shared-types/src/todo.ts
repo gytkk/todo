@@ -64,7 +64,7 @@ export interface TodoStats {
 export interface CreateTodoRequest {
   title: string;
   date: string; // ISO date string
-  categoryId: string; // 카테고리 ID 추가
+  category: TodoCategory; // 카테고리 전체 객체 포함
 }
 
 export interface CreateTodoResponse {
@@ -75,7 +75,7 @@ export interface UpdateTodoRequest {
   title?: string;
   completed?: boolean;
   date?: string;
-  categoryId?: string; // 카테고리 변경 지원
+  category?: TodoCategory; // 카테고리 전체 객체 포함
 }
 
 export interface UpdateTodoResponse {

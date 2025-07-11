@@ -4,10 +4,11 @@ import {
   IsOptional,
   IsDateString,
   IsEnum,
-  IsObject,
+  ValidateNested,
 } from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { TodoCategory } from "@calendar-todo/shared-types";
+import { Type } from "class-transformer";
+import { TodoCategoryDto } from "./todo-category.dto";
 
 export class CreateTodoDto {
   @ApiProperty({
@@ -36,24 +37,19 @@ export class CreateTodoDto {
   priority?: "high" | "medium" | "low";
 
   @ApiProperty({
-    description: "할일 카테고리",
-    example: {
-      id: "work",
-      name: "업무",
-      color: "#FF6B6B",
-      isDefault: false,
-      createdAt: "2024-01-01T00:00:00.000Z",
-    },
+    description: "할일 카테고리 정보",
+    type: TodoCategoryDto,
   })
-  @IsObject()
+  @ValidateNested()
+  @Type(() => TodoCategoryDto)
   @IsNotEmpty()
-  category: TodoCategory;
+  category: TodoCategoryDto;
 
   @ApiProperty({
-    description: "마감일 (ISO 8601 형식)",
+    description: "할일 날짜 (ISO 8601 형식)",
     example: "2024-01-15T09:00:00.000Z",
   })
   @IsDateString()
   @IsNotEmpty()
-  dueDate: string;
+  date: string;
 }

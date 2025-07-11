@@ -87,8 +87,11 @@ describe("TodoController", () => {
         title: "새 할일",
         description: "설명",
         priority: "high",
-        category: mockCategory,
-        dueDate: "2024-01-15T09:00:00.000Z",
+        category: {
+          ...mockCategory,
+          createdAt: mockCategory.createdAt.toISOString(),
+        },
+        date: "2024-01-15T09:00:00.000Z",
       };
 
       mockTodoService.create.mockResolvedValue(mockTodo);
@@ -105,8 +108,11 @@ describe("TodoController", () => {
     it("서비스에서 에러가 발생하면 에러를 전파해야 함", async () => {
       const createTodoDto: CreateTodoDto = {
         title: "새 할일",
-        category: mockCategory,
-        dueDate: "2024-01-15T09:00:00.000Z",
+        category: {
+          ...mockCategory,
+          createdAt: mockCategory.createdAt.toISOString(),
+        },
+        date: "2024-01-15T09:00:00.000Z",
       };
 
       mockTodoService.create.mockRejectedValue(new Error("생성 실패"));

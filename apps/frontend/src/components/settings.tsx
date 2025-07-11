@@ -14,7 +14,6 @@ import {
   SelectTrigger,
   SelectValue,
   Label,
-  Badge,
   Input,
   Dialog,
   DialogContent,
@@ -24,13 +23,14 @@ import {
   DialogTrigger
 } from "@calendar-todo/ui";
 import {
-  Palette, Calendar, Code, Eye, Check, AlertTriangle, RefreshCw, User, Plus,
-  Minus, LogOut, RotateCcw, UserX, Lock, Camera, Star, Info
+  Palette, Calendar, Code, Eye, Check, AlertTriangle, RefreshCw, User,
+  LogOut, RotateCcw, UserX, Lock, Camera, Info
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { TodoItem, AppSettings } from '@/types';
 import { useSettings } from '@/hooks/useSettings';
+import { CategoryManagement } from "./settings/CategoryManagement";
 
 interface SettingsProps {
   todos: TodoItem[];
@@ -43,8 +43,6 @@ export function Settings({ onClearData }: SettingsProps) {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [newCategoryName, setNewCategoryName] = useState('');
-  const [newCategoryColor, setNewCategoryColor] = useState('#3B82F6');
   const [activeSection, setActiveSection] = useState('user-info');
   const [mounted, setMounted] = useState(false);
 
@@ -62,11 +60,7 @@ export function Settings({ onClearData }: SettingsProps) {
   const {
     settings,
     updateSetting,
-    resetSettings,
-    addCategory,
-    removeCategory,
-    updateCategory,
-    setDefaultCategory
+    resetSettings
   } = useSettings();
 
   // Hydration 완료 후 mounted 상태 설정
@@ -127,31 +121,6 @@ export function Settings({ onClearData }: SettingsProps) {
     setConfirmPassword('');
   };
 
-  const handleAddCategory = () => {
-    if (!newCategoryName.trim()) {
-      alert('카테고리 이름을 입력하세요.');
-      return;
-    }
-    const currentCategories = settings.categories || [];
-    if (currentCategories.length >= 10) {
-      alert('카테고리는 최대 10개까지 추가할 수 있습니다.');
-      return;
-    }
-    addCategory(newCategoryName.trim(), newCategoryColor);
-    setNewCategoryName('');
-    setNewCategoryColor('#3B82F6');
-  };
-
-  const handleRemoveCategory = (id: string) => {
-    const currentCategories = settings.categories || [];
-    if (currentCategories.length <= 1) {
-      alert('카테고리는 최소 하나 이상 존재해야 합니다.');
-      return;
-    }
-    if (confirm('이 카테고리를 삭제하시겠습니까?')) {
-      removeCategory(id);
-    }
-  };
 
   const handleLogout = () => {
     if (confirm('로그아웃하시겠습니까?')) {
@@ -374,97 +343,7 @@ export function Settings({ onClearData }: SettingsProps) {
                     </Card>
 
                     {/* 카테고리 관리 섹션 */}
-                    <Card id="category-management">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <Palette className="h-5 w-5" />
-                          카테고리 관리
-                        </CardTitle>
-                        <CardDescription>
-                          할 일 카테고리를 관리하고 색상을 설정합니다
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-6">
-                        <div className="space-y-4">
-                          <Label className="text-sm font-medium">카테고리 목록</Label>
-                          <div className="space-y-2">
-                            {(settings.categories || []).map((category) => (
-                              <div
-                                key={category.id}
-                                className="flex items-center justify-between p-3 border rounded-lg"
-                              >
-                                <div className="flex items-center gap-3">
-                                  <div
-                                    className="w-4 h-4 rounded-full border"
-                                    style={{ backgroundColor: category.color }}
-                                  />
-                                  <Input
-                                    value={category.name}
-                                    onChange={(e) => updateCategory(category.id, { name: e.target.value })}
-                                    className="max-w-32"
-                                  />
-                                  <input
-                                    type="color"
-                                    value={category.color}
-                                    onChange={(e) => updateCategory(category.id, { color: e.target.value })}
-                                    className="w-8 h-8 border rounded cursor-pointer"
-                                  />
-                                  {category.isDefault && (
-                                    <Badge variant="secondary" className="flex items-center gap-1">
-                                      <Star className="h-3 w-3" />
-                                      기본
-                                    </Badge>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  {!category.isDefault && (
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => setDefaultCategory(category.id)}
-                                    >
-                                      <Star className="h-4 w-4" />
-                                    </Button>
-                                  )}
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleRemoveCategory(category.id)}
-                                    disabled={category.isDefault}
-                                  >
-                                    <Minus className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="border-t pt-4">
-                          <div className="flex items-center gap-2">
-                            <Input
-                              placeholder="새 카테고리 이름"
-                              value={newCategoryName}
-                              onChange={(e) => setNewCategoryName(e.target.value)}
-                              className="flex-1"
-                            />
-                            <input
-                              type="color"
-                              value={newCategoryColor}
-                              onChange={(e) => setNewCategoryColor(e.target.value)}
-                              className="w-10 h-10 border rounded cursor-pointer"
-                            />
-                            <Button onClick={handleAddCategory} className="flex items-center gap-2">
-                              <Plus className="h-4 w-4" />
-                              추가
-                            </Button>
-                          </div>
-                          <p className="text-sm text-gray-500 mt-2">
-                            최대 10개까지 카테고리를 추가할 수 있습니다. ({(settings.categories || []).length}/10)
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <CategoryManagement />
 
                     {/* 보기 설정 섹션 */}
                     <Card id="display-settings">

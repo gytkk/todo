@@ -7,12 +7,26 @@ import { TodoRepository } from "./todo.repository";
 import { TodoEntity } from "./todo.entity";
 import { CreateTodoDto } from "./dto/create-todo.dto";
 import { UpdateTodoDto } from "./dto/update-todo.dto";
+import { TodoCategoryDto } from "./dto/todo-category.dto";
 import { TodoItem, TodoStats, TodoCategory } from "@calendar-todo/shared-types";
 import { subDays } from "date-fns";
 
 @Injectable()
 export class TodoService {
   constructor(private readonly todoRepository: TodoRepository) {}
+
+  private convertCategoryDtoToCategory(
+    categoryDto: TodoCategoryDto,
+  ): TodoCategory {
+    return {
+      id: categoryDto.id,
+      name: categoryDto.name,
+      color: categoryDto.color,
+      icon: categoryDto.icon,
+      isDefault: categoryDto.isDefault,
+      createdAt: new Date(categoryDto.createdAt),
+    };
+  }
 
   async create(
     createTodoDto: CreateTodoDto,
@@ -22,8 +36,8 @@ export class TodoService {
       title: createTodoDto.title,
       description: createTodoDto.description,
       priority: createTodoDto.priority || "medium",
-      category: createTodoDto.category,
-      dueDate: new Date(createTodoDto.dueDate),
+      category: this.convertCategoryDtoToCategory(createTodoDto.category),
+      dueDate: new Date(createTodoDto.date),
       userId,
     };
 
@@ -100,10 +114,13 @@ export class TodoService {
       updateData.completed = updateTodoDto.completed;
     if (updateTodoDto.priority !== undefined)
       updateData.priority = updateTodoDto.priority;
-    if (updateTodoDto.category !== undefined)
-      updateData.category = updateTodoDto.category;
-    if (updateTodoDto.dueDate !== undefined)
-      updateData.dueDate = new Date(updateTodoDto.dueDate);
+    if (updateTodoDto.category !== undefined) {
+      updateData.category = this.convertCategoryDtoToCategory(
+        updateTodoDto.category,
+      );
+    }
+    if (updateTodoDto.date !== undefined)
+      updateData.dueDate = new Date(updateTodoDto.date);
 
     const updatedTodo = await this.todoRepository.update(id, updateData);
     return updatedTodo!.toTodoItem();
@@ -189,10 +206,19 @@ export class TodoService {
     const createdTodos: TodoItem[] = [];
 
     for (const todoData of todos) {
+      const categoryDto: TodoCategoryDto = {
+        id: todoData.category.id,
+        name: todoData.category.name,
+        color: todoData.category.color,
+        icon: todoData.category.icon,
+        isDefault: todoData.category.isDefault,
+        createdAt: todoData.category.createdAt.toISOString(),
+      };
+
       const createDto: CreateTodoDto = {
         title: todoData.title,
-        category: todoData.category,
-        dueDate: todoData.date.toISOString(),
+        category: categoryDto,
+        date: todoData.date.toISOString(),
         priority: "medium",
       };
 

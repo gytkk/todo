@@ -1,4 +1,4 @@
-import { TodoItem, TodoStats, TodoCategory, CreateTodoRequest, UpdateTodoRequest } from '@calendar-todo/shared-types';
+import { TodoItem, TodoStats, TodoCategory } from '@calendar-todo/shared-types';
 
 export class TodoService {
   private static instance: TodoService;
@@ -87,9 +87,12 @@ export class TodoService {
 
   async addTodo(todo: Omit<TodoItem, 'id'>): Promise<TodoItem | null> {
     try {
-      const createRequest: CreateTodoRequest = {
+      const createRequest = {
         title: todo.title,
-        categoryId: todo.category.id,
+        category: {
+          ...todo.category,
+          createdAt: todo.category.createdAt.toISOString(),
+        },
         date: todo.date.toISOString(),
       };
 
@@ -128,11 +131,16 @@ export class TodoService {
 
   async updateTodo(id: string, updates: Partial<TodoItem>): Promise<boolean> {
     try {
-      const updateRequest: UpdateTodoRequest = {};
+      const updateRequest: Record<string, unknown> = {};
 
       if (updates.title !== undefined) updateRequest.title = updates.title;
       if (updates.completed !== undefined) updateRequest.completed = updates.completed;
-      if (updates.category !== undefined) updateRequest.categoryId = updates.category.id;
+      if (updates.category !== undefined) {
+        updateRequest.category = {
+          ...updates.category,
+          createdAt: updates.category.createdAt.toISOString(),
+        };
+      }
       if (updates.date !== undefined) updateRequest.date = updates.date.toISOString();
 
       const response = await fetch(`${this.BASE_URL}/${id}`, {
@@ -268,9 +276,9 @@ export class TodoService {
               date: new Date(todoItem.date as string),
               completed: Boolean(todoItem.completed),
               category: (todoItem.category as TodoCategory) || { 
-                id: 'default', 
-                name: '일반', 
-                color: '#3B82F6', 
+                id: 'personal', 
+                name: '개인', 
+                color: '#f59e0b', 
                 isDefault: true,
                 createdAt: new Date(),
               },
