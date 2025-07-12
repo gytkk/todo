@@ -3,7 +3,6 @@
 import { memo, useState, useCallback } from 'react';
 import { TodoItem } from '@calendar-todo/shared-types';
 import { CalendarContainer } from './custom';
-import { DailyView } from './daily';
 import { SimpleCalendarSkeleton } from './SimpleCalendarSkeleton';
 import { NoSSR } from '../NoSSR';
 

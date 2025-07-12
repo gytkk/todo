@@ -3,19 +3,19 @@ name: Backend CI
 on:
   push:
     branches: [main]
-    paths: ['apps/backend/**', 'packages/shared-types/**']
+    paths: ["apps/backend/**", "packages/shared-types/**"]
   pull_request:
     branches: [main]
-    paths: ['apps/backend/**', 'packages/shared-types/**']
+    paths: ["apps/backend/**", "packages/shared-types/**"]
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     strategy:
       matrix:
         node-version: [20]
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -26,23 +26,23 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
-        
+          cache: "pnpm"
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-        
+
       - name: Build shared-types
         run: pnpm build --filter=@calendar-todo/shared-types
-        
+
       - name: Run lint
         run: pnpm lint --filter=backend
-        
+
       - name: Run type check
         run: pnpm type-check --filter=backend
-        
+
       - name: Run tests with coverage
         run: pnpm test:cov --filter=backend
-        
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
@@ -50,13 +50,13 @@ jobs:
           flags: backend
           name: backend-coverage
           fail_ci_if_error: false
-          
+
       - name: Upload coverage artifacts
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: apps/backend/coverage/
-          
+
       - name: Comment coverage on PR
         if: github.event_name == 'pull_request'
         uses: marocchino/sticky-pull-request-comment@v2
