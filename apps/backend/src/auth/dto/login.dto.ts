@@ -1,4 +1,10 @@
-import { IsEmail, IsString, MinLength } from "class-validator";
+import {
+  IsEmail,
+  IsString,
+  MinLength,
+  IsOptional,
+  IsBoolean,
+} from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { LoginRequest } from "@calendar-todo/shared-types";
 
@@ -19,4 +25,13 @@ export class LoginDto implements LoginRequest {
   @IsString()
   @MinLength(1, { message: "Password is required" })
   password: string;
+
+  @ApiProperty({
+    description: "Keep user logged in for extended period",
+    example: false,
+    required: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  rememberMe?: boolean;
 }

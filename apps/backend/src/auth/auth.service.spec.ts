@@ -103,6 +103,7 @@ describe("AuthService", () => {
       expect(generateTokenPairSpy).toHaveBeenCalledWith(
         mockUser.id,
         mockUser.email,
+        false,
       );
       expect(result).toEqual(mockAuthResponse);
     });
@@ -156,6 +157,7 @@ describe("AuthService", () => {
       expect(generateTokenPairSpy).toHaveBeenCalledWith(
         mockUser.id,
         mockUser.email,
+        false,
       );
       expect(result).toEqual(mockAuthResponse);
     });

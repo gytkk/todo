@@ -12,15 +12,22 @@ export class JwtAuthService {
     private readonly redisService: RedisService,
   ) {}
 
-  generateAccessToken(userId: string, email: string): string {
+  generateAccessToken(
+    userId: string,
+    email: string,
+    rememberMe = false,
+  ): string {
     const payload: Omit<JwtPayload, "iat" | "exp"> = {
       sub: userId,
       email,
     };
 
+    // 로그인 유지 시 30일, 기본 15분
+    const expiresIn = rememberMe ? "30d" : "15m";
+
     return this.jwtService.sign(payload, {
       secret: this.configService.get<string>("JWT_SECRET"),
-      expiresIn: "15m", // 15분
+      expiresIn,
     });
   }
 
@@ -37,8 +44,9 @@ export class JwtAuthService {
   async generateTokenPair(
     userId: string,
     email: string,
+    rememberMe = false,
   ): Promise<{ accessToken: string; refreshToken: string }> {
-    const accessToken = this.generateAccessToken(userId, email);
+    const accessToken = this.generateAccessToken(userId, email, rememberMe);
     const refreshToken = this.generateRefreshToken(userId);
 
     // Store refresh token in Redis with expiration

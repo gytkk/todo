@@ -15,6 +15,7 @@ import {
   CardHeader, 
   CardTitle,
 } from "@calendar-todo/ui";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -34,6 +35,7 @@ const FormSchema = z.object({
   password: z
     .string()
     .min(1, { message: "비밀번호를 입력해주세요" }),
+  rememberMe: z.boolean().optional(),
 });
 
 export function LoginForm() {
@@ -47,6 +49,7 @@ export function LoginForm() {
     defaultValues: {
       email: "",
       password: "",
+      rememberMe: false,
     },
   });
 
@@ -57,6 +60,7 @@ export function LoginForm() {
       const loginData: LoginRequest = {
         email: data.email,
         password: data.password,
+        rememberMe: data.rememberMe,
       };
 
       await login(loginData);
@@ -147,6 +151,27 @@ export function LoginForm() {
                     </div>
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="rememberMe"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      disabled={isLoading}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel className="text-base cursor-pointer">
+                      로그인 유지
+                    </FormLabel>
+                  </div>
                 </FormItem>
               )}
             />

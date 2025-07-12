@@ -280,7 +280,10 @@ describe("HttpExceptionFilter", () => {
     });
 
     it("null 응답에 대해 기본 메시지를 반환해야 함", () => {
-      const exception = new HttpException(null as unknown as string, HttpStatus.BAD_REQUEST);
+      const exception = new HttpException(
+        null as unknown as string,
+        HttpStatus.BAD_REQUEST,
+      );
 
       const message = (
         filter as unknown as { getMessage: (exception: unknown) => string }

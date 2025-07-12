@@ -103,7 +103,7 @@ describe("AuthController", () => {
 
       const result = await controller.login(loginDto, mockUser);
 
-      expect(loginSpy).toHaveBeenCalledWith(mockUser);
+      expect(loginSpy).toHaveBeenCalledWith(mockUser, undefined);
       expect(result).toEqual(mockAuthResponse);
     });
 
@@ -118,7 +118,7 @@ describe("AuthController", () => {
 
       const result = await controller.login(loginDto, differentUser);
 
-      expect(loginSpy).toHaveBeenCalledWith(differentUser);
+      expect(loginSpy).toHaveBeenCalledWith(differentUser, undefined);
       expect(result).toEqual(differentAuthResponse);
     });
 

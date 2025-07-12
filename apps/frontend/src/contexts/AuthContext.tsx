@@ -28,7 +28,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // 토큰 검증 및 자동 갱신
   const refreshAuthToken = async (): Promise<boolean> => {
     try {
-      const refreshToken = localStorage.getItem('refresh_token');
+      // localStorage와 sessionStorage 모두 확인
+      const refreshToken = localStorage.getItem('refresh_token') || sessionStorage.getItem('refresh_token');
       if (!refreshToken) {
         return false;
       }
@@ -47,10 +48,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       const authResponse: AuthResponse = await response.json();
 
+      // 기존 저장소 유형 확인
+      const rememberMe = localStorage.getItem('remember_me') === 'true' || sessionStorage.getItem('remember_me') === 'true';
+      const storage = rememberMe ? localStorage : sessionStorage;
+      
       // 새 토큰으로 업데이트
-      localStorage.setItem('auth_token', authResponse.accessToken);
-      localStorage.setItem('refresh_token', authResponse.refreshToken);
-      document.cookie = `auth-token=${authResponse.accessToken}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`;
+      storage.setItem('auth_token', authResponse.accessToken);
+      storage.setItem('refresh_token', authResponse.refreshToken);
+      
+      const maxAge = rememberMe ? 30 * 24 * 60 * 60 : 0;
+      const cookieOptions = maxAge > 0 ? `max-age=${maxAge}` : '';
+      document.cookie = `auth-token=${authResponse.accessToken}; path=/; ${cookieOptions}; samesite=strict`;
 
       return true;
     } catch (error) {
@@ -76,12 +84,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  // 컴포넌트 마운트 시 로컬 스토리지에서 사용자 정보 복원
+  // 컴포넌트 마운트 시 저장소에서 사용자 정보 복원
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        const token = localStorage.getItem('auth_token');
-        const userData = localStorage.getItem('user_data');
+        // localStorage와 sessionStorage 모두 확인
+        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+        const userData = localStorage.getItem('user_data') || sessionStorage.getItem('user_data');
         
         if (token && userData) {
           // 토큰 유효성 검증
@@ -100,20 +109,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
               const parsedUser = JSON.parse(userData);
               setUser(parsedUser);
             } else {
-              // 갱신 실패 시 로그아웃
+              // 갱신 실패 시 로그아웃 - 모든 저장소 정리
               localStorage.removeItem('auth_token');
               localStorage.removeItem('refresh_token');
               localStorage.removeItem('user_data');
+              localStorage.removeItem('remember_me');
+              sessionStorage.removeItem('auth_token');
+              sessionStorage.removeItem('refresh_token');
+              sessionStorage.removeItem('user_data');
+              sessionStorage.removeItem('remember_me');
               document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
             }
           }
         }
       } catch (error) {
         console.error('인증 초기화 오류:', error);
-        // 손상된 데이터 정리
+        // 손상된 데이터 정리 - 모든 저장소
         localStorage.removeItem('auth_token');
         localStorage.removeItem('refresh_token');
         localStorage.removeItem('user_data');
+        localStorage.removeItem('remember_me');
+        sessionStorage.removeItem('auth_token');
+        sessionStorage.removeItem('refresh_token');
+        sessionStorage.removeItem('user_data');
+        sessionStorage.removeItem('remember_me');
         document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
       } finally {
         setIsLoading(false);
@@ -126,7 +145,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // 15분마다 토큰 갱신 시도
     const tokenRefreshInterval = setInterval(async () => {
       if (user) {
-        const token = localStorage.getItem('auth_token');
+        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
         if (token) {
           const isValid = await validateToken(token);
           if (!isValid) {
@@ -161,17 +180,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       const authResponse: AuthResponse = await response.json();
 
-      // 토큰과 사용자 정보를 로컬 스토리지에 저장
-      localStorage.setItem('auth_token', authResponse.accessToken);
-      localStorage.setItem('refresh_token', authResponse.refreshToken);
-      localStorage.setItem('user_data', JSON.stringify({
+      // rememberMe에 따라 저장소 선택
+      const storage = credentials.rememberMe ? localStorage : sessionStorage;
+      
+      // 토큰과 사용자 정보 저장
+      storage.setItem('auth_token', authResponse.accessToken);
+      storage.setItem('refresh_token', authResponse.refreshToken);
+      storage.setItem('user_data', JSON.stringify({
         ...authResponse.user,
         isActive: true,
         updatedAt: new Date(),
       }));
 
+      // rememberMe 설정도 저장
+      storage.setItem('remember_me', String(credentials.rememberMe || false));
+
       // 쿠키에도 토큰 설정 (미들웨어에서 사용)
-      document.cookie = `auth-token=${authResponse.accessToken}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`;
+      // rememberMe가 true면 30일, false면 세션만 유지
+      const maxAge = credentials.rememberMe ? 30 * 24 * 60 * 60 : 0; // 30일 또는 세션
+      const cookieOptions = maxAge > 0 ? `max-age=${maxAge}` : '';
+      document.cookie = `auth-token=${authResponse.accessToken}; path=/; ${cookieOptions}; samesite=strict`;
 
       setUser({
         ...authResponse.user,
@@ -187,10 +215,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const logout = () => {
-    // 로컬 스토리지 정리
+    // 모든 저장소 정리
     localStorage.removeItem('auth_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_data');
+    localStorage.removeItem('remember_me');
+    sessionStorage.removeItem('auth_token');
+    sessionStorage.removeItem('refresh_token');
+    sessionStorage.removeItem('user_data');
+    sessionStorage.removeItem('remember_me');
     
     // 쿠키 정리
     document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
@@ -206,7 +239,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const updateUser = (updatedUser: User) => {
     setUser(updatedUser);
-    localStorage.setItem('user_data', JSON.stringify(updatedUser));
+    // 기존 저장소 유형 확인하여 같은 저장소에 업데이트
+    const rememberMe = localStorage.getItem('remember_me') === 'true' || sessionStorage.getItem('remember_me') === 'true';
+    const storage = rememberMe ? localStorage : sessionStorage;
+    storage.setItem('user_data', JSON.stringify(updatedUser));
   };
 
   const value: AuthContextType = {

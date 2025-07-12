@@ -99,7 +99,7 @@ export class AuthController {
     @Body(ValidationPipe) loginDto: LoginDto,
     @CurrentUser() user: User,
   ): Promise<AuthResponse> {
-    return this.authService.login(user);
+    return this.authService.login(user, loginDto.rememberMe);
   }
 
   @Public()

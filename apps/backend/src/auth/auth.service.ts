@@ -21,8 +21,8 @@ export class AuthService {
     return this.userService.validatePassword(email, password);
   }
 
-  async login(user: User): Promise<AuthResponse> {
-    return this.generateTokens(user);
+  async login(user: User, rememberMe = false): Promise<AuthResponse> {
+    return this.generateTokens(user, rememberMe);
   }
 
   async refreshToken(refreshToken: string): Promise<AuthResponse> {
@@ -76,10 +76,14 @@ export class AuthService {
     }
   }
 
-  private async generateTokens(user: User): Promise<AuthResponse> {
+  private async generateTokens(
+    user: User,
+    rememberMe = false,
+  ): Promise<AuthResponse> {
     const tokens = await this.jwtAuthService.generateTokenPair(
       user.id,
       user.email,
+      rememberMe,
     );
 
     return {
