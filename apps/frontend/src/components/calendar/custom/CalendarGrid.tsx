@@ -3,7 +3,6 @@ import { CalendarGridProps } from './types/calendar';
 import { CalendarCell } from './CalendarCell';
 import { createCalendarDates, createWeekCalendarDates, createDayCalendarDate, getCategoryColorWithOpacity, getPrimaryCategoryColor } from './utils/calendarUtils';
 import { getWeekdayNames } from './utils/dateUtils';
-import { DailyView } from '../daily/DailyView';
 
 export const CalendarGrid: React.FC<CalendarGridProps> = ({
   currentDate,
@@ -137,13 +136,55 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   }
 
   if (view === 'day') {
+    const dayData = createDayCalendarDate(currentDate, selectedDate, todos);
     return (
-      <div className="flex-1">
-        <DailyView
-          selectedDate={selectedDate || currentDate}
-          onDateChange={onDateSelect}
-          showHeader={false}
-        />
+      <div className="flex-1 bg-white p-6">
+        <div className="max-w-2xl mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <div
+              className={`text-3xl font-bold ${dayData.isToday ? 'text-blue-600' : 'text-gray-900'
+                }`}
+            >
+              {dayData.date.getDate()}일
+            </div>
+            {dayData.todos.length > 0 && (
+              <div className="text-sm text-gray-500">
+                {dayData.todos.filter(t => t.completed).length}/{dayData.todos.length} 완료
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-3">
+            {dayData.todos.length === 0 ? (
+              <div className="text-center text-gray-500 py-12">
+                이 날에는 할일이 없습니다.
+              </div>
+            ) : (
+              dayData.todos.map((todo) => (
+                <div
+                  key={todo.id}
+                  className={`p-4 rounded-lg border ${todo.completed
+                    ? 'bg-gray-50 border-gray-200 text-gray-500'
+                    : ''
+                    }`}
+                  style={todo.completed ? {} : {
+                    backgroundColor: getCategoryColorWithOpacity(todo.category.color, 0.1),
+                    borderColor: getCategoryColorWithOpacity(todo.category.color, 0.3),
+                    color: todo.category.color
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-3 h-3 rounded-full flex-shrink-0 ${todo.completed ? 'bg-gray-400' : ''}`}
+                      style={todo.completed ? {} : { backgroundColor: todo.category.color }}
+                    />
+                    <span className={todo.completed ? 'line-through' : ''}>{todo.title}</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
       </div>
     );
   }
