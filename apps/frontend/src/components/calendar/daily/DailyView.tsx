@@ -10,12 +10,14 @@ interface DailyViewProps {
   selectedDate?: Date;
   onDateChange?: (date: Date) => void;
   onViewChange?: (view: 'month' | 'week' | 'day') => void;
+  showHeader?: boolean;
 }
 
 export const DailyView: React.FC<DailyViewProps> = ({
   selectedDate: initialDate,
   onDateChange,
-  onViewChange
+  onViewChange,
+  showHeader = true
 }) => {
   const {
     todos,
@@ -115,17 +117,19 @@ export const DailyView: React.FC<DailyViewProps> = ({
 
   return (
     <div className="h-full flex flex-col bg-gray-50">
-      {/* 헤더 */}
-      <DailyViewHeader
-        selectedDate={selectedDate}
-        onPreviousDay={goToPreviousDay}
-        onNextDay={goToNextDay}
-        onToday={goToToday}
-        onDateSelect={goToDate}
-        formatDate={formatDate}
-        isToday={isToday}
-        onViewChange={onViewChange}
-      />
+      {/* 헤더 - 선택적 표시 */}
+      {showHeader && (
+        <DailyViewHeader
+          selectedDate={selectedDate}
+          onPreviousDay={goToPreviousDay}
+          onNextDay={goToNextDay}
+          onToday={goToToday}
+          onDateSelect={goToDate}
+          formatDate={formatDate}
+          isToday={isToday}
+          onViewChange={onViewChange}
+        />
+      )}
 
       {/* 메인 콘텐츠: 세로 스크롤 */}
       <div
