@@ -13,7 +13,6 @@ export const CalendarContainer: React.FC<CalendarProps> = ({
   onViewChange,
   allTodos = [],
   hasActiveFilters = false,
-  activeFilters = [],
 }) => {
   const [view, setView] = useState<CalendarView>(initialView);
 
@@ -38,8 +37,6 @@ export const CalendarContainer: React.FC<CalendarProps> = ({
         onNavigate={handleNavigate}
         onViewChange={handleViewChange}
         onDateSelect={handleDateSelect}
-        activeFilters={activeFilters}
-        hasActiveFilters={hasActiveFilters}
       />
 
       <CalendarGrid

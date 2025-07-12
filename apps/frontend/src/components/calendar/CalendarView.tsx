@@ -18,7 +18,6 @@ interface CalendarViewProps {
   defaultView?: CalendarViewType;
   allTodos?: TodoItem[]; // 필터링 전 전체 할일 목록
   hasActiveFilters?: boolean; // 필터가 활성화되어 있는지 여부
-  activeFilters?: { id: string; name: string; color: string }[]; // 활성화된 필터 목록
 }
 
 function CalendarViewComponent({
@@ -30,8 +29,7 @@ function CalendarViewComponent({
   onCalendarClick,
   defaultView = 'month',
   allTodos = [],
-  hasActiveFilters = false,
-  activeFilters = []
+  hasActiveFilters = false
 }: CalendarViewProps) {
   const [currentView, setCurrentView] = useState<CalendarViewType>(defaultView);
 
@@ -63,7 +61,6 @@ function CalendarViewComponent({
               onViewChange={handleViewChange}
               allTodos={allTodos}
               hasActiveFilters={hasActiveFilters}
-              activeFilters={activeFilters}
             />
           </div>
         </NoSSR>

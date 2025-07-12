@@ -60,15 +60,6 @@ function HomeContent() {
     categoryFilter[category.id] === false
   );
 
-  // 활성화된 필터 목록 생성
-  const activeFilters = categories.filter(category => 
-    categoryFilter[category.id] !== false
-  ).map(category => ({
-    id: category.id,
-    name: category.name,
-    color: category.color
-  }));
-
   return (
     <AppLayout>
       <ErrorBoundary>
@@ -91,7 +82,6 @@ function HomeContent() {
                 onCalendarClick={isAuthenticated ? handleCalendarClick : () => {}} // 미인증 시 비활성화
                 allTodos={todos} // 필터링 전 전체 할일 목록
                 hasActiveFilters={hasActiveFilters} // 필터 활성화 여부
-                activeFilters={activeFilters} // 활성화된 필터 목록
               />
             }
           />

@@ -97,6 +97,11 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
     onSidebarStateChange?.(isExpanded, isVisible);
   }, [isExpanded, isVisible, onSidebarStateChange]);
 
+  // 클라이언트에서만 렌더링
+  if (!isMounted) {
+    return null;
+  }
+
   return (
     <>
       {/* 토글 버튼 - 사이드바가 숨겨진 경우 */}
@@ -127,7 +132,7 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
       >
         {/* 헤더 */}
         <div className="flex items-center justify-between h-16 px-4 border-b border-gray-100">
-          {isMounted && isFullyExpanded && (
+          {isFullyExpanded && (
             <div className="flex items-center gap-3 overflow-hidden">
               <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
                 <User className="h-4 w-4 text-gray-500" />
@@ -174,8 +179,8 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
                       !isExpanded && "justify-center px-0"
                     )}
                   >
-                    <Icon className={cn("h-5 w-5", isMounted && isFullyExpanded && "mr-3")} />
-                    {isMounted && isFullyExpanded && (
+                    <Icon className={cn("h-5 w-5", isFullyExpanded && "mr-3")} />
+                    {isFullyExpanded && (
                       <div className="flex flex-col items-start overflow-hidden">
                         <span className="font-medium text-sm truncate">{item.name}</span>
                         <span className="text-xs text-gray-400 truncate">로그인 필요</span>
@@ -201,8 +206,8 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
                     }
                   }}
                 >
-                  <Icon className={cn("h-5 w-5", isMounted && isFullyExpanded && "mr-3")} />
-                  {isMounted && isFullyExpanded && (
+                  <Icon className={cn("h-5 w-5", isFullyExpanded && "mr-3")} />
+                  {isFullyExpanded && (
                     <div className="flex flex-col items-start">
                       <span className="font-medium text-sm">{item.name}</span>
                     </div>

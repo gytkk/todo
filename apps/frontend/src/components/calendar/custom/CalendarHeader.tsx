@@ -10,8 +10,6 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
   onNavigate,
   onViewChange,
   onDateSelect,
-  activeFilters = [],
-  hasActiveFilters = false,
 }) => {
   const handlePrevious = () => {
     let newDate: Date;
@@ -86,8 +84,6 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
       title={getTitle()}
       navigationLabels={getNavigationLabel()}
       isTodayDisabled={isCurrentlyToday}
-      activeFilters={activeFilters}
-      hasActiveFilters={hasActiveFilters}
     />
   );
 };
