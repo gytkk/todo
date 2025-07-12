@@ -9,6 +9,13 @@ jest.mock('../../../hooks/useCategories', () => ({
   useCategories: jest.fn(),
 }));
 
+// Mock the CategoryContext
+jest.mock('../../../contexts/AppContext', () => ({
+  useCategoryContext: () => ({
+    refreshCategories: jest.fn(),
+  }),
+}));
+
 import { useCategories } from '../../../hooks/useCategories';
 const mockedUseCategories = useCategories as jest.MockedFunction<typeof useCategories>;
 
@@ -32,14 +39,12 @@ const mockCategories: TodoCategory[] = [
     id: 'work',
     name: '업무',
     color: '#3b82f6',
-    isDefault: true,
     createdAt: new Date('2024-01-01'),
   },
   {
     id: 'personal',
     name: '개인',
     color: '#ef4444',
-    isDefault: false,
     createdAt: new Date('2024-01-01'),
   },
 ];
@@ -48,10 +53,22 @@ const mockAvailableColors = ['#10b981', '#f59e0b', '#8b5cf6'];
 
 const mockUseCategoriesReturn = {
   categories: mockCategories,
-  addCategory: jest.fn(() => Promise.resolve(true)),
+  categoryFilter: { work: true, personal: true },
+  loading: false,
+  setCategoryFilter: jest.fn(),
+  toggleCategoryFilter: jest.fn(),
+  getFilteredTodos: jest.fn(),
+  addCategory: jest.fn(() => Promise.resolve({ 
+    id: 'new-category', 
+    name: 'New Category', 
+    color: '#10b981', 
+    createdAt: new Date() 
+  })),
   updateCategory: jest.fn(() => Promise.resolve(true)),
   deleteCategory: jest.fn(() => Promise.resolve(true)),
+  getCategoryById: jest.fn(),
   getAvailableColors: jest.fn(() => Promise.resolve(mockAvailableColors)),
+  loadCategories: jest.fn(),
 };
 
 describe('CategoryManagement', () => {
@@ -85,10 +102,17 @@ describe('CategoryManagement', () => {
       expect(screen.getByText('개인')).toBeInTheDocument();
     });
 
-    it('should show default badge for default categories', () => {
+    it('should show last badge when only one category remains', () => {
+      // Mock categories with only one category
+      const singleCategoryMock = {
+        ...mockUseCategoriesReturn,
+        categories: [mockCategories[0]], // Only one category
+      };
+      mockedUseCategories.mockReturnValue(singleCategoryMock);
+      
       render(<CategoryManagement />);
       
-      expect(screen.getByText('기본')).toBeInTheDocument();
+      expect(screen.getByText('마지막')).toBeInTheDocument();
     });
 
     it('should display category colors correctly', () => {
@@ -104,11 +128,11 @@ describe('CategoryManagement', () => {
   });
 
   describe('category editing', () => {
-    it('should allow editing non-default category names', async () => {
+    it('should allow editing category names', async () => {
       const user = userEvent.setup();
       render(<CategoryManagement />);
       
-      // Find and click edit button for non-default category
+      // Find and click edit button for any category
       const editButtons = screen.getAllByText('수정');
       const personalEditButton = editButtons.find(button => 
         button.closest('[class*="p-3"]')?.textContent?.includes('개인')
@@ -178,17 +202,16 @@ describe('CategoryManagement', () => {
       }
     });
 
-    it('should disable edit button for default categories', () => {
+    it('should enable edit button for all categories', () => {
       render(<CategoryManagement />);
       
-      // Find edit button in the row containing default category
-      const workRow = screen.getByText('업무').closest('[class*="p-3"]');
-      const buttons = workRow?.querySelectorAll('button') || [];
-      const editButton = Array.from(buttons).find(btn => btn.textContent === '수정');
+      // Find edit button in any category row
+      const editButtons = screen.getAllByText('수정');
       
-      if (editButton) {
-        expect(editButton).toBeDisabled();
-      }
+      // All edit buttons should be enabled
+      editButtons.forEach(button => {
+        expect(button).not.toBeDisabled();
+      });
     });
 
     it('should prevent duplicate category names', async () => {
@@ -235,30 +258,34 @@ describe('CategoryManagement', () => {
       }
     });
 
-    it('should disable delete button for default categories', () => {
+    it('should disable delete button when only one category remains', () => {
+      // Mock categories with only one category
+      const singleCategoryMock = {
+        ...mockUseCategoriesReturn,
+        categories: [mockCategories[0]], // Only one category
+      };
+      mockedUseCategories.mockReturnValue(singleCategoryMock);
+      
       render(<CategoryManagement />);
       
-      // Find delete button in the row containing default category
-      const workRow = screen.getByText('업무').closest('[class*="p-3"]');
-      const buttons = workRow?.querySelectorAll('button') || [];
-      const deleteButton = Array.from(buttons).find(btn => btn.textContent === '삭제');
-      
-      if (deleteButton) {
-        expect(deleteButton).toBeDisabled();
-      }
+      // Find delete button - should be disabled
+      const deleteButton = screen.getByText('삭제');
+      expect(deleteButton).toBeDisabled();
     });
 
-    it('should show alert for default category deletion attempt', async () => {
+    it('should show alert when trying to delete the last category', async () => {
+      // Mock categories with only one category
+      const singleCategoryMock = {
+        ...mockUseCategoriesReturn,
+        categories: [mockCategories[0]], // Only one category
+      };
+      mockedUseCategories.mockReturnValue(singleCategoryMock);
+      
       render(<CategoryManagement />);
-      // This test verifies the logic, even if the button is disabled in UI
       
-      // We can test this by checking that default categories have disabled delete buttons
-      const workRow = screen.getByText('업무').closest('[class*="p-3"]');
-      const deleteButton = workRow?.querySelector('button') as HTMLButtonElement;
-      
-      if (deleteButton && deleteButton.textContent === '삭제') {
-        expect(deleteButton).toBeDisabled();
-      }
+      // Delete button should be disabled, preventing the deletion
+      const deleteButton = screen.getByText('삭제');
+      expect(deleteButton).toBeDisabled();
     });
   });
 
@@ -430,8 +457,8 @@ describe('CategoryManagement', () => {
       render(<CategoryManagement />);
       
       expect(screen.getByText('카테고리 관리 안내')).toBeInTheDocument();
-      expect(screen.getByText(/기본 카테고리.*는 수정하거나 삭제할 수 없습니다/)).toBeInTheDocument();
-      expect(screen.getByText(/카테고리를 삭제하면.*개인.*카테고리로 이동됩니다/)).toBeInTheDocument();
+      expect(screen.getByText(/최소 1개의 카테고리는 항상 유지되어야 합니다/)).toBeInTheDocument();
+      expect(screen.getByText(/카테고리를 삭제하면.*다른 카테고리로 이동됩니다/)).toBeInTheDocument();
     });
 
     it('should show correct category count limit', () => {

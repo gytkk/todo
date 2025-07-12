@@ -4,8 +4,8 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { CalendarView } from "@/components/calendar/CalendarView";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AppLayout } from "@/components/AppLayout";
-import { useCallback, Suspense } from "react";
-import { useTodoContext } from "@/contexts/AppContext";
+import { useCallback, Suspense, useEffect } from "react";
+import { useTodoContext, useCategoryContext } from "@/contexts/AppContext";
 import { useCalendar } from "@/hooks/useCalendar";
 import { PageLoading } from "@/components/ui/loading";
 import { ResponsiveContainer, ResponsiveTodoInterface } from "@/components/responsive";
@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 function HomeContent() {
   const { todos } = useTodoContext();
+  const { refreshCategories } = useCategoryContext();
   const { isAuthenticated } = useAuth();
   const {
     selectedDate,
@@ -22,6 +23,20 @@ function HomeContent() {
     closeSidebar,
     handleNavigate,
   } = useCalendar(todos);
+
+  // 카테고리 변경 이벤트 리스너
+  useEffect(() => {
+    const handleCategoryChange = async (event: Event) => {
+      const customEvent = event as CustomEvent;
+      console.log('HomePage: 카테고리 변경 감지, 새로고침 중...', customEvent.detail);
+      await refreshCategories();
+    };
+
+    window.addEventListener('categoryChanged', handleCategoryChange);
+    return () => {
+      window.removeEventListener('categoryChanged', handleCategoryChange);
+    };
+  }, [refreshCategories]);
 
   const handleCalendarClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const target = e.target as HTMLElement;

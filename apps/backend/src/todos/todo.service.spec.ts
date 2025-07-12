@@ -16,7 +16,6 @@ describe("TodoService", () => {
     id: "work",
     name: "업무",
     color: "#FF6B6B",
-    isDefault: false,
     createdAt: new Date("2023-01-01"),
   };
 
@@ -452,7 +451,6 @@ describe("TodoService", () => {
         id: "old-category",
         name: "이전 카테고리",
         color: "#000000",
-        isDefault: false,
         createdAt: new Date(),
       };
 
@@ -460,7 +458,6 @@ describe("TodoService", () => {
         id: "new-category",
         name: "새 카테고리",
         color: "#ffffff",
-        isDefault: false,
         createdAt: new Date(),
       };
 

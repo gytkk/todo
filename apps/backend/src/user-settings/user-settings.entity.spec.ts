@@ -10,7 +10,7 @@ describe("UserSettingsEntity", () => {
       expect(entity.createdAt).toBeInstanceOf(Date);
       expect(entity.updatedAt).toBeInstanceOf(Date);
       expect(entity.settings).toBeDefined();
-      expect(entity.settings.categories).toHaveLength(3); // 기본 카테고리 3개
+      expect(entity.settings.categories).toHaveLength(2); // 기본 카테고리 2개
       expect(entity.settings.theme).toBe("system");
       expect(entity.settings.language).toBe("ko");
     });
@@ -22,7 +22,6 @@ describe("UserSettingsEntity", () => {
             id: "custom-1",
             name: "커스텀",
             color: "#FF0000",
-            isDefault: false,
             createdAt: new Date(),
           },
         ],
@@ -52,16 +51,14 @@ describe("UserSettingsEntity", () => {
       const entity = new UserSettingsEntity({ userId: "user-1" });
       const categories = entity.settings.categories;
 
-      expect(categories).toHaveLength(3);
+      expect(categories).toHaveLength(2);
 
       const categoryNames = categories.map((cat) => cat.name);
       expect(categoryNames).toContain("회사");
-      expect(categoryNames).toContain("가족");
       expect(categoryNames).toContain("개인");
 
-      // 모든 기본 카테고리는 isDefault가 true여야 함
+      // 모든 기본 카테고리는 기본 데이터로 생성되어야 함
       categories.forEach((cat) => {
-        expect(cat.isDefault).toBe(true);
         expect(cat.id).toBeDefined();
         expect(cat.color).toMatch(/^#[0-9a-fA-F]{6}$/);
         expect(cat.createdAt).toBeInstanceOf(Date);
@@ -84,14 +81,13 @@ describe("UserSettingsEntity", () => {
       const entity = new UserSettingsEntity({ userId: "user-1" });
       const categories = entity.getCategories();
 
-      expect(categories).toHaveLength(3);
+      expect(categories).toHaveLength(2);
       categories.forEach((cat) => {
         expect(cat).toHaveProperty("id");
         expect(cat).toHaveProperty("name");
         expect(cat).toHaveProperty("color");
-        expect(cat).toHaveProperty("isDefault");
         expect(cat).toHaveProperty("createdAt");
-        expect(cat.isDefault).toBe(true); // 기본 카테고리들
+        // 기본 카테고리들은 기본 데이터로 생성됨
       });
     });
   });
@@ -116,7 +112,7 @@ describe("UserSettingsEntity", () => {
       expect(addedCategory).toBeDefined();
       expect(addedCategory!.name).toBe("프로젝트");
       expect(addedCategory!.color).toBe("#8B5CF6");
-      expect(addedCategory!.isDefault).toBe(false);
+      // 추가된 카테고리는 커스텀 카테고리임
       expect(addedCategory!.createdAt).toBeInstanceOf(Date);
 
       // 카테고리 필터가 true로 설정되어야 함
@@ -186,34 +182,32 @@ describe("UserSettingsEntity", () => {
       expect(updatedCategory!.color).toBe("#0000FF");
     });
 
-    it("기본 카테고리의 이름 수정을 거부해야 함", () => {
-      const defaultCategories = entity
-        .getCategories()
-        .filter((cat) => cat.isDefault);
-      const defaultCategoryId = defaultCategories[0].id;
+    it("카테고리 이름을 성공적으로 수정해야 함", () => {
+      const categories = entity.getCategories();
+      const categoryId = categories[0].id;
+      const originalName = categories[0].name;
 
-      const success = entity.updateCategory(defaultCategoryId, {
-        name: "수정된 기본 카테고리",
+      const success = entity.updateCategory(categoryId, {
+        name: "수정된 카테고리",
       });
 
-      expect(success).toBe(false);
-      const category = entity.getCategoryById(defaultCategoryId);
-      expect(category!.name).not.toBe("수정된 기본 카테고리");
+      expect(success).toBe(true);
+      const category = entity.getCategoryById(categoryId);
+      expect(category!.name).toBe("수정된 카테고리");
+      expect(category!.name).not.toBe(originalName);
     });
 
-    it("기본 카테고리의 색상은 수정할 수 있어야 함", () => {
-      const defaultCategories = entity
-        .getCategories()
-        .filter((cat) => cat.isDefault);
-      const defaultCategoryId = defaultCategories[0].id;
-      const originalName = entity.getCategoryById(defaultCategoryId)!.name;
+    it("카테고리 색상을 성공적으로 수정해야 함", () => {
+      const categories = entity.getCategories();
+      const categoryId = categories[0].id;
+      const originalName = entity.getCategoryById(categoryId)!.name;
 
-      const success = entity.updateCategory(defaultCategoryId, {
+      const success = entity.updateCategory(categoryId, {
         color: "#ABCDEF",
       });
 
       expect(success).toBe(true);
-      const category = entity.getCategoryById(defaultCategoryId);
+      const category = entity.getCategoryById(categoryId);
       expect(category!.color).toBe("#ABCDEF");
       expect(category!.name).toBe(originalName); // 이름은 유지
     });
@@ -253,18 +247,25 @@ describe("UserSettingsEntity", () => {
       );
     });
 
-    it("기본 카테고리 삭제를 거부해야 함", () => {
-      const defaultCategories = entity
-        .getCategories()
-        .filter((cat) => cat.isDefault);
-      const defaultCategoryId = defaultCategories[0].id;
-      const initialCount = entity.settings.categories.length;
+    it("마지막 카테고리 삭제를 거부해야 함", () => {
+      // 이 테스트는 beforeEach에서 customCategoryId를 추가한 상태에서 실행됨
+      // 따라서 3개의 카테고리가 있음: 기본 2개 + 커스텀 1개
+      const categories = entity.getCategories();
+      expect(categories).toHaveLength(3); // 기본 2개 + 커스텀 1개
 
-      const success = entity.deleteCategory(defaultCategoryId);
+      // 2개 삭제해서 1개만 남김
+      entity.deleteCategory(customCategoryId); // 커스텀 카테고리 삭제
+      entity.deleteCategory(categories[1].id); // 두 번째 기본 카테고리 삭제
+
+      const remainingCategories = entity.getCategories();
+      expect(remainingCategories).toHaveLength(1);
+
+      const lastCategoryId = remainingCategories[0].id;
+      const success = entity.deleteCategory(lastCategoryId);
 
       expect(success).toBe(false);
-      expect(entity.settings.categories).toHaveLength(initialCount);
-      expect(entity.getCategoryById(defaultCategoryId)).toBeDefined();
+      expect(entity.settings.categories).toHaveLength(1);
+      expect(entity.getCategoryById(lastCategoryId)).toBeDefined();
     });
 
     it("존재하지 않는 카테고리 삭제 시 false를 반환해야 함", () => {
@@ -392,7 +393,6 @@ describe("UserSettingsEntity", () => {
             id: "new-cat",
             name: "새 카테고리",
             color: "#123456",
-            isDefault: false,
             createdAt: new Date(),
           },
         ],
@@ -413,7 +413,7 @@ describe("UserSettingsEntity", () => {
 
       expect(entity.userId).toBe("user-123");
       expect(entity.id).toBeDefined();
-      expect(entity.settings.categories).toHaveLength(3);
+      expect(entity.settings.categories).toHaveLength(2);
       expect(entity.settings.theme).toBe("system");
       expect(entity.settings.language).toBe("ko");
       expect(entity.createdAt).toBeInstanceOf(Date);

@@ -73,7 +73,6 @@ export class UserSettingsService {
       id: newCategory!.id,
       name: newCategory!.name,
       color: newCategory!.color,
-      isDefault: newCategory!.isDefault,
       createdAt: newCategory!.createdAt,
     };
   }
@@ -120,9 +119,7 @@ export class UserSettingsService {
 
     const success = settings.updateCategory(categoryId, updates);
     if (!success) {
-      throw new BadRequestException(
-        "Cannot update default category properties",
-      );
+      throw new BadRequestException("Failed to update category");
     }
 
     await this.userSettingsRepository.update(userId, settings);
@@ -132,7 +129,6 @@ export class UserSettingsService {
       id: updatedCategory!.id,
       name: updatedCategory!.name,
       color: updatedCategory!.color,
-      isDefault: updatedCategory!.isDefault,
       createdAt: updatedCategory!.createdAt,
     };
   }
@@ -149,13 +145,11 @@ export class UserSettingsService {
       throw new NotFoundException("Category not found");
     }
 
-    if (category.isDefault) {
-      throw new BadRequestException("Cannot delete default category");
-    }
-
     const success = settings.deleteCategory(categoryId);
     if (!success) {
-      throw new BadRequestException("Failed to delete category");
+      throw new BadRequestException(
+        "Cannot delete the last category. At least one category must remain.",
+      );
     }
 
     await this.userSettingsRepository.update(userId, settings);
@@ -183,7 +177,6 @@ export class UserSettingsService {
       id: category.id,
       name: category.name,
       color: category.color,
-      isDefault: category.isDefault,
       createdAt: category.createdAt,
     };
   }

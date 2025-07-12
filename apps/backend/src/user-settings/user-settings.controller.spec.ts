@@ -27,16 +27,14 @@ describe("UserSettingsController", () => {
     categories: [
       {
         id: "cat-1",
-        name: "회사",
+        name: "개인",
         color: "#3b82f6",
-        isDefault: true,
         createdAt: new Date("2023-01-01"),
       },
       {
         id: "cat-2",
-        name: "가족",
+        name: "회사",
         color: "#10b981",
-        isDefault: true,
         createdAt: new Date("2023-01-01"),
       },
     ],
@@ -48,16 +46,14 @@ describe("UserSettingsController", () => {
   const mockCategories: TodoCategory[] = [
     {
       id: "cat-1",
-      name: "회사",
+      name: "개인",
       color: "#3b82f6",
-      isDefault: true,
       createdAt: new Date("2023-01-01"),
     },
     {
       id: "cat-2",
-      name: "가족",
+      name: "회사",
       color: "#10b981",
-      isDefault: true,
       createdAt: new Date("2023-01-01"),
     },
   ];
@@ -161,7 +157,6 @@ describe("UserSettingsController", () => {
         id: "cat-3",
         name: "프로젝트",
         color: "#8b5cf6",
-        isDefault: false,
         createdAt: new Date(),
       };
 
@@ -238,7 +233,6 @@ describe("UserSettingsController", () => {
         id: categoryId,
         name: "업무",
         color: "#ff0000",
-        isDefault: true,
         createdAt: new Date("2023-01-01"),
       };
 

@@ -16,7 +16,6 @@ const mockCategory1: TodoCategory = {
   id: 'work',
   name: '업무',
   color: '#3b82f6',
-  isDefault: false,
   createdAt: new Date('2024-01-01'),
 };
 
@@ -24,7 +23,6 @@ const mockCategory2: TodoCategory = {
   id: 'personal',
   name: '개인',
   color: '#ef4444',
-  isDefault: false,
   createdAt: new Date('2024-01-01'),
 };
 

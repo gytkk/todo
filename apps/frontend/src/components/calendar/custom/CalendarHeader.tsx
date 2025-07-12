@@ -9,6 +9,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
   view,
   onNavigate,
   onViewChange,
+  onDateSelect,
 }) => {
   const handlePrevious = () => {
     let newDate: Date;
@@ -43,7 +44,9 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
   };
 
   const handleToday = () => {
-    onNavigate(new Date());
+    const today = new Date();
+    onNavigate(today);
+    onDateSelect(today); // 오늘 날짜 선택 및 사이드바 열기
   };
 
   const getTitle = () => {
@@ -68,7 +71,8 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
     }
   };
 
-  const isToday = isSameDay(currentDate, new Date());
+  // 오늘 버튼은 정확히 오늘 날짜를 보고 있을 때만 비활성화
+  const isCurrentlyToday = isSameDay(currentDate, new Date());
 
   return (
     <CalendarCommonHeader
@@ -79,7 +83,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
       onToday={handleToday}
       title={getTitle()}
       navigationLabels={getNavigationLabel()}
-      isTodayDisabled={isToday}
+      isTodayDisabled={isCurrentlyToday}
     />
   );
 };

@@ -28,6 +28,7 @@ interface SidebarProps {
 export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isVisible, setIsVisible] = useState(true);
+  const [isFullyExpanded, setIsFullyExpanded] = useState(true);
   const { categories, categoryFilter, toggleCategoryFilter } = useCategoryContext();
   const { user, isAuthenticated, logout } = useAuth();
   const pathname = usePathname();
@@ -71,6 +72,20 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
     }
   };
 
+  // 사이드바 확장 애니메이션 완료 상태 관리
+  useEffect(() => {
+    if (isExpanded) {
+      // 확장될 때: 애니메이션 완료 후 텍스트 표시
+      const timer = setTimeout(() => {
+        setIsFullyExpanded(true);
+      }, 300); // 사이드바 transition duration과 동일
+      return () => clearTimeout(timer);
+    } else {
+      // 축소될 때: 즉시 텍스트 숨김
+      setIsFullyExpanded(false);
+    }
+  }, [isExpanded]);
+
   // 초기 상태 전달
   useEffect(() => {
     onSidebarStateChange?.(isExpanded, isVisible);
@@ -93,7 +108,7 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
       {/* 사이드바 */}
       <div 
         className={cn(
-          "fixed left-0 top-0 h-screen bg-white border-r border-gray-100 shadow-sm transition-all duration-300 ease-in-out z-40 flex flex-col",
+          "fixed left-0 top-0 h-screen bg-white border-r border-gray-100 shadow-sm transition-all duration-300 ease-in-out z-40 flex flex-col overflow-hidden",
           isVisible ? "translate-x-0" : "-translate-x-full",
           isExpanded ? "w-64" : "w-16"
         )}
@@ -106,21 +121,21 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
       >
         {/* 헤더 */}
         <div className="flex items-center justify-between h-16 px-4 border-b border-gray-100">
-          {isExpanded && (
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+          {isFullyExpanded && (
+            <div className="flex items-center gap-3 overflow-hidden">
+              <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
                 <User className="h-4 w-4 text-gray-500" />
               </div>
-              <div className="text-sm">
+              <div className="text-sm overflow-hidden">
                 {isAuthenticated ? (
-                  <div>
-                    <div className="font-medium text-gray-900">
+                  <div className="overflow-hidden">
+                    <div className="font-medium text-gray-900 truncate">
                       {user?.name || user?.email}
                     </div>
-                    <div className="text-xs text-gray-500">{user?.email}</div>
+                    <div className="text-xs text-gray-500 truncate">{user?.email}</div>
                   </div>
                 ) : (
-                  <div className="text-gray-500 italic">로그인이 필요합니다</div>
+                  <div className="text-gray-500 italic truncate">로그인이 필요합니다</div>
                 )}
               </div>
             </div>
@@ -153,11 +168,11 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
                       !isExpanded && "justify-center px-0"
                     )}
                   >
-                    <Icon className={cn("h-5 w-5", isExpanded && "mr-3")} />
-                    {isExpanded && (
-                      <div className="flex flex-col items-start">
-                        <span className="font-medium text-sm">{item.name}</span>
-                        <span className="text-xs text-gray-400">로그인 필요</span>
+                    <Icon className={cn("h-5 w-5", isFullyExpanded && "mr-3")} />
+                    {isFullyExpanded && (
+                      <div className="flex flex-col items-start overflow-hidden">
+                        <span className="font-medium text-sm truncate">{item.name}</span>
+                        <span className="text-xs text-gray-400 truncate">로그인 필요</span>
                       </div>
                     )}
                   </Button>
@@ -180,8 +195,8 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
                     }
                   }}
                 >
-                  <Icon className={cn("h-5 w-5", isExpanded && "mr-3")} />
-                  {isExpanded && (
+                  <Icon className={cn("h-5 w-5", isFullyExpanded && "mr-3")} />
+                  {isFullyExpanded && (
                     <div className="flex flex-col items-start">
                       <span className="font-medium text-sm">{item.name}</span>
                     </div>
@@ -193,7 +208,7 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
         </div>
 
         {/* 카테고리 필터 - 홈 페이지에서만 표시, 인증된 사용자만 */}
-        {isExpanded && pathname === "/" && isAuthenticated && (
+        {isFullyExpanded && pathname === "/" && isAuthenticated && (
           <div className="flex-1 overflow-y-auto scrollbar-thin">
             <CategoryFilter
               categories={categories}
@@ -204,8 +219,8 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
         )}
 
         {/* 미인증 사용자를 위한 안내 메시지 */}
-        {isExpanded && !isAuthenticated && (
-          <div className="flex-1 p-4">
+        {isFullyExpanded && !isAuthenticated && (
+          <div className="flex-1 p-4 overflow-hidden">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
               <div className="text-blue-600 mb-2">
                 <LogIn className="h-6 w-6 mx-auto" />
@@ -227,8 +242,8 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
                 !isExpanded && "justify-center px-0"
               )}
             >
-              <LogOut className={cn("h-5 w-5", isExpanded && "mr-3")} />
-              {isExpanded && "로그아웃"}
+              <LogOut className={cn("h-5 w-5", isFullyExpanded && "mr-3")} />
+              {isFullyExpanded && "로그아웃"}
             </Button>
           ) : (
             <Link href="/login">
@@ -239,8 +254,8 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
                   !isExpanded && "justify-center px-0"
                 )}
               >
-                <LogIn className={cn("h-5 w-5", isExpanded && "mr-3")} />
-                {isExpanded && "로그인"}
+                <LogIn className={cn("h-5 w-5", isFullyExpanded && "mr-3")} />
+                {isFullyExpanded && "로그인"}
               </Button>
             </Link>
           )}

@@ -44,7 +44,7 @@ async function bootstrap() {
   // Swagger 설정
   const config = new DocumentBuilder()
     .setTitle("Todo Calendar API")
-    .setDescription("Korean calendar-based todo application API")
+    .setDescription("Calendar-based todo application API")
     .setVersion("1.0")
     .addTag("auth", "Authentication endpoints")
     .addTag("users", "User management endpoints")
@@ -57,7 +57,7 @@ async function bootstrap() {
         description: "Enter JWT token",
         in: "header",
       },
-      "JWT-auth", // This name here is important for matching up with @ApiBearerAuth() in your controller!
+      "JWT-auth",
     )
     .build();
 

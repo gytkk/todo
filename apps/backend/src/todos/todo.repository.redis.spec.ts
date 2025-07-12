@@ -22,7 +22,6 @@ describe("TodoRepository (Redis)", () => {
     id: "category-1",
     name: "일반",
     color: "#3B82F6",
-    isDefault: true,
     createdAt: new Date("2023-01-01"),
   };
 

@@ -24,6 +24,7 @@ export const useCalendar = (todos: TodoItem[]) => {
 
   const handleDateSelect = useCallback((date: Date) => {
     setSelectedDate(date);
+    setCurrentDate(date); // 선택한 날짜로 currentDate도 업데이트
     setIsSidebarOpen(true);
   }, []);
 

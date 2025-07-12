@@ -2,7 +2,6 @@ import {
   IsString,
   IsNotEmpty,
   IsOptional,
-  IsBoolean,
   IsDateString,
   Matches,
 } from "class-validator";
@@ -42,13 +41,6 @@ export class TodoCategoryDto {
   @IsOptional()
   @IsString()
   icon?: string;
-
-  @ApiProperty({
-    description: "기본 카테고리 여부",
-    example: true,
-  })
-  @IsBoolean()
-  isDefault: boolean;
 
   @ApiProperty({
     description: "생성 날짜 (ISO 8601 형식)",

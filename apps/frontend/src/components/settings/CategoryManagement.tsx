@@ -12,10 +12,12 @@ import {
 } from "@calendar-todo/ui";
 import { Palette } from 'lucide-react';
 import { useCategories } from '../../hooks/useCategories';
+import { useCategoryContext } from '@/contexts/AppContext';
 import { TodoCategory } from '@calendar-todo/shared-types';
 
 export const CategoryManagement: React.FC = () => {
   const { categories, addCategory, updateCategory, deleteCategory } = useCategories();
+  const { refreshCategories } = useCategoryContext();
   const [newCategoryName, setNewCategoryName] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
@@ -51,18 +53,39 @@ export const CategoryManagement: React.FC = () => {
       if (result) {
         setNewCategoryName('');
         setSelectedColor('');
+        
+        // Context를 통해 전체 앱의 카테고리 상태를 즉시 새로고침
+        await refreshCategories();
+        
+        // 커스텀 이벤트로 다른 컴포넌트들에게 카테고리 변경 알림
+        window.dispatchEvent(new CustomEvent('categoryChanged', { 
+          detail: { type: 'added', category: result } 
+        }));
+        
+        console.log('새 카테고리가 추가되어 캘린더에 반영됩니다:', result.name);
       }
     }
   };
 
   const handleDeleteCategory = async (categoryId: string) => {
-    const category = categories.find(cat => cat.id === categoryId);
-    if (category?.isDefault) {
-      alert('기본 카테고리는 삭제할 수 없습니다.');
+    // 최소 1개 카테고리는 유지해야 함
+    if (categories.length <= 1) {
+      alert('최소 1개의 카테고리는 유지해야 합니다.');
       return;
     }
     
-    await deleteCategory(categoryId, []);
+    const result = await deleteCategory(categoryId, []);
+    if (result) {
+      // Context를 통해 전체 앱의 카테고리 상태를 즉시 새로고침
+      await refreshCategories();
+      
+      // 커스텀 이벤트로 다른 컴포넌트들에게 카테고리 변경 알림
+      window.dispatchEvent(new CustomEvent('categoryChanged', { 
+        detail: { type: 'deleted', categoryId } 
+      }));
+      
+      console.log('카테고리가 삭제되어 캘린더에서 제거됩니다:', categoryId);
+    }
   };
 
   const startEdit = (category: TodoCategory) => {
@@ -87,6 +110,16 @@ export const CategoryManagement: React.FC = () => {
       if (result) {
         setEditingCategory(null);
         setEditName('');
+        
+        // Context를 통해 전체 앱의 카테고리 상태를 즉시 새로고침
+        await refreshCategories();
+        
+        // 커스텀 이벤트로 다른 컴포넌트들에게 카테고리 변경 알림
+        window.dispatchEvent(new CustomEvent('categoryChanged', { 
+          detail: { type: 'updated', categoryId: editingCategory, name: editName.trim() } 
+        }));
+        
+        console.log('카테고리가 수정되어 캘린더에 반영됩니다:', editingCategory);
       }
     }
   };
@@ -135,8 +168,8 @@ export const CategoryManagement: React.FC = () => {
                   ) : (
                     <span className="font-medium">{category.name}</span>
                   )}
-                  {category.isDefault && (
-                    <Badge variant="secondary" className="text-xs">기본</Badge>
+                  {categories.length <= 1 && (
+                    <Badge variant="secondary" className="text-xs">마지막</Badge>
                   )}
                 </div>
 
@@ -152,7 +185,6 @@ export const CategoryManagement: React.FC = () => {
                         size="sm"
                         variant="outline"
                         onClick={() => startEdit(category)}
-                        disabled={category.isDefault}
                       >
                         수정
                       </Button>
@@ -160,7 +192,7 @@ export const CategoryManagement: React.FC = () => {
                         size="sm"
                         variant="destructive"
                         onClick={() => handleDeleteCategory(category.id)}
-                        disabled={category.isDefault}
+                        disabled={categories.length <= 1}
                       >
                         삭제
                       </Button>
@@ -229,9 +261,10 @@ export const CategoryManagement: React.FC = () => {
         <div className="mt-6 p-4 bg-blue-50 rounded-lg">
           <h4 className="text-sm font-medium text-blue-900 mb-2">카테고리 관리 안내</h4>
           <ul className="text-sm text-blue-800 space-y-1">
-            <li>• 기본 카테고리(회사, 가족, 개인)는 수정하거나 삭제할 수 없습니다.</li>
-            <li>• 카테고리를 삭제하면 해당 카테고리의 할일들은 &quot;개인&quot; 카테고리로 이동됩니다.</li>
-            <li>• 최대 {categories.length + availableColors.length}개의 카테고리를 만들 수 있습니다.</li>
+            <li>• 최소 1개의 카테고리는 항상 유지되어야 합니다.</li>
+            <li>• 카테고리를 삭제하면 해당 카테고리의 할일들은 다른 카테고리로 이동됩니다.</li>
+            <li>• 최대 {availableColors.length}개의 카테고리를 만들 수 있습니다.</li>
+            <li>• 총 {availableColors.length}가지 색상을 사용할 수 있습니다.</li>
           </ul>
         </div>
         </div>

@@ -14,30 +14,20 @@ describe("UserSettingsService", () => {
       categories: [
         {
           id: "cat-1",
-          name: "회사",
+          name: "개인",
           color: "#3b82f6",
-          isDefault: true,
           createdAt: new Date("2023-01-01"),
         },
         {
           id: "cat-2",
-          name: "가족",
+          name: "회사",
           color: "#10b981",
-          isDefault: true,
-          createdAt: new Date("2023-01-01"),
-        },
-        {
-          id: "cat-3",
-          name: "개인",
-          color: "#f59e0b",
-          isDefault: true,
           createdAt: new Date("2023-01-01"),
         },
       ],
       categoryFilter: {
         "cat-1": true,
         "cat-2": true,
-        "cat-3": true,
       },
       theme: "system",
       language: "ko",
@@ -108,27 +98,18 @@ describe("UserSettingsService", () => {
       const result = await service.getUserCategories("user-1");
 
       expect(mockRepository.findOrCreate).toHaveBeenCalledWith("user-1");
-      expect(result).toHaveLength(3);
+      expect(result).toHaveLength(2);
       expect(result).toEqual([
         {
           id: "cat-1",
-          name: "회사",
+          name: "개인",
           color: "#3b82f6",
-          isDefault: true,
           createdAt: new Date("2023-01-01"),
         },
         {
           id: "cat-2",
-          name: "가족",
+          name: "회사",
           color: "#10b981",
-          isDefault: true,
-          createdAt: new Date("2023-01-01"),
-        },
-        {
-          id: "cat-3",
-          name: "개인",
-          color: "#f59e0b",
-          isDefault: true,
           createdAt: new Date("2023-01-01"),
         },
       ]);
@@ -159,7 +140,6 @@ describe("UserSettingsService", () => {
         id: expect.any(String) as string,
         name: "프로젝트",
         color: "#8b5cf6",
-        isDefault: false,
         createdAt: expect.any(Date) as Date,
       });
     });
@@ -194,7 +174,6 @@ describe("UserSettingsService", () => {
             id: `cat-${i + 1}`,
             name: `카테고리 ${i + 1}`,
             color: `#${i.toString(16).padStart(6, "0")}`,
-            isDefault: i < 3,
             createdAt: new Date(),
           })),
         },
@@ -226,9 +205,8 @@ describe("UserSettingsService", () => {
       );
       expect(result).toEqual({
         id: "cat-1",
-        name: "회사",
+        name: "개인",
         color: "#ff0000",
-        isDefault: true,
         createdAt: new Date("2023-01-01"),
       });
     });
@@ -245,7 +223,7 @@ describe("UserSettingsService", () => {
       mockRepository.findOrCreate.mockResolvedValue(mockUserSettingsEntity);
 
       await expect(
-        service.updateCategory("user-1", "cat-1", { name: "가족" }),
+        service.updateCategory("user-1", "cat-1", { name: "회사" }),
       ).rejects.toThrow(
         new BadRequestException("Category name already exists"),
       );
@@ -261,8 +239,8 @@ describe("UserSettingsService", () => {
       );
     });
 
-    it("기본 카테고리 이름 수정 시도 시 BadRequestException을 던져야 함", async () => {
-      // UserSettingsEntity.updateCategory에서 기본 카테고리 이름 수정 시 false 반환
+    it("카테고리 업데이트 실패 시 BadRequestException을 던져야 함", async () => {
+      // UserSettingsEntity.updateCategory에서 false 반환하도록 모킹
       const entitySpy = jest
         .spyOn(mockUserSettingsEntity, "updateCategory")
         .mockReturnValue(false);
@@ -270,9 +248,7 @@ describe("UserSettingsService", () => {
 
       await expect(
         service.updateCategory("user-1", "cat-1", { name: "새 이름" }),
-      ).rejects.toThrow(
-        new BadRequestException("Cannot update default category properties"),
-      );
+      ).rejects.toThrow(new BadRequestException("Failed to update category"));
 
       entitySpy.mockRestore();
     });
@@ -290,7 +266,6 @@ describe("UserSettingsService", () => {
               id: "custom-1",
               name: "커스텀",
               color: "#ff0000",
-              isDefault: false,
               createdAt: new Date(),
             },
           ],
@@ -318,11 +293,20 @@ describe("UserSettingsService", () => {
       ).rejects.toThrow(new NotFoundException("Category not found"));
     });
 
-    it("기본 카테고리 삭제 시도 시 BadRequestException을 던져야 함", async () => {
-      mockRepository.findOrCreate.mockResolvedValue(mockUserSettingsEntity);
+    it("마지막 카테고리 삭제 시도 시 BadRequestException을 던져야 함", async () => {
+      const singleCategoryEntity = new UserSettingsEntity({
+        ...mockUserSettingsEntity,
+        settings: {
+          ...mockUserSettingsEntity.settings,
+          categories: [mockUserSettingsEntity.settings.categories[0]],
+        },
+      });
+      mockRepository.findOrCreate.mockResolvedValue(singleCategoryEntity);
 
       await expect(service.deleteCategory("user-1", "cat-1")).rejects.toThrow(
-        new BadRequestException("Cannot delete default category"),
+        new BadRequestException(
+          "Cannot delete the last category. At least one category must remain.",
+        ),
       );
     });
 
@@ -337,7 +321,6 @@ describe("UserSettingsService", () => {
               id: "custom-1",
               name: "커스텀",
               color: "#ff0000",
-              isDefault: false,
               createdAt: new Date(),
             },
           ],
@@ -352,7 +335,11 @@ describe("UserSettingsService", () => {
 
       await expect(
         service.deleteCategory("user-1", "custom-1"),
-      ).rejects.toThrow(new BadRequestException("Failed to delete category"));
+      ).rejects.toThrow(
+        new BadRequestException(
+          "Cannot delete the last category. At least one category must remain.",
+        ),
+      );
 
       entitySpy.mockRestore();
     });
@@ -360,6 +347,12 @@ describe("UserSettingsService", () => {
 
   describe("getAvailableColors", () => {
     it("사용 가능한 색상 목록을 반환해야 함", async () => {
+      // Mock the getAvailableColors method instead of using the entity directly
+      const mockAvailableColors = ["#f97316", "#ef4444", "#8b5cf6", "#ec4899"];
+      const entitySpy = jest
+        .spyOn(mockUserSettingsEntity, "getAvailableColors")
+        .mockReturnValue(mockAvailableColors);
+
       mockRepository.findOrCreate.mockResolvedValue(mockUserSettingsEntity);
 
       const result = await service.getAvailableColors("user-1");
@@ -371,12 +364,25 @@ describe("UserSettingsService", () => {
       // 현재 사용 중인 색상들은 포함되지 않아야 함
       expect(result).not.toContain("#3b82f6");
       expect(result).not.toContain("#10b981");
-      expect(result).not.toContain("#f59e0b");
+
+      entitySpy.mockRestore();
     });
   });
 
   describe("getCategoryById", () => {
     it("존재하는 카테고리를 성공적으로 반환해야 함", async () => {
+      // Mock the getCategoryById to return the expected category
+      const mockCategory = {
+        id: "cat-1",
+        name: "개인",
+        color: "#3b82f6",
+        createdAt: new Date("2023-01-01"),
+      };
+
+      const entitySpy = jest
+        .spyOn(mockUserSettingsEntity, "getCategoryById")
+        .mockReturnValue(mockCategory);
+
       mockRepository.findOrCreate.mockResolvedValue(mockUserSettingsEntity);
 
       const result = await service.getCategoryById("user-1", "cat-1");
@@ -384,11 +390,12 @@ describe("UserSettingsService", () => {
       expect(mockRepository.findOrCreate).toHaveBeenCalledWith("user-1");
       expect(result).toEqual({
         id: "cat-1",
-        name: "회사",
-        color: expect.any(String) as string, // 색상이 다를 수 있음
-        isDefault: true,
+        name: "개인",
+        color: "#3b82f6",
         createdAt: new Date("2023-01-01"),
       });
+
+      entitySpy.mockRestore();
     });
 
     it("존재하지 않는 카테고리에 대해 null을 반환해야 함", async () => {
@@ -425,7 +432,6 @@ describe("UserSettingsService", () => {
       expect(typeof result).toBe("object");
       expect(result).toHaveProperty("cat-1");
       expect(result).toHaveProperty("cat-2");
-      expect(result).toHaveProperty("cat-3");
     });
   });
 });

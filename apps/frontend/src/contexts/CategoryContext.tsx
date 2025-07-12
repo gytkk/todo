@@ -18,6 +18,7 @@ interface CategoryContextType {
   getCategoryById: (id: string) => TodoCategory | undefined;
   getAvailableColors: () => Promise<string[]>;
   loadCategories: () => Promise<void>;
+  refreshCategories: () => Promise<void>; // 강제 새로고침 함수 추가
 }
 
 const CategoryContext = createContext<CategoryContextType | undefined>(undefined);
@@ -29,8 +30,14 @@ interface CategoryProviderProps {
 export function CategoryProvider({ children }: CategoryProviderProps) {
   const categoryHook = useCategories();
 
+  // 강제 새로고침 함수
+  const refreshCategories = async () => {
+    await categoryHook.loadCategories();
+  };
+
   const contextValue: CategoryContextType = {
     ...categoryHook,
+    refreshCategories,
   };
 
   return (

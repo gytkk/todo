@@ -15,14 +15,11 @@ export const useCategories = () => {
   // 카테고리 목록 로드
   const loadCategories = useCallback(async () => {
     if (!isAuthenticated) {
-      // 미인증 사용자에게는 '개인', '회사' 카테고리만 제공
-      const defaultCategories = DEFAULT_CATEGORIES.filter(cat => 
-        cat.id === 'personal' || cat.id === 'work'
-      );
-      setCategories(defaultCategories);
+      // 미인증 사용자에게는 기본 카테고리 2개 제공
+      setCategories(DEFAULT_CATEGORIES);
       
       // 기본 카테고리 필터 설정 (모두 활성화)
-      const defaultFilter = defaultCategories.reduce((filter, cat) => {
+      const defaultFilter = DEFAULT_CATEGORIES.reduce((filter, cat) => {
         filter[cat.id] = true;
         return filter;
       }, {} as CategoryFilter);
@@ -61,6 +58,7 @@ export const useCategories = () => {
         const service = CategoryService.getInstance();
         const newCategory = await service.addCategory(name, color);
         if (newCategory) {
+          // 즉시 로컬 상태 업데이트
           setCategories(prev => [...prev, newCategory]);
           
           // 새 카테고리는 기본적으로 필터에 포함
@@ -71,6 +69,11 @@ export const useCategories = () => {
               [newCategory.id]: true
             }));
           }
+          
+          // 서버에서 최신 상태를 다시 가져와서 동기화 확인
+          setTimeout(() => {
+            loadCategories();
+          }, 100);
           
           return newCategory;
         }
@@ -113,8 +116,8 @@ export const useCategories = () => {
     async (id: string, todos: TodoItem[]): Promise<boolean> => {
       const category = categories.find(cat => cat.id === id);
 
-      // 기본 카테고리는 삭제 불가
-      if (!category || category.isDefault) {
+      // 최소 1개 카테고리는 유지해야 함
+      if (!category || categories.length <= 1) {
         return false;
       }
 
@@ -122,7 +125,7 @@ export const useCategories = () => {
       const relatedTodos = todos.filter(todo => todo.category.id === id);
       if (relatedTodos.length > 0) {
         const confirmed = window.confirm(
-          `"${category.name}" 카테고리에 ${relatedTodos.length}개의 할일이 있습니다. 정말 삭제하시겠습니까?\n관련된 할일들은 "개인" 카테고리로 이동됩니다.`
+          `"${category.name}" 카테고리에 ${relatedTodos.length}개의 할일이 있습니다. 정말 삭제하시겠습니까?\n관련된 할일들은 다른 카테고리로 이동됩니다.`
         );
         if (!confirmed) {
           return false;

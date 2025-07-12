@@ -26,7 +26,8 @@ export const DailyView: React.FC<DailyViewProps> = ({
   const {
     categories,
     categoryFilter,
-    getFilteredTodos
+    getFilteredTodos,
+    refreshCategories
   } = useCategoryContext();
 
   // 카테고리 필터가 적용된 할일들
@@ -49,6 +50,20 @@ export const DailyView: React.FC<DailyViewProps> = ({
       onDateChange(selectedDate);
     }
   }, [selectedDate, onDateChange]);
+
+  // 카테고리 변경 이벤트 리스너
+  useEffect(() => {
+    const handleCategoryChange = async (event: Event) => {
+      const customEvent = event as CustomEvent;
+      console.log('DailyView: 카테고리 변경 감지, 새로고침 중...', customEvent.detail);
+      await refreshCategories();
+    };
+
+    window.addEventListener('categoryChanged', handleCategoryChange);
+    return () => {
+      window.removeEventListener('categoryChanged', handleCategoryChange);
+    };
+  }, [refreshCategories]);
 
   // 키보드 단축키 처리
   useEffect(() => {

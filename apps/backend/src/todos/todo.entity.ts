@@ -37,7 +37,6 @@ export class TodoEntity {
         id: this.categoryId,
         name: "Unknown",
         color: "#64748b",
-        isDefault: false,
         createdAt: new Date(),
       },
       userId: this.userId,

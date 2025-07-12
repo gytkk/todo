@@ -6,10 +6,19 @@ interface ApiResponse<T = unknown> {
 
 export class BaseApiClient {
   protected handle401Error(): void {
-    console.log('토큰 만료 또는 잘못된 토큰, 로컬 스토리지 정리');
+    console.log('토큰 만료 또는 잘못된 토큰, 스토리지 정리');
+    // localStorage와 sessionStorage 모두 정리
     localStorage.removeItem('auth_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_data');
+    localStorage.removeItem('remember_me');
+    sessionStorage.removeItem('auth_token');
+    sessionStorage.removeItem('refresh_token');
+    sessionStorage.removeItem('user_data');
+    sessionStorage.removeItem('remember_me');
+    
+    // 쿠키도 정리
+    document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
     
     // 새로고침 대신 로그인 페이지로 리다이렉트
     if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
@@ -18,7 +27,9 @@ export class BaseApiClient {
   }
 
   protected getAuthHeaders(): Record<string, string> {
-    const token = localStorage.getItem('auth_token');
+    // localStorage와 sessionStorage 모두 확인 (AuthContext와 일치)
+    const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+    
     return {
       'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` }),

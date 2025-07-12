@@ -29,7 +29,6 @@ describe("TodoController", () => {
     id: "work",
     name: "업무",
     color: "#FF6B6B",
-    isDefault: false,
     createdAt: new Date("2023-01-01"),
   };
 

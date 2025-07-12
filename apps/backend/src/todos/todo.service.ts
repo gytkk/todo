@@ -27,7 +27,6 @@ export class TodoService {
       name: categoryDto.name,
       color: categoryDto.color,
       icon: categoryDto.icon,
-      isDefault: categoryDto.isDefault,
       createdAt: new Date(categoryDto.createdAt),
     };
   }
@@ -263,7 +262,6 @@ export class TodoService {
         name: todoData.category.name,
         color: todoData.category.color,
         icon: todoData.category.icon,
-        isDefault: todoData.category.isDefault,
         createdAt: todoData.category.createdAt.toISOString(),
       };
 

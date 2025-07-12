@@ -3,6 +3,8 @@
 import { Button } from "@calendar-todo/ui";
 import { TodoItem as TodoItemType } from '@calendar-todo/shared-types';
 import { memo, useCallback } from 'react';
+import { getCategoryBackgroundColor } from '@/utils/colorUtils';
+import { X } from 'lucide-react';
 
 interface TodoItemProps {
   todo: TodoItemType;
@@ -19,13 +21,22 @@ function TodoItemComponent({ todo, onToggle, onDelete }: TodoItemProps) {
     onDelete(todo.id);
   }, [todo.id, onDelete]);
 
+  // Get category background color
+  const categoryBackgroundColor = getCategoryBackgroundColor(
+    todo.category.color, 
+    todo.completed
+  );
+
   return (
     <div
-      className={`flex items-center gap-3 p-3 rounded-lg border ${
+      className={`flex items-center gap-3 p-2 rounded-lg border ${
         todo.completed
-          ? "bg-gray-50 border-gray-100"
-          : "bg-white border-gray-200"
+          ? "border-gray-100"
+          : "border-gray-200"
       }`}
+      style={{
+        backgroundColor: categoryBackgroundColor
+      }}
     >
       <input
         type="checkbox"
@@ -43,12 +54,12 @@ function TodoItemComponent({ todo, onToggle, onDelete }: TodoItemProps) {
         {todo.title}
       </span>
       <Button
-        variant="outline"
+        variant="ghost"
         size="sm"
         onClick={handleDelete}
-        className="text-gray-500 hover:text-gray-700"
+        className="h-8 w-8 p-0 text-gray-400 hover:text-red-500 hover:bg-red-50"
       >
-        삭제
+        <X className="h-4 w-4" />
       </Button>
     </div>
   );

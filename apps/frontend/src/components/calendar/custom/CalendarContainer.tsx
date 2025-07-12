@@ -34,6 +34,7 @@ export const CalendarContainer: React.FC<CalendarProps> = ({
         view={view}
         onNavigate={handleNavigate}
         onViewChange={handleViewChange}
+        onDateSelect={handleDateSelect}
       />
 
       <CalendarGrid

@@ -28,6 +28,11 @@ Object.defineProperty(window, 'alert', {
 
 // Mock the hooks
 jest.mock('../../hooks/useCategories');
+jest.mock('../../contexts/AppContext', () => ({
+  useCategoryContext: () => ({
+    refreshCategories: jest.fn(),
+  }),
+}));
 
 import { useCategories } from '../../hooks/useCategories';
 
@@ -39,14 +44,12 @@ const mockCategories: TodoCategory[] = [
     id: 'work',
     name: '업무',
     color: '#3b82f6',
-    isDefault: true,
     createdAt: new Date('2024-01-01'),
   },
   {
     id: 'personal',
     name: '개인',
     color: '#ef4444',
-    isDefault: false,
     createdAt: new Date('2024-01-01'),
   },
 ];
@@ -55,6 +58,7 @@ const mockCategories: TodoCategory[] = [
 const mockUseCategoriesReturn = {
   categories: mockCategories,
   categoryFilter: { work: true, personal: true },
+  loading: false,
   setCategoryFilter: jest.fn(),
   toggleCategoryFilter: jest.fn(),
   getFilteredTodos: jest.fn((todos: TodoItem[]) => todos),
@@ -62,7 +66,8 @@ const mockUseCategoriesReturn = {
   updateCategory: jest.fn(),
   deleteCategory: jest.fn(),
   getCategoryById: jest.fn(),
-  getAvailableColors: jest.fn(() => ['#10b981', '#f59e0b']),
+  getAvailableColors: jest.fn(() => Promise.resolve(['#10b981', '#f59e0b'])),
+  loadCategories: jest.fn(),
 };
 
 
@@ -88,7 +93,8 @@ describe('Category Color Integration Flow', () => {
       
       expect(screen.getByText('업무')).toBeInTheDocument();
       expect(screen.getByText('개인')).toBeInTheDocument();
-      expect(screen.getByText('기본')).toBeInTheDocument();
+      // No default badge is shown when there are 2 categories
+      expect(screen.queryByText('기본')).not.toBeInTheDocument();
     });
   });
 

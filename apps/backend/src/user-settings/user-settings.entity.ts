@@ -5,7 +5,6 @@ export interface UserCategoryData {
   id: string;
   name: string;
   color: string;
-  isDefault: boolean;
   createdAt: Date;
 }
 
@@ -52,23 +51,14 @@ export class UserSettingsEntity {
     return [
       {
         id: uuidv4(),
-        name: "회사",
-        color: "#3b82f6",
-        isDefault: true,
-        createdAt: new Date(),
-      },
-      {
-        id: uuidv4(),
-        name: "가족",
-        color: "#10b981",
-        isDefault: true,
-        createdAt: new Date(),
-      },
-      {
-        id: uuidv4(),
         name: "개인",
-        color: "#f59e0b",
-        isDefault: true,
+        color: "#3b82f6",
+        createdAt: new Date(),
+      },
+      {
+        id: uuidv4(),
+        name: "회사",
+        color: "#10b981",
         createdAt: new Date(),
       },
     ];
@@ -80,7 +70,6 @@ export class UserSettingsEntity {
       id: cat.id,
       name: cat.name,
       color: cat.color,
-      isDefault: cat.isDefault,
       createdAt: cat.createdAt,
     }));
   }
@@ -91,7 +80,6 @@ export class UserSettingsEntity {
       id: uuidv4(),
       name,
       color,
-      isDefault: false,
       createdAt: new Date(),
     };
 
@@ -114,11 +102,6 @@ export class UserSettingsEntity {
 
     const category = this.settings.categories[categoryIndex];
 
-    // Prevent updating default categories' core properties
-    if (category.isDefault && updates.name !== undefined) {
-      return false;
-    }
-
     if (updates.name !== undefined) category.name = updates.name;
     if (updates.color !== undefined) category.color = updates.color;
 
@@ -126,15 +109,17 @@ export class UserSettingsEntity {
     return true;
   }
 
-  // Delete category (non-default only)
+  // Delete category (minimum 1 category must remain)
   deleteCategory(categoryId: string): boolean {
     const categoryIndex = this.settings.categories.findIndex(
       (cat) => cat.id === categoryId,
     );
     if (categoryIndex === -1) return false;
 
-    const category = this.settings.categories[categoryIndex];
-    if (category.isDefault) return false;
+    // 최소 1개 카테고리는 유지해야 함
+    if (this.settings.categories.length <= 1) {
+      return false;
+    }
 
     this.settings.categories.splice(categoryIndex, 1);
     delete this.settings.categoryFilter[categoryId];
@@ -160,14 +145,18 @@ export class UserSettingsEntity {
   getAvailableColors(): string[] {
     const usedColors = this.settings.categories.map((cat) => cat.color);
     const allColors = [
-      "#ef4444",
-      "#8b5cf6",
-      "#06b6d4",
-      "#84cc16",
-      "#f97316",
-      "#ec4899",
-      "#64748b",
-      "#059669",
+      "#3b82f6", // Blue
+      "#10b981", // Emerald
+      "#f97316", // Orange
+      "#ef4444", // Red
+      "#8b5cf6", // Purple
+      "#ec4899", // Pink
+      "#0ea5e9", // Sky
+      "#22c55e", // Green
+      "#eab308", // Yellow
+      "#6366f1", // Indigo
+      "#f43f5e", // Rose
+      "#14b8a6", // Teal
     ];
     return allColors.filter((color) => !usedColors.includes(color));
   }

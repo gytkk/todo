@@ -18,10 +18,30 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+// 초기 상태를 즉시 결정하는 함수
+const getInitialAuthState = () => {
+  if (typeof window === 'undefined') return { user: null, isLoading: true };
+  
+  try {
+    const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+    const userData = localStorage.getItem('user_data') || sessionStorage.getItem('user_data');
+    
+    if (token && userData) {
+      const parsedUser = JSON.parse(userData);
+      return { user: parsedUser, isLoading: false };
+    }
+  } catch (error) {
+    console.error('초기 인증 상태 로드 오류:', error);
+  }
+  
+  return { user: null, isLoading: false };
+};
+
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hydrated, setHydrated] = useState(false);
+  const initialState = getInitialAuthState();
+  const [user, setUser] = useState<User | null>(initialState.user);
+  const [isLoading, setIsLoading] = useState(initialState.isLoading);
+  const [hydrated, setHydrated] = useState(typeof window !== 'undefined');
 
   const isAuthenticated = !!user;
 
@@ -70,6 +90,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // 토큰 검증
   const validateToken = async (token: string): Promise<boolean> => {
     try {
+      console.log('토큰 검증 시작:', token.substring(0, 20) + '...');
+      
       const response = await fetch('/api/auth/validate', {
         method: 'GET',
         headers: {
@@ -77,6 +99,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         },
       });
 
+      console.log('토큰 검증 응답:', response.status, response.statusText);
       return response.ok;
     } catch (error) {
       console.error('토큰 검증 오류:', error);
@@ -84,81 +107,39 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  // 컴포넌트 마운트 시 저장소에서 사용자 정보 복원
+  // 컴포넌트 마운트 시 쿠키 설정 및 정리 작업만 수행
   useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        // localStorage와 sessionStorage 모두 확인
-        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
-        const userData = localStorage.getItem('user_data') || sessionStorage.getItem('user_data');
-        
-        if (token && userData) {
-          // 토큰 유효성 검증
-          const isValidToken = await validateToken(token);
-          
-          if (isValidToken) {
-            const parsedUser = JSON.parse(userData);
-            setUser(parsedUser);
-            // 쿠키에도 토큰 설정
-            document.cookie = `auth-token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`;
-          } else {
-            // 토큰이 유효하지 않으면 갱신 시도
-            const refreshSuccess = await refreshAuthToken();
-            
-            if (refreshSuccess) {
-              const parsedUser = JSON.parse(userData);
-              setUser(parsedUser);
-            } else {
-              // 갱신 실패 시 로그아웃 - 모든 저장소 정리
-              localStorage.removeItem('auth_token');
-              localStorage.removeItem('refresh_token');
-              localStorage.removeItem('user_data');
-              localStorage.removeItem('remember_me');
-              sessionStorage.removeItem('auth_token');
-              sessionStorage.removeItem('refresh_token');
-              sessionStorage.removeItem('user_data');
-              sessionStorage.removeItem('remember_me');
-              document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-            }
-          }
-        }
-      } catch (error) {
-        console.error('인증 초기화 오류:', error);
-        // 손상된 데이터 정리 - 모든 저장소
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user_data');
-        localStorage.removeItem('remember_me');
-        sessionStorage.removeItem('auth_token');
-        sessionStorage.removeItem('refresh_token');
-        sessionStorage.removeItem('user_data');
-        sessionStorage.removeItem('remember_me');
-        document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-      } finally {
-        setIsLoading(false);
-        setHydrated(true);
+    // 이미 초기 상태에서 사용자 정보를 로드했으므로 쿠키 설정만 수행
+    if (user) {
+      const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+      if (token) {
+        document.cookie = `auth-token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`;
       }
-    };
+    }
 
-    initializeAuth();
+    // 이미 클라이언트 사이드이므로 즉시 완료 처리
+    setIsLoading(false);
+    setHydrated(true);
 
-    // 15분마다 토큰 갱신 시도
+    // 토큰 갱신 interval은 한 번만 설정하고 user 상태 변경에 의존하지 않음
     const tokenRefreshInterval = setInterval(async () => {
-      if (user) {
-        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
-        if (token) {
-          const isValid = await validateToken(token);
-          if (!isValid) {
-            await refreshAuthToken();
+      const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+      if (token) {
+        const isValid = await validateToken(token);
+        if (!isValid) {
+          const refreshSuccess = await refreshAuthToken();
+          if (!refreshSuccess) {
+            // 갱신 실패 시에만 로그아웃
+            logout();
           }
         }
       }
-    }, 15 * 60 * 1000); // 15분
+    }, 30 * 60 * 1000); // 30분으로 간격 늘림
 
     return () => {
       clearInterval(tokenRefreshInterval);
     };
-  }, [user]);
+  }, [user]); // user 의존성 추가 // 의존성 배열 비움
 
   const login = async (credentials: LoginRequest): Promise<void> => {
     setIsLoading(true);
@@ -184,6 +165,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const storage = credentials.rememberMe ? localStorage : sessionStorage;
       
       // 토큰과 사용자 정보 저장
+      console.log('로그인 성공 - 토큰 저장:', authResponse.accessToken.substring(0, 20) + '...');
+      console.log('로그인 성공 - 저장소 유형:', credentials.rememberMe ? 'localStorage' : 'sessionStorage');
+      
       storage.setItem('auth_token', authResponse.accessToken);
       storage.setItem('refresh_token', authResponse.refreshToken);
       storage.setItem('user_data', JSON.stringify({
@@ -254,16 +238,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     updateUser,
   };
 
-  // 하이드레이션이 완료되지 않았을 때 로딩 표시
-  if (!hydrated) {
+  // 하이드레이션이 완료되지 않았을 때 최소한의 로딩 표시 (또는 제거)
+  if (!hydrated && typeof window !== 'undefined') {
+    // 클라이언트에서는 매우 빠르게 하이드레이션되므로 로딩 화면 최소화
     return (
       <AuthContext.Provider value={value}>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-muted-foreground">로딩 중...</p>
-          </div>
-        </div>
+        {children}
       </AuthContext.Provider>
     );
   }
@@ -288,13 +268,17 @@ export function withAuth<P extends object>(Component: React.ComponentType<P>) {
   return function AuthenticatedComponent(props: P) {
     const { isAuthenticated, isLoading } = useAuth();
 
+    // 성능 최적화를 위해 디버깅 로그 제거
+    // const token = typeof window !== 'undefined' ? (localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token')) : null;
+    // console.log('withAuth - 토큰 존재:', !!token);
+    // console.log('withAuth - 인증 상태:', isAuthenticated);
+    // console.log('withAuth - 로딩 상태:', isLoading);
+
     if (isLoading) {
+      // 로딩 시간을 최소화하기 위해 간단한 로딩 표시 또는 즉시 렌더링
       return (
         <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-muted-foreground">로딩 중...</p>
-          </div>
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
         </div>
       );
     }
@@ -302,9 +286,19 @@ export function withAuth<P extends object>(Component: React.ComponentType<P>) {
     if (!isAuthenticated) {
       // 클라이언트 사이드에서만 리다이렉트
       if (typeof window !== 'undefined') {
-        window.location.href = '/login';
+        // console.log('withAuth - 인증 실패, 로그인 페이지로 이동');
+        // 더 부드러운 리다이렉트를 위해 setTimeout 사용
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 100);
       }
-      return null;
+      return (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <p className="text-muted-foreground">로그인 페이지로 이동합니다...</p>
+          </div>
+        </div>
+      );
     }
 
     return <Component {...props} />;
