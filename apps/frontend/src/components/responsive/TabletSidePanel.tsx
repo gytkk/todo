@@ -7,7 +7,7 @@ import { Button, Badge } from "@calendar-todo/ui";
 import { TodoForm } from '@/components/todo/TodoForm';
 import { TodoList } from '@/components/todo/TodoList';
 import { TodoStats } from '@/components/todo/TodoStats';
-import { useAppContext } from '@/contexts/AppContext';
+import { useTodoContext, useCategoryContext } from '@/contexts/AppContext';
 import { useMemo } from 'react';
 
 interface TabletSidePanelProps {
@@ -17,7 +17,8 @@ interface TabletSidePanelProps {
 }
 
 export const TabletSidePanel = ({ isOpen, selectedDate, onClose }: TabletSidePanelProps) => {
-  const { addTodo, toggleTodo, deleteTodo, getTodosByDate, categories } = useAppContext();
+  const { addTodo, toggleTodo, deleteTodo, getTodosByDate } = useTodoContext();
+  const { categories } = useCategoryContext();
   const panelRef = useRef<HTMLDivElement>(null);
 
   const selectedDateTodos = useMemo(() => {

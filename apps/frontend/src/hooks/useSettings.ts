@@ -1,5 +1,5 @@
 import { useLocalStorage } from './useLocalStorage';
-import { AppSettings, Category, UserInfo } from '@/types';
+import { AppSettings, Category, UserInfo } from '@calendar-todo/shared-types';
 
 const defaultSettings: AppSettings = {
   // 사용자 정보

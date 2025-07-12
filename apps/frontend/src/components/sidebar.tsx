@@ -5,7 +5,7 @@ import { Button } from "@calendar-todo/ui";
 import { Home, Settings, Menu, User, LucideIcon, BarChart3, LogIn, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CategoryFilter } from "@/components/categories/CategoryFilter";
-import { useAppContext } from "@/contexts/AppContext";
+import { useCategoryContext } from "@/contexts/AppContext";
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -28,7 +28,7 @@ interface SidebarProps {
 export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isVisible, setIsVisible] = useState(true);
-  const { categories, categoryFilter, toggleCategoryFilter } = useAppContext();
+  const { categories, categoryFilter, toggleCategoryFilter } = useCategoryContext();
   const { user, isAuthenticated, logout } = useAuth();
   const pathname = usePathname();
 

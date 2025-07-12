@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import { DailyViewHeader } from './DailyViewHeader';
 import { DaySection } from './DaySection';
 import { useDailyView } from './hooks/useDailyView';
-import { useAppContext } from '@/contexts/AppContext';
+import { useTodoContext, useCategoryContext } from '@/contexts/AppContext';
 
 interface DailyViewProps {
   selectedDate?: Date;
@@ -21,11 +21,13 @@ export const DailyView: React.FC<DailyViewProps> = ({
     todos,
     addTodo,
     toggleTodo,
-    deleteTodo,
+    deleteTodo
+  } = useTodoContext();
+  const {
     categories,
     categoryFilter,
     getFilteredTodos
-  } = useAppContext();
+  } = useCategoryContext();
 
   // 카테고리 필터가 적용된 할일들
   const filteredTodos = getFilteredTodos(todos);

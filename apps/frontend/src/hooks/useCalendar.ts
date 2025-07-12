@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { CalendarEvent, TodoItem } from '@/types';
+import { CalendarEvent, TodoItem } from '@calendar-todo/shared-types';
 
 export const useCalendar = (todos: TodoItem[]) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());

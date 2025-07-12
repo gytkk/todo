@@ -3,11 +3,11 @@
 import { Settings } from "@/components/settings";
 import { AppLayout } from "@/components/AppLayout";
 import { PageHeader } from "@/components/common/PageHeader";
-import { useAppContext } from "@/contexts/AppContext";
+import { useTodoContext } from "@/contexts/AppContext";
 import { withAuth } from "@/contexts/AuthContext";
 
 function SettingsPage() {
-  const { todos, clearAllTodos } = useAppContext();
+  const { todos, clearAllTodos } = useTodoContext();
 
   return (
     <AppLayout>

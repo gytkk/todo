@@ -6,7 +6,7 @@ import { Button, Badge } from "@calendar-todo/ui";
 import { TodoForm } from './TodoForm';
 import { TodoList } from './TodoList';
 import { TodoStats } from './TodoStats';
-import { useAppContext } from '@/contexts/AppContext';
+import { useTodoContext, useCategoryContext } from '@/contexts/AppContext';
 import { useMemo, useEffect, useRef, useCallback, memo } from 'react';
 import { useFocusTrap, useAria } from '@/hooks/useAccessibility';
 
@@ -17,7 +17,8 @@ interface TodoSidebarProps {
 }
 
 function TodoSidebarComponent({ isOpen, selectedDate, onClose }: TodoSidebarProps) {
-  const { addTodo, toggleTodo, deleteTodo, getTodosByDate, categories } = useAppContext();
+  const { addTodo, toggleTodo, deleteTodo, getTodosByDate } = useTodoContext();
+  const { categories } = useCategoryContext();
   const sidebarRef = useRef<HTMLDivElement>(null);
   const focusTrapRef = useFocusTrap<HTMLDivElement>(isOpen);
   const { getAriaProps } = useAria();

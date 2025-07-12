@@ -123,7 +123,7 @@ describe('CalendarCell', () => {
       render(<CalendarCell {...defaultProps} isToday={true} />);
       
       const dateElement = screen.getByText('15');
-      expect(dateElement).toHaveClass('bg-blue-500', 'text-white', 'rounded-full');
+      expect(dateElement).toHaveClass('text-gray-900', 'font-semibold');
     });
 
     it('should not apply today styles when isToday is false', () => {
@@ -131,6 +131,7 @@ describe('CalendarCell', () => {
       
       const dateElement = screen.getByText('15');
       expect(dateElement).not.toHaveClass('bg-blue-500', 'text-white', 'rounded-full');
+      expect(dateElement).toHaveClass('text-gray-900'); // Regular current month styling
     });
   });
 

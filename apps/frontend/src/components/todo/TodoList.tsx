@@ -1,6 +1,6 @@
 "use client";
 
-import { TodoItem as TodoItemType } from '@/types';
+import { TodoItem as TodoItemType } from '@calendar-todo/shared-types';
 import { TodoItem } from './TodoItem';
 import { memo } from 'react';
 

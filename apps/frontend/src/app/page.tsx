@@ -5,14 +5,14 @@ import { CalendarView } from "@/components/calendar/CalendarView";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AppLayout } from "@/components/AppLayout";
 import { useCallback, Suspense } from "react";
-import { useAppContext } from "@/contexts/AppContext";
+import { useTodoContext } from "@/contexts/AppContext";
 import { useCalendar } from "@/hooks/useCalendar";
 import { PageLoading } from "@/components/ui/loading";
 import { ResponsiveContainer, ResponsiveTodoInterface } from "@/components/responsive";
 import { useAuth } from "@/contexts/AuthContext";
 
 function HomeContent() {
-  const { todos } = useAppContext();
+  const { todos } = useTodoContext();
   const { isAuthenticated } = useAuth();
   const {
     selectedDate,

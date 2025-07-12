@@ -3,11 +3,11 @@
 import { StatisticsPage } from "@/components/statistics/StatisticsPage";
 import { AppLayout } from "@/components/AppLayout";
 import { PageHeader } from "@/components/common/PageHeader";
-import { useAppContext } from "@/contexts/AppContext";
+import { useTodoContext } from "@/contexts/AppContext";
 import { withAuth } from "@/contexts/AuthContext";
 
 function Statistics() {
-  const { todos } = useAppContext();
+  const { todos } = useTodoContext();
 
   return (
     <AppLayout>

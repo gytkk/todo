@@ -1,6 +1,7 @@
 import { TodoItem, TodoStats, TodoCategory } from '@calendar-todo/shared-types';
+import { BaseApiClient } from './BaseApiClient';
 
-export class TodoService {
+export class TodoService extends BaseApiClient {
   private static instance: TodoService;
   private readonly BASE_URL = '/api/todos';
 
@@ -11,25 +12,6 @@ export class TodoService {
     return TodoService.instance;
   }
 
-  private handle401Error(): void {
-    console.log('토큰 만료 또는 잘못된 토큰, 로컬 스토리지 정리');
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('user_data');
-    
-    // 새로고침 대신 로그인 페이지로 리다이렉트
-    if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-      window.location.href = '/login';
-    }
-  }
-
-  private getAuthHeaders(): Record<string, string> {
-    const token = localStorage.getItem('auth_token');
-    return {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
-    };
-  }
 
   async getTodos(
     startDate?: string,
@@ -45,34 +27,23 @@ export class TodoService {
       if (completed !== undefined) params.append('completed', completed.toString());
 
       const url = `${this.BASE_URL}${params.toString() ? `?${params.toString()}` : ''}`;
-      const headers = this.getAuthHeaders();
       
       console.log('Making request to:', url);
-      console.log('Headers:', headers);
       console.log('Auth token exists:', !!localStorage.getItem('auth_token'));
       
-      const response = await fetch(url, {
-        method: 'GET',
-        headers,
-      });
+      const response = await this.get<{ todos: TodoItem[]; stats: TodoStats }>(url);
 
       console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.log('Error response:', errorText);
-        
-        // 401 Unauthorized 오류인 경우 토큰 정리
-        if (response.status === 401) {
-          this.handle401Error();
-          return { todos: [], stats: { total: 0, completed: 0, incomplete: 0, completionRate: 0, recentCompletions: 0 } };
-        }
-        
-        throw new Error(`할일 목록 조회 실패: ${response.status}`);
+      if (response.status === 401) {
+        return { todos: [], stats: { total: 0, completed: 0, incomplete: 0, completionRate: 0, recentCompletions: 0 } };
+      }
+      
+      if (response.error || !response.data) {
+        throw new Error(`할일 목록 조회 실패: ${response.error || response.status}`);
       }
 
-      const data = await response.json();
+      const data = response.data;
       
       // 날짜 문자열을 Date 객체로 변환
       const todos = data.todos.map((todo: TodoItem) => ({

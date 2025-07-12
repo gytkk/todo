@@ -1,6 +1,6 @@
 "use client";
 
-import { TodoStats as TodoStatsType } from '@/types';
+import { TodoStats as TodoStatsType } from '@calendar-todo/shared-types';
 
 interface TodoStatsProps {
   stats: TodoStatsType;

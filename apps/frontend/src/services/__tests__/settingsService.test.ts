@@ -1,5 +1,5 @@
 import { SettingsService } from '../settingsService';
-import { AppSettings } from '@/types';
+import { AppSettings } from '@calendar-todo/shared-types';
 import { safeLocalStorageGet, safeLocalStorageSet } from '@/utils/errorHandler';
 
 // Mock the error handler utilities

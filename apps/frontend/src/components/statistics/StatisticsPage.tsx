@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, Badge } from "@calendar-todo/ui";
 import { BarChart3, Calendar, CheckCircle, Clock, TrendingUp, Target } from "lucide-react";
-import { TodoItem } from '@/types';
+import { TodoItem } from '@calendar-todo/shared-types';
 import { useMemo } from 'react';
 import { format, subDays, startOfWeek, endOfWeek, isWithinInterval } from 'date-fns';
 import { ko } from 'date-fns/locale';

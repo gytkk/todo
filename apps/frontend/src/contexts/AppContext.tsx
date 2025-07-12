@@ -1,10 +1,10 @@
 "use client";
 
 import React, { createContext, ReactNode, useEffect } from 'react';
-import { CategoryProvider, useCategoryContext } from './CategoryContext';
-import { TodoProvider, useTodoContext } from './TodoContext';
-import { CalendarProvider, useCalendarContext } from './CalendarContext';
-import { SettingsProvider, useSettingsContext } from './SettingsContext';
+import { CategoryProvider } from './CategoryContext';
+import { TodoProvider } from './TodoContext';
+import { CalendarProvider } from './CalendarContext';
+import { SettingsProvider } from './SettingsContext';
 import { initializeDataCleanup } from '@/utils/dataCleanup';
 import { initializeTempUser } from '@/utils/tempUser';
 
@@ -58,17 +58,8 @@ export function AppProvider({ children }: AppProviderProps) {
 
 // Removed Consumer components - no longer needed as providers access data directly
 
-// Hook that combines all contexts for backward compatibility
-export function useAppContext() {
-  const categoryContext = useCategoryContext();
-  const todoContext = useTodoContext();
-  const calendarContext = useCalendarContext();
-  const settingsContext = useSettingsContext();
-
-  return {
-    ...categoryContext,
-    ...todoContext,
-    ...calendarContext,
-    ...settingsContext,
-  };
-}
+// Export individual context hooks for direct usage
+export { useCategoryContext } from './CategoryContext';
+export { useTodoContext } from './TodoContext';
+export { useCalendarContext } from './CalendarContext';
+export { useSettingsContext } from './SettingsContext';

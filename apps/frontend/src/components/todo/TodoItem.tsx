@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@calendar-todo/ui";
-import { TodoItem as TodoItemType } from '@/types';
+import { TodoItem as TodoItemType } from '@calendar-todo/shared-types';
 import { memo, useCallback } from 'react';
 
 interface TodoItemProps {

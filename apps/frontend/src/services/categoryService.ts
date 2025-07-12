@@ -1,6 +1,7 @@
 import { TodoCategory, CategoryFilter } from '@calendar-todo/shared-types';
+import { BaseApiClient } from './BaseApiClient';
 
-export class CategoryService {
+export class CategoryService extends BaseApiClient {
   private static instance: CategoryService;
   private readonly BASE_URL = '/api/user-settings';
 
@@ -11,25 +12,6 @@ export class CategoryService {
     return CategoryService.instance;
   }
 
-  private handle401Error(): void {
-    console.log('토큰 만료 또는 잘못된 토큰, 로컬 스토리지 정리');
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('user_data');
-    
-    // 새로고침 대신 로그인 페이지로 리다이렉트
-    if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-      window.location.href = '/login';
-    }
-  }
-
-  private getAuthHeaders(): Record<string, string> {
-    const token = localStorage.getItem('auth_token');
-    return {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
-    };
-  }
 
   async getCategories(): Promise<TodoCategory[]> {
     try {

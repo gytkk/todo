@@ -28,9 +28,9 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
-import { TodoItem, AppSettings } from '@/types';
+import { TodoItem, AppSettings } from '@calendar-todo/shared-types';
 import { useSettings } from '@/hooks/useSettings';
-import { CategoryManagement } from "./settings/CategoryManagement";
+import { CategoryManagement } from "./CategoryManagement";
 
 interface SettingsProps {
   todos: TodoItem[];
@@ -642,3 +642,5 @@ export function Settings({ onClearData }: SettingsProps) {
     </div>
   );
 }
+
+export default Settings;

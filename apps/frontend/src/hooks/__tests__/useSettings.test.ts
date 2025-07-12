@@ -1,7 +1,7 @@
 import { renderHook, act } from '@testing-library/react';
 import { useSettings } from '../useSettings';
 import { useLocalStorage } from '../useLocalStorage';
-import { AppSettings, Category, UserInfo } from '@/types';
+import { AppSettings, Category, UserInfo } from '@calendar-todo/shared-types';
 
 // Mock useLocalStorage hook
 jest.mock('../useLocalStorage');

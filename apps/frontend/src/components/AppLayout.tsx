@@ -3,7 +3,7 @@
 import { Sidebar } from "@/components/sidebar";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useState } from "react";
-import { useAppContext } from "@/contexts/AppContext";
+import { useCalendarContext } from "@/contexts/AppContext";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -14,7 +14,7 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const [sidebarVisible, setSidebarVisible] = useState(true);
-  const { closeSidebar } = useAppContext();
+  const { closeSidebar } = useCalendarContext();
   const { isAuthenticated, isLoading } = useAuth();
   const pathname = usePathname();
 

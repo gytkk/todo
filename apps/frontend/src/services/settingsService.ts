@@ -1,4 +1,4 @@
-import { AppSettings } from '@/types';
+import { AppSettings } from '@calendar-todo/shared-types';
 import { safeLocalStorageGet, safeLocalStorageSet } from '@/utils/errorHandler';
 
 export class SettingsService {

@@ -7,7 +7,7 @@ import { Button, Badge } from "@calendar-todo/ui";
 import { TodoForm } from '@/components/todo/TodoForm';
 import { TodoList } from '@/components/todo/TodoList';
 import { TodoStats } from '@/components/todo/TodoStats';
-import { useAppContext } from '@/contexts/AppContext';
+import { useTodoContext, useCategoryContext } from '@/contexts/AppContext';
 import { useMemo } from 'react';
 
 interface MobileBottomSheetProps {
@@ -17,7 +17,8 @@ interface MobileBottomSheetProps {
 }
 
 export const MobileBottomSheet = ({ isOpen, selectedDate, onClose }: MobileBottomSheetProps) => {
-  const { addTodo, toggleTodo, deleteTodo, getTodosByDate, categories } = useAppContext();
+  const { addTodo, toggleTodo, deleteTodo, getTodosByDate } = useTodoContext();
+  const { categories } = useCategoryContext();
   const sheetRef = useRef<HTMLDivElement>(null);
 
   const selectedDateTodos = useMemo(() => {
