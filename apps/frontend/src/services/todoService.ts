@@ -17,8 +17,10 @@ export class TodoService {
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_data');
     
-    // 페이지를 새로고침하여 로그인 상태 초기화
-    window.location.reload();
+    // 새로고침 대신 로그인 페이지로 리다이렉트
+    if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+      window.location.href = '/login';
+    }
   }
 
   private getAuthHeaders(): Record<string, string> {

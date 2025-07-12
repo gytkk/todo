@@ -43,17 +43,7 @@ function CalendarViewComponent({
   }, []);
 
   const renderCalendarContent = () => {
-    if (currentView === 'day') {
-      return (
-        <DailyView
-          selectedDate={selectedDate || currentDate}
-          onDateChange={handleNavigate}
-          onViewChange={handleViewChange}
-        />
-      );
-    }
-
-    // 월간/주간 뷰는 기존 캘린더 사용
+    // 모든 뷰(월간/주간/일간)를 CalendarContainer를 통해 일관성 있게 처리
     return (
       <div className="h-full bg-white overflow-hidden" onClick={onCalendarClick}>
         <NoSSR fallback={<SimpleCalendarSkeleton />}>

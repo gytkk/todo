@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CategoryManagement } from '../CategoryManagement';
 import { TodoCategory } from '@calendar-todo/shared-types';
@@ -48,10 +48,10 @@ const mockAvailableColors = ['#10b981', '#f59e0b', '#8b5cf6'];
 
 const mockUseCategoriesReturn = {
   categories: mockCategories,
-  addCategory: jest.fn(),
-  updateCategory: jest.fn(),
-  deleteCategory: jest.fn(),
-  getAvailableColors: jest.fn(() => mockAvailableColors),
+  addCategory: jest.fn(() => Promise.resolve(true)),
+  updateCategory: jest.fn(() => Promise.resolve(true)),
+  deleteCategory: jest.fn(() => Promise.resolve(true)),
+  getAvailableColors: jest.fn(() => Promise.resolve(mockAvailableColors)),
 };
 
 describe('CategoryManagement', () => {
@@ -62,9 +62,17 @@ describe('CategoryManagement', () => {
     jest.clearAllMocks();
   });
 
+  const renderWithAct = async (component: React.ReactElement) => {
+    let renderResult: ReturnType<typeof render>;
+    await act(async () => {
+      renderResult = render(component);
+    });
+    return renderResult;
+  };
+
   describe('rendering', () => {
-    it('should render category management card with title', () => {
-      render(<CategoryManagement />);
+    it('should render category management card with title', async () => {
+      await renderWithAct(<CategoryManagement />);
       
       expect(screen.getByText('카테고리 관리')).toBeInTheDocument();
       expect(screen.getByText('할 일 카테고리를 관리하고 색상을 설정합니다')).toBeInTheDocument();
@@ -264,15 +272,16 @@ describe('CategoryManagement', () => {
       expect(screen.getByText('카테고리 추가')).toBeInTheDocument();
     });
 
-    it('should display available colors', () => {
-      render(<CategoryManagement />);
+    it('should display available colors', async () => {
+      await renderWithAct(<CategoryManagement />);
       
-      // Should show color buttons for available colors
-      const colorButtons = screen.getAllByRole('button').filter(button => 
-        button.style.backgroundColor && button.title?.includes('색상:')
-      );
-      
-      expect(colorButtons.length).toBe(mockAvailableColors.length);
+      // Wait for color buttons to be rendered after async load
+      await waitFor(() => {
+        const colorButtons = screen.getAllByRole('button').filter(button => 
+          button.style.backgroundColor && button.title?.includes('색상:')
+        );
+        expect(colorButtons.length).toBe(mockAvailableColors.length);
+      });
     });
 
     it('should add new category with valid input', async () => {
@@ -356,8 +365,21 @@ describe('CategoryManagement', () => {
     });
 
     it('should show message when no colors are available', () => {
-      // Mock no available colors
-      mockUseCategoriesReturn.getAvailableColors.mockReturnValue([]);
+      // Mock categories that use all available colors
+      const allColorsUsed: TodoCategory[] = [
+        { id: '1', name: '카테고리1', color: '#10b981', isDefault: false, createdAt: new Date() },
+        { id: '2', name: '카테고리2', color: '#f59e0b', isDefault: false, createdAt: new Date() },
+        { id: '3', name: '카테고리3', color: '#8b5cf6', isDefault: false, createdAt: new Date() },
+        { id: '4', name: '카테고리4', color: '#ef4444', isDefault: false, createdAt: new Date() },
+        { id: '5', name: '카테고리5', color: '#3b82f6', isDefault: false, createdAt: new Date() },
+      ];
+      
+      const mockWithAllColors = {
+        ...mockUseCategoriesReturn,
+        categories: allColorsUsed,
+      };
+      
+      mockedUseCategories.mockReturnValue(mockWithAllColors);
       
       render(<CategoryManagement />);
       

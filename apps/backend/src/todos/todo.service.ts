@@ -234,7 +234,9 @@ export class TodoService {
   }
 
   async removeAllByUserId(userId: string): Promise<number> {
-    return await this.todoRepository.deleteByUserId(userId);
+    const todos = await this.todoRepository.findByUserId(userId);
+    await this.todoRepository.deleteByUserId(userId);
+    return todos.length;
   }
 
   async updateCategoryForUser(

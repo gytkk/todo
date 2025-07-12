@@ -8,25 +8,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Overall
 
-- Always scan the entire module directory before making changes
-- **NEVER use `npm` commands directly** - always use `pnpm` as a package manager
-- **ALWAYS use `turbo` commands for all development operations** - never use `npm` directly
-- When you work on backend code, always write unit tests first then implement business logic
-- Do not use `turbo build` or `turbo dev` commands as they break the running development server
-- Do not test your result by executing build, except if you are sure it is a build-related change
-- For package management, use `pnpm` instead of `npm`
-
-### Planning
-
-- When you plan a new implementation, write a todo list under the directory `z_plans` as a markdown file
-- If you complete any todo item in a markdown file under the directory `z_plans`, you have to update the todo item to mark it completed
+- **NEVER use `npm` commands directly** - always use `pnpm` or `turbo` for development tools
+- Always write unit tests first, then implement business logic
+- Check lint errors and code style after you write code
 
 ### Code Style Guidelines
 
 - Use TypeScript with strong typing; avoid `any` when possible
 - Use camelCase for variables/functions, PascalCase for components/classes
 - Imports: group React imports first, then external libs, then internal modules
-- Always check lint and code style after you write code
 - Error handling: prefer early returns over deep nesting
 - Keep components focused on a single responsibility
 

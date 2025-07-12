@@ -6,7 +6,7 @@ import { TodoProvider, useTodoContext } from './TodoContext';
 import { CalendarProvider, useCalendarContext } from './CalendarContext';
 import { SettingsProvider, useSettingsContext } from './SettingsContext';
 import { initializeDataCleanup } from '@/utils/dataCleanup';
-import { TodoCategory, TodoItem } from '@calendar-todo/shared-types';
+import { initializeTempUser } from '@/utils/tempUser';
 
 // Combined context type for backward compatibility
 interface AppContextType {
@@ -23,9 +23,10 @@ interface AppProviderProps {
 
 // Internal component that provides the combined context
 function AppContextProvider({ children }: AppProviderProps) {
-  // Initialize data cleanup on app start
+  // Initialize data cleanup and temp user on app start
   useEffect(() => {
     initializeDataCleanup();
+    initializeTempUser();
   }, []);
 
   const contextValue: AppContextType = {
@@ -43,38 +44,19 @@ export function AppProvider({ children }: AppProviderProps) {
   return (
     <SettingsProvider>
       <CategoryProvider>
-        {/* TodoProvider needs categories, so it's inside CategoryProvider */}
-        <CategoryConsumer>
-          {(categories) => (
-            <TodoProvider categories={categories}>
-              {/* CalendarProvider needs todos, so it's inside TodoProvider */}
-              <TodoConsumer>
-                {(todos) => (
-                  <CalendarProvider todos={todos}>
-                    <AppContextProvider>
-                      {children}
-                    </AppContextProvider>
-                  </CalendarProvider>
-                )}
-              </TodoConsumer>
-            </TodoProvider>
-          )}
-        </CategoryConsumer>
+        <TodoProvider>
+          <CalendarProvider>
+            <AppContextProvider>
+              {children}
+            </AppContextProvider>
+          </CalendarProvider>
+        </TodoProvider>
       </CategoryProvider>
     </SettingsProvider>
   );
 }
 
-// Helper components to pass data between providers
-function CategoryConsumer({ children }: { children: (categories: TodoCategory[]) => ReactNode }) {
-  const { categories } = useCategoryContext();
-  return <>{children(categories)}</>;
-}
-
-function TodoConsumer({ children }: { children: (todos: TodoItem[]) => ReactNode }) {
-  const { todos } = useTodoContext();
-  return <>{children(todos)}</>;
-}
+// Removed Consumer components - no longer needed as providers access data directly
 
 // Hook that combines all contexts for backward compatibility
 export function useAppContext() {

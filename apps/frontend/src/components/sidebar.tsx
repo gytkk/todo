@@ -140,6 +140,30 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
           {menuItems.map((item: MenuItem) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
+            const isDisabled = (item.id === "statistics" || item.id === "settings") && !isAuthenticated;
+
+            if (isDisabled) {
+              return (
+                <div key={item.id}>
+                  <Button
+                    variant="ghost"
+                    disabled
+                    className={cn(
+                      "w-full justify-start h-12 px-3 py-2 text-left opacity-50 cursor-not-allowed",
+                      !isExpanded && "justify-center px-0"
+                    )}
+                  >
+                    <Icon className={cn("h-5 w-5", isExpanded && "mr-3")} />
+                    {isExpanded && (
+                      <div className="flex flex-col items-start">
+                        <span className="font-medium text-sm">{item.name}</span>
+                        <span className="text-xs text-gray-400">로그인 필요</span>
+                      </div>
+                    )}
+                  </Button>
+                </div>
+              );
+            }
 
             return (
               <Link key={item.id} href={item.href}>
@@ -168,14 +192,27 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
           })}
         </div>
 
-        {/* 카테고리 필터 - 홈 페이지에서만 표시 */}
-        {isExpanded && pathname === "/" && (
+        {/* 카테고리 필터 - 홈 페이지에서만 표시, 인증된 사용자만 */}
+        {isExpanded && pathname === "/" && isAuthenticated && (
           <div className="flex-1 overflow-y-auto scrollbar-thin">
             <CategoryFilter
               categories={categories}
               categoryFilter={categoryFilter}
               onToggleCategory={toggleCategoryFilter}
             />
+          </div>
+        )}
+
+        {/* 미인증 사용자를 위한 안내 메시지 */}
+        {isExpanded && !isAuthenticated && (
+          <div className="flex-1 p-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+              <div className="text-blue-600 mb-2">
+                <LogIn className="h-6 w-6 mx-auto" />
+              </div>
+              <p className="text-sm text-blue-700 font-medium mb-1">로그인이 필요합니다</p>
+              <p className="text-xs text-blue-600">모든 기능을 이용하려면 로그인해주세요.</p>
+            </div>
           </div>
         )}
 

@@ -4,8 +4,9 @@ import { StatisticsPage } from "@/components/statistics/StatisticsPage";
 import { AppLayout } from "@/components/AppLayout";
 import { PageHeader } from "@/components/common/PageHeader";
 import { useAppContext } from "@/contexts/AppContext";
+import { withAuth } from "@/contexts/AuthContext";
 
-export default function Statistics() {
+function Statistics() {
   const { todos } = useAppContext();
 
   return (
@@ -19,3 +20,6 @@ export default function Statistics() {
     </AppLayout>
   );
 }
+
+// withAuth HOC로 페이지 보호
+export default withAuth(Statistics);

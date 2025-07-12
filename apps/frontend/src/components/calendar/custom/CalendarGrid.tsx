@@ -1,7 +1,7 @@
 import React from 'react';
 import { CalendarGridProps } from './types/calendar';
 import { CalendarCell } from './CalendarCell';
-import { createCalendarDates, getCategoryColorWithOpacity, getPrimaryCategoryColor } from './utils/calendarUtils';
+import { createCalendarDates, createWeekCalendarDates, createDayCalendarDate, getCategoryColorWithOpacity, getPrimaryCategoryColor } from './utils/calendarUtils';
 import { getWeekdayNames } from './utils/dateUtils';
 
 export const CalendarGrid: React.FC<CalendarGridProps> = ({
@@ -11,7 +11,9 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   onDateSelect,
   view,
 }) => {
-  const calendarDates = createCalendarDates(currentDate, selectedDate, todos);
+  const calendarDates = view === 'week' 
+    ? createWeekCalendarDates(currentDate, selectedDate, todos)
+    : createCalendarDates(currentDate, selectedDate, todos);
   const weekdayNames = getWeekdayNames();
 
   if (view === 'month') {
@@ -30,8 +32,8 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
           ))}
         </div>
 
-        {/* 날짜 그리드 - 6주 고정 높이, 아래쪽 여백 */}
-        <div className="flex-1 grid grid-cols-7 border-l border-gray-200 mb-6" style={{ gridTemplateRows: 'repeat(6, 1fr)' }}>
+        {/* 날짜 그리드 - 6주 고정 높이 */}
+        <div className="flex-1 grid grid-cols-7 border-l border-gray-200" style={{ gridTemplateRows: 'repeat(6, 1fr)' }}>
           {calendarDates.map((calendarDate) => (
             <CalendarCell
               key={calendarDate.date.getTime()}
@@ -64,7 +66,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
           ))}
         </div>
 
-        {/* 주 뷰 그리드 */}
+        {/* 주 뷰 그리드 - 1행 7열 */}
         <div className="grid grid-cols-7 border-l border-gray-200" style={{ height: 'calc(100vh - 200px)' }}>
           {calendarDates.map((calendarDate) => (
             <div
@@ -134,7 +136,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   }
 
   if (view === 'day') {
-    const dayData = calendarDates[0];
+    const dayData = createDayCalendarDate(currentDate, selectedDate, todos);
     return (
       <div className="flex-1 bg-white p-6">
         <div className="max-w-2xl mx-auto">

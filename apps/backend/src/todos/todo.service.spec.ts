@@ -6,6 +6,7 @@ import { CreateTodoDto } from "./dto/create-todo.dto";
 import { UpdateTodoDto } from "./dto/update-todo.dto";
 import { TodoItem, TodoCategory } from "@calendar-todo/shared-types";
 import { NotFoundException, ForbiddenException } from "@nestjs/common";
+import { UserSettingsService } from "../user-settings/user-settings.service";
 import { subDays } from "date-fns";
 
 describe("TodoService", () => {
@@ -55,6 +56,14 @@ describe("TodoService", () => {
     updateCategoryForUser: jest.fn(),
   };
 
+  const mockUserSettingsService = {
+    getUserCategories: jest.fn().mockResolvedValue([mockCategory]),
+    getCategoryById: jest.fn().mockResolvedValue(mockCategory),
+    addCategory: jest.fn(),
+    updateCategory: jest.fn(),
+    deleteCategory: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -62,6 +71,10 @@ describe("TodoService", () => {
         {
           provide: TodoRepository,
           useValue: mockRepository,
+        },
+        {
+          provide: UserSettingsService,
+          useValue: mockUserSettingsService,
         },
       ],
     }).compile();
@@ -94,7 +107,7 @@ describe("TodoService", () => {
         title: createTodoDto.title,
         description: createTodoDto.description,
         priority: createTodoDto.priority,
-        category: createTodoDto.category,
+        categoryId: createTodoDto.category.id,
         dueDate: new Date(createTodoDto.date),
         userId: "user-1",
       });
@@ -415,10 +428,19 @@ describe("TodoService", () => {
 
   describe("removeAllByUserId", () => {
     it("사용자의 모든 할일을 삭제해야 함", async () => {
-      mockRepository.deleteByUserId.mockResolvedValue(5);
+      const mockTodos = [
+        { id: "1" },
+        { id: "2" },
+        { id: "3" },
+        { id: "4" },
+        { id: "5" },
+      ];
+      mockRepository.findByUserId.mockResolvedValue(mockTodos);
+      mockRepository.deleteByUserId.mockResolvedValue(true);
 
       const result = await service.removeAllByUserId("user-1");
 
+      expect(mockRepository.findByUserId).toHaveBeenCalledWith("user-1");
       expect(mockRepository.deleteByUserId).toHaveBeenCalledWith("user-1");
       expect(result).toBe(5);
     });

@@ -1,8 +1,9 @@
 "use client";
 
 import React, { createContext, useContext, ReactNode } from 'react';
-import { TodoItem, TodoStats, TodoCategory } from '@calendar-todo/shared-types';
+import { TodoItem, TodoStats } from '@calendar-todo/shared-types';
 import { useTodos } from '@/hooks/useTodos';
+import { useCategoryContext } from './CategoryContext';
 
 interface TodoContextType {
   // Todo related
@@ -19,10 +20,10 @@ const TodoContext = createContext<TodoContextType | undefined>(undefined);
 
 interface TodoProviderProps {
   children: ReactNode;
-  categories: TodoCategory[];
 }
 
-export function TodoProvider({ children, categories }: TodoProviderProps) {
+export function TodoProvider({ children }: TodoProviderProps) {
+  const { categories } = useCategoryContext();
   const todoHook = useTodos(categories);
 
   const contextValue: TodoContextType = {

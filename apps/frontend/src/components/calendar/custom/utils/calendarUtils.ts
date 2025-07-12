@@ -175,6 +175,71 @@ export function shouldShowMixedCategoryIndicator(todos: TodoItem[]): boolean {
 }
 
 /**
+ * Creates calendar dates for the week view (7 days only)
+ */
+export function createWeekCalendarDates(
+  currentDate: Date,
+  selectedDate: Date | undefined,
+  todos: TodoItem[]
+): CalendarDate[] {
+  const today = new Date();
+  
+  // Get the start of the week (Sunday)
+  const startOfWeek = new Date(currentDate);
+  const dayOfWeek = startOfWeek.getDay(); // 0 = Sunday, 1 = Monday, etc.
+  startOfWeek.setDate(startOfWeek.getDate() - dayOfWeek);
+  
+  const calendarDates: CalendarDate[] = [];
+  
+  // Generate 7 days starting from Sunday
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(startOfWeek);
+    date.setDate(startOfWeek.getDate() + i);
+    
+    const dayTodos = todos.filter(todo => 
+      todo.date.getFullYear() === date.getFullYear() &&
+      todo.date.getMonth() === date.getMonth() &&
+      todo.date.getDate() === date.getDate()
+    );
+    
+    calendarDates.push({
+      date,
+      isToday: isSameDay(date, today),
+      isSelected: selectedDate ? isSameDay(date, selectedDate) : false,
+      isCurrentMonth: date.getMonth() === currentDate.getMonth(),
+      todos: dayTodos,
+    });
+  }
+  
+  return calendarDates;
+}
+
+/**
+ * Creates calendar data for the day view (single day only)
+ */
+export function createDayCalendarDate(
+  currentDate: Date,
+  selectedDate: Date | undefined,
+  todos: TodoItem[]
+): CalendarDate {
+  const today = new Date();
+  
+  const dayTodos = todos.filter(todo => 
+    todo.date.getFullYear() === currentDate.getFullYear() &&
+    todo.date.getMonth() === currentDate.getMonth() &&
+    todo.date.getDate() === currentDate.getDate()
+  );
+  
+  return {
+    date: currentDate,
+    isToday: isSameDay(currentDate, today),
+    isSelected: selectedDate ? isSameDay(currentDate, selectedDate) : false,
+    isCurrentMonth: true,
+    todos: dayTodos,
+  };
+}
+
+/**
  * Gets appropriate text color based on background color for readability
  */
 export function getContrastTextColor(hexColor: string): string {

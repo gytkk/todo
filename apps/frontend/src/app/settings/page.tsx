@@ -4,8 +4,9 @@ import { Settings } from "@/components/settings";
 import { AppLayout } from "@/components/AppLayout";
 import { PageHeader } from "@/components/common/PageHeader";
 import { useAppContext } from "@/contexts/AppContext";
+import { withAuth } from "@/contexts/AuthContext";
 
-export default function SettingsPage() {
+function SettingsPage() {
   const { todos, clearAllTodos } = useAppContext();
 
   return (
@@ -17,3 +18,6 @@ export default function SettingsPage() {
     </AppLayout>
   );
 }
+
+// withAuth HOC로 페이지 보호
+export default withAuth(SettingsPage);

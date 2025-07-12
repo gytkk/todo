@@ -9,9 +9,11 @@ import { useAppContext } from "@/contexts/AppContext";
 import { useCalendar } from "@/hooks/useCalendar";
 import { PageLoading } from "@/components/ui/loading";
 import { ResponsiveContainer, ResponsiveTodoInterface } from "@/components/responsive";
+import { useAuth } from "@/contexts/AuthContext";
 
 function HomeContent() {
   const { todos } = useAppContext();
+  const { isAuthenticated } = useAuth();
   const {
     selectedDate,
     isSidebarOpen,
@@ -43,7 +45,7 @@ function HomeContent() {
       <ErrorBoundary>
         <PageHeader title="홈" onCloseTodoSidebar={closeSidebar} />
         <ResponsiveContainer 
-          className="h-[calc(100vh-4rem)] bg-white" 
+          className="h-[calc(100vh-4rem)] bg-white relative" 
           sidebarOpen={isSidebarOpen}
         >
           <ResponsiveTodoInterface
@@ -54,10 +56,10 @@ function HomeContent() {
               <CalendarView
                 currentDate={currentDate}
                 selectedDate={selectedDate}
-                todos={todos}
-                onDateSelect={handleDateSelect}
-                onNavigate={handleNavigate}
-                onCalendarClick={handleCalendarClick}
+                todos={todos} // 인증 여부와 관계없이 todos 전달 (useTodos에서 처리)
+                onDateSelect={handleDateSelect} // 인증 여부와 관계없이 날짜 선택 허용
+                onNavigate={handleNavigate} // 달력 네비게이션은 허용
+                onCalendarClick={isAuthenticated ? handleCalendarClick : () => {}} // 미인증 시 비활성화
               />
             }
           />

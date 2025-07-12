@@ -25,16 +25,88 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const isAuthenticated = !!user;
 
+  // 토큰 검증 및 자동 갱신
+  const refreshAuthToken = async (): Promise<boolean> => {
+    try {
+      const refreshToken = localStorage.getItem('refresh_token');
+      if (!refreshToken) {
+        return false;
+      }
+
+      const response = await fetch('/api/auth/refresh', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refreshToken }),
+      });
+
+      if (!response.ok) {
+        return false;
+      }
+
+      const authResponse: AuthResponse = await response.json();
+
+      // 새 토큰으로 업데이트
+      localStorage.setItem('auth_token', authResponse.accessToken);
+      localStorage.setItem('refresh_token', authResponse.refreshToken);
+      document.cookie = `auth-token=${authResponse.accessToken}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`;
+
+      return true;
+    } catch (error) {
+      console.error('토큰 갱신 오류:', error);
+      return false;
+    }
+  };
+
+  // 토큰 검증
+  const validateToken = async (token: string): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/auth/validate', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      return response.ok;
+    } catch (error) {
+      console.error('토큰 검증 오류:', error);
+      return false;
+    }
+  };
+
   // 컴포넌트 마운트 시 로컬 스토리지에서 사용자 정보 복원
   useEffect(() => {
-    const initializeAuth = () => {
+    const initializeAuth = async () => {
       try {
         const token = localStorage.getItem('auth_token');
         const userData = localStorage.getItem('user_data');
         
         if (token && userData) {
-          const parsedUser = JSON.parse(userData);
-          setUser(parsedUser);
+          // 토큰 유효성 검증
+          const isValidToken = await validateToken(token);
+          
+          if (isValidToken) {
+            const parsedUser = JSON.parse(userData);
+            setUser(parsedUser);
+            // 쿠키에도 토큰 설정
+            document.cookie = `auth-token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`;
+          } else {
+            // 토큰이 유효하지 않으면 갱신 시도
+            const refreshSuccess = await refreshAuthToken();
+            
+            if (refreshSuccess) {
+              const parsedUser = JSON.parse(userData);
+              setUser(parsedUser);
+            } else {
+              // 갱신 실패 시 로그아웃
+              localStorage.removeItem('auth_token');
+              localStorage.removeItem('refresh_token');
+              localStorage.removeItem('user_data');
+              document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+            }
+          }
         }
       } catch (error) {
         console.error('인증 초기화 오류:', error);
@@ -42,6 +114,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('refresh_token');
         localStorage.removeItem('user_data');
+        document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
       } finally {
         setIsLoading(false);
         setHydrated(true);
@@ -49,7 +122,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
 
     initializeAuth();
-  }, []);
+
+    // 15분마다 토큰 갱신 시도
+    const tokenRefreshInterval = setInterval(async () => {
+      if (user) {
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+          const isValid = await validateToken(token);
+          if (!isValid) {
+            await refreshAuthToken();
+          }
+        }
+      }
+    }, 15 * 60 * 1000); // 15분
+
+    return () => {
+      clearInterval(tokenRefreshInterval);
+    };
+  }, [user]);
 
   const login = async (credentials: LoginRequest): Promise<void> => {
     setIsLoading(true);
@@ -80,6 +170,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         updatedAt: new Date(),
       }));
 
+      // 쿠키에도 토큰 설정 (미들웨어에서 사용)
+      document.cookie = `auth-token=${authResponse.accessToken}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`;
+
       setUser({
         ...authResponse.user,
         isActive: true,
@@ -98,6 +191,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_data');
+    
+    // 쿠키 정리
+    document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
     
     // 상태 초기화
     setUser(null);
