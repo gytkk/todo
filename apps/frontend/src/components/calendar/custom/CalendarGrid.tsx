@@ -33,7 +33,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
         </div>
 
         {/* 날짜 그리드 - 6주 고정 높이 */}
-        <div className="flex-1 grid grid-cols-7 border-l border-gray-200" style={{ gridTemplateRows: 'repeat(6, 1fr)' }}>
+        <div className="grid grid-cols-7 border-l border-gray-200" style={{ height: 'calc(100vh - 250px)', gridTemplateRows: 'repeat(6, minmax(80px, 1fr))' }}>
           {calendarDates.map((calendarDate) => (
             <CalendarCell
               key={calendarDate.date.getTime()}
@@ -71,22 +71,27 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
           {calendarDates.map((calendarDate) => (
             <div
               key={calendarDate.date.getTime()}
-              className={`p-3 border-r border-gray-200 cursor-pointer transition-colors ${calendarDate.isToday
+              className={`p-3 border-r border-gray-200 cursor-pointer transition-colors ${
+                calendarDate.isToday
                   ? 'bg-blue-50 hover:bg-blue-100'
                   : 'bg-white hover:bg-gray-50'
-                } ${calendarDate.isSelected ? 'ring-2 ring-blue-500 ring-inset' : ''
-                }`}
+                } ${calendarDate.isSelected ? 'ring-2 ring-blue-500 ring-inset' : ''}`}
               onClick={() => onDateSelect(calendarDate.date)}
             >
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-3">
                 {/* 빈 공간 (균형을 위해) */}
                 <div className="flex-1"></div>
 
                 {/* 날짜 표시 (중앙) */}
                 <div
-                  className={`text-lg font-semibold ${calendarDate.isToday
-                    ? 'w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center'
-                    : 'text-gray-900'
+                  className={`text-lg font-semibold ${
+                    calendarDate.isSelected
+                      ? 'w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-md'
+                      : calendarDate.isToday
+                        ? 'text-gray-900'
+                        : calendarDate.isCurrentMonth
+                          ? 'text-gray-900'
+                          : 'text-gray-400'
                     }`}
                 >
                   {calendarDate.date.getDate()}
@@ -140,18 +145,25 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     return (
       <div className="flex-1 bg-white p-6">
         <div className="max-w-2xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <div
-              className={`text-3xl font-bold ${dayData.isToday ? 'text-blue-600' : 'text-gray-900'
-                }`}
-            >
-              {dayData.date.getDate()}일
-            </div>
-            {dayData.todos.length > 0 && (
-              <div className="text-sm text-gray-500">
-                {dayData.todos.filter(t => t.completed).length}/{dayData.todos.length} 완료
+          {/* 선택된 날짜 표시 영역에 배경색과 테두리 추가 */}
+          <div className={`rounded-lg p-6 mb-6 transition-colors ${dayData.isSelected ? 'bg-blue-50 border-2 border-blue-200' : 'bg-gray-50 border-2 border-gray-200'}`}>
+            <div className="flex items-center justify-between">
+              <div
+                className={`text-3xl font-bold ${dayData.isToday 
+                  ? 'text-blue-600 drop-shadow-sm' 
+                  : dayData.isSelected
+                    ? 'text-blue-700'
+                    : 'text-gray-900'
+                  }`}
+              >
+                {dayData.date.getDate()}일
               </div>
-            )}
+              {dayData.todos.length > 0 && (
+                <div className="text-sm text-gray-500">
+                  {dayData.todos.filter(t => t.completed).length}/{dayData.todos.length} 완료
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="space-y-3">

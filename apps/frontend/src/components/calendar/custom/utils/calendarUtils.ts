@@ -267,3 +267,41 @@ export function getMixedCategoryIndicatorStyle(): React.CSSProperties {
     backgroundSize: '4px 4px',
   };
 }
+
+/**
+ * Gets CSS classes for calendar cell based on its state
+ */
+export function getCalendarCellClasses(
+  isSelected: boolean,
+  isToday: boolean,
+  isCurrentMonth: boolean
+): string {
+  if (isSelected) {
+    return 'bg-blue-100 hover:bg-blue-200 ring-2 ring-blue-500 ring-inset';
+  }
+  
+  if (isToday) {
+    return 'bg-white hover:bg-gray-50';
+  }
+  
+  if (isCurrentMonth) {
+    return 'bg-white hover:bg-gray-50';
+  }
+  
+  return 'bg-gray-50 hover:bg-gray-100';
+}
+
+/**
+ * Gets CSS classes for date number display based on its state
+ */
+export function getDateNumberClasses(isToday: boolean, isCurrentMonth: boolean): string {
+  if (isToday) {
+    return 'w-7 h-7 bg-blue-500 text-white rounded-full font-semibold leading-none shadow-md ring-2 ring-blue-200';
+  }
+  
+  if (isCurrentMonth) {
+    return 'text-gray-900';
+  }
+  
+  return 'text-gray-400';
+}

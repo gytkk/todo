@@ -27,15 +27,16 @@ export const CalendarCell: React.FC<CalendarCellProps> = ({
     }
   };
 
+
   return (
     <div
-      className={`h-full p-2 border-r border-b border-gray-200 cursor-pointer transition-colors relative flex flex-col ${isToday
-        ? 'bg-blue-50 hover:bg-blue-100'
-        : isCurrentMonth
-          ? 'bg-white hover:bg-gray-50'
-          : 'bg-gray-50 hover:bg-gray-100'
-        } ${isSelected ? 'ring-2 ring-blue-500 ring-inset' : ''
-        }`}
+      className={`h-full p-2 border-r border-b border-gray-200 cursor-pointer transition-colors relative flex flex-col ${
+        isToday
+          ? 'bg-blue-50 hover:bg-blue-100'
+          : isCurrentMonth
+            ? 'bg-white hover:bg-gray-50'
+            : 'bg-gray-50 hover:bg-gray-100'
+        } ${isSelected ? 'ring-2 ring-blue-500 ring-inset' : ''}`}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       tabIndex={0}
@@ -43,18 +44,21 @@ export const CalendarCell: React.FC<CalendarCellProps> = ({
       aria-label={`${date.getDate()}일${todos.length > 0 ? `, ${todos.length}개 할일` : ''}`}
     >
       {/* 상단 영역: 날짜와 할일 개수 */}
-      <div className="flex items-center justify-between mb-1">
+      <div className="flex items-center justify-between mb-2">
         {/* 빈 공간 (균형을 위해) */}
         <div className="w-8"></div>
 
         {/* 날짜 표시 (중앙) */}
         <div
-          className={`text-sm font-medium flex items-center justify-center ${isToday
-            ? 'w-7 h-7 bg-blue-500 text-white rounded-full font-semibold leading-none'
-            : isCurrentMonth
-              ? 'text-gray-900'
-              : 'text-gray-400'
-            }`}
+          className={`text-sm font-medium flex items-center justify-center w-7 h-7 ${
+            isSelected
+              ? 'bg-blue-500 text-white rounded-full font-semibold leading-none shadow-md'
+              : isToday
+                ? 'text-gray-900 font-semibold'
+                : isCurrentMonth
+                  ? 'text-gray-900'
+                  : 'text-gray-400'
+          }`}
         >
           {date.getDate()}
         </div>

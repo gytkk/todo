@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { CalendarEvent, TodoItem } from '@/types';
 
 export const useCalendar = (todos: TodoItem[]) => {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
 
