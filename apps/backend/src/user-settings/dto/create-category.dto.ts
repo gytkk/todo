@@ -1,4 +1,5 @@
-import { IsString, IsNotEmpty, Matches } from "class-validator";
+import { IsString, IsNotEmpty, Matches, Length } from "class-validator";
+import { Transform } from "class-transformer";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class CreateCategoryDto {
@@ -7,7 +8,9 @@ export class CreateCategoryDto {
     example: "프로젝트",
   })
   @IsString()
+  @Transform(({ value }) => typeof value === 'string' ? value.trim() : value)
   @IsNotEmpty()
+  @Length(1, 50)
   name: string;
 
   @ApiProperty({

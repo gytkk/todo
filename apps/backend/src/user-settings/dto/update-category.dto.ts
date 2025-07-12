@@ -1,4 +1,4 @@
-import { IsString, IsOptional, Matches } from "class-validator";
+import { IsString, IsOptional, Matches, IsNotEmpty } from "class-validator";
 import { ApiPropertyOptional } from "@nestjs/swagger";
 
 export class UpdateCategoryDto {
@@ -8,6 +8,7 @@ export class UpdateCategoryDto {
   })
   @IsOptional()
   @IsString()
+  @IsNotEmpty()
   name?: string;
 
   @ApiPropertyOptional({
