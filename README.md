@@ -42,6 +42,7 @@ turbo dev --filter=backend
 
 - `turbo test` - 단위 테스트
 - `turbo test:e2e` - E2E 테스트
+- 테스트 커버리지 확인: <https://gytkk.github.io/todo/>
 
 ## 📁 프로젝트 구조
 
