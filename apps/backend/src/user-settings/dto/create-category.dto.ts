@@ -8,7 +8,9 @@ export class CreateCategoryDto {
     example: "프로젝트",
   })
   @IsString()
-  @Transform(({ value }) => typeof value === 'string' ? value.trim() : value)
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === "string" ? value.trim() : value,
+  )
   @IsNotEmpty()
   @Length(1, 50)
   name: string;

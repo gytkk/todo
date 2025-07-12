@@ -461,7 +461,7 @@ describe('useSettings', () => {
       const { result } = renderHook(() => useSettings());
 
       act(() => {
-        // @ts-ignore - 테스트를 위한 잘못된 키
+        // @ts-expect-error - 테스트를 위한 잘못된 키
         result.current.updateSetting('invalidKey', 'value');
       });
 
@@ -493,9 +493,6 @@ describe('useSettings', () => {
 
     it('여러 번의 렌더링에서 함수 참조가 안정적이어야 함', () => {
       const { result, rerender } = renderHook(() => useSettings());
-
-      const firstUpdateSetting = result.current.updateSetting;
-      const firstSetSettings = result.current.setSettings;
 
       rerender();
 

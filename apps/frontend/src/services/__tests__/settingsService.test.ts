@@ -56,7 +56,7 @@ describe('SettingsService', () => {
 
   afterEach(() => {
     // Reset the singleton instance for clean tests
-    (SettingsService as any).instance = undefined;
+    (SettingsService as unknown as { instance: undefined }).instance = undefined;
   });
 
   describe('Singleton Pattern', () => {
@@ -165,7 +165,7 @@ describe('SettingsService', () => {
     it('설정 검증 후 저장해야 함', async () => {
       const invalidSettings = {
         ...mockSettings,
-        theme: 'invalid-theme' as any
+        theme: 'invalid-theme' as unknown as AppSettings['theme']
       };
       mockSafeLocalStorageSet.mockReturnValue(true);
 
@@ -419,7 +419,7 @@ describe('SettingsService', () => {
     });
 
     it('유효하지 않은 날짜 형식을 기본값으로 보정해야 함', async () => {
-      const invalidSettings = { ...mockSettings, dateFormat: 'invalid' as any };
+      const invalidSettings = { ...mockSettings, dateFormat: 'invalid' as unknown as AppSettings['dateFormat'] };
       mockSafeLocalStorageGet.mockReturnValue(invalidSettings);
 
       const result = await service.getSettings();
@@ -428,7 +428,7 @@ describe('SettingsService', () => {
     });
 
     it('유효하지 않은 시간 형식을 기본값으로 보정해야 함', async () => {
-      const invalidSettings = { ...mockSettings, timeFormat: 'invalid' as any };
+      const invalidSettings = { ...mockSettings, timeFormat: 'invalid' as unknown as AppSettings['timeFormat'] };
       mockSafeLocalStorageGet.mockReturnValue(invalidSettings);
 
       const result = await service.getSettings();
@@ -437,7 +437,7 @@ describe('SettingsService', () => {
     });
 
     it('유효하지 않은 주 시작일을 기본값으로 보정해야 함', async () => {
-      const invalidSettings = { ...mockSettings, weekStart: 'invalid' as any };
+      const invalidSettings = { ...mockSettings, weekStart: 'invalid' as unknown as AppSettings['weekStart'] };
       mockSafeLocalStorageGet.mockReturnValue(invalidSettings);
 
       const result = await service.getSettings();
@@ -446,7 +446,7 @@ describe('SettingsService', () => {
     });
 
     it('유효하지 않은 기본 뷰를 기본값으로 보정해야 함', async () => {
-      const invalidSettings = { ...mockSettings, defaultView: 'invalid' as any };
+      const invalidSettings = { ...mockSettings, defaultView: 'invalid' as unknown as AppSettings['defaultView'] };
       mockSafeLocalStorageGet.mockReturnValue(invalidSettings);
 
       const result = await service.getSettings();
@@ -455,7 +455,7 @@ describe('SettingsService', () => {
     });
 
     it('유효하지 않은 백업 간격을 기본값으로 보정해야 함', async () => {
-      const invalidSettings = { ...mockSettings, backupInterval: 'invalid' as any };
+      const invalidSettings = { ...mockSettings, backupInterval: 'invalid' as unknown as AppSettings['backupInterval'] };
       mockSafeLocalStorageGet.mockReturnValue(invalidSettings);
 
       const result = await service.getSettings();
