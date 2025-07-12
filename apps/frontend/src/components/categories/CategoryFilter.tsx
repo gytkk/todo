@@ -28,25 +28,29 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
           return (
             <label
               key={category.id}
-              className={`flex items-center gap-2 p-3 rounded-md cursor-pointer transition-colors ${isActive ? 'bg-gray-50' : 'bg-gray-25 opacity-60'
-                } hover:bg-gray-100`}
+              className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200 ease-in-out ${
+                isActive 
+                  ? 'bg-gray-50 border-2 border-gray-200 shadow-sm' 
+                  : 'bg-gray-25 opacity-60 border-2 border-gray-100'
+              } hover:bg-gray-100 hover:shadow-md active:scale-95`}
             >
               <div className="relative flex items-center">
                 <input
                   type="checkbox"
                   checked={isActive}
                   onChange={() => onToggleCategory(category.id)}
-                  className="h-5 w-5 focus:ring-2 border-gray-300 rounded appearance-none cursor-pointer flex-shrink-0"
+                  className="h-5 w-5 focus:ring-2 focus:ring-offset-2 border-gray-300 rounded appearance-none cursor-pointer flex-shrink-0 transition-all duration-200"
                   style={{
                     backgroundColor: isActive ? category.color : 'transparent',
                     borderColor: category.color,
-                    borderWidth: '2px'
+                    borderWidth: '2px',
+                    boxShadow: isActive ? `0 0 0 2px ${category.color}20` : 'none'
                   }}
                 />
                 {isActive && (
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <svg
-                      className="w-5 h-5 text-white"
+                      className="w-5 h-5 text-white animate-in fade-in-0 zoom-in-50 duration-150"
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="2.5"
@@ -61,9 +65,21 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
                   </div>
                 )}
               </div>
-              <span className={`text-sm ${isActive ? 'text-gray-700' : 'text-gray-400'}`}>
-                {category.name}
-              </span>
+              <div className="flex items-center gap-2 flex-1">
+                <div 
+                  className="w-3 h-3 rounded-full flex-shrink-0 transition-all duration-200"
+                  style={{
+                    backgroundColor: isActive ? category.color : 'transparent',
+                    border: `2px solid ${category.color}`,
+                    opacity: isActive ? 1 : 0.4
+                  }}
+                />
+                <span className={`text-sm font-medium transition-all duration-200 ${
+                  isActive ? 'text-gray-700' : 'text-gray-400'
+                }`}>
+                  {category.name}
+                </span>
+              </div>
             </label>
           );
         })}

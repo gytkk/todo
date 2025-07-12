@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { addDays, subDays, isSameDay, format } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { TodoItem, CategoryFilter as CategoryFilterType } from '@calendar-todo/shared-types';
+import { TodoItem } from '@calendar-todo/shared-types';
 
 export interface DayData {
   date: Date;
@@ -21,19 +21,15 @@ export interface DailyViewData {
 
 export const useDailyView = (
   initialDate: Date = new Date(),
-  todos: TodoItem[],
-  categoryFilter: CategoryFilterType
+  todos: TodoItem[]
 ) => {
   const [selectedDate, setSelectedDate] = useState(initialDate);
 
   // 더 많은 날짜 데이터 생성 (선택된 날짜 기준으로 앞뒤 30일씩)
   const dailyData: DailyViewData = useMemo(() => {
-    // 날짜별 할일 필터링 함수
+    // 날짜별 할일 필터링 함수 (이미 필터링된 todos를 받으므로 카테고리 필터링 불필요)
     const getDayTodos = (date: Date): TodoItem[] => {
-      return todos.filter(todo =>
-        isSameDay(todo.date, date) &&
-        categoryFilter[todo.category.id] !== false
-      );
+      return todos.filter(todo => isSameDay(todo.date, date));
     };
 
     // 통계 계산 함수
@@ -66,7 +62,7 @@ export const useDailyView = (
       days,
       selectedDayIndex
     };
-  }, [selectedDate, todos, categoryFilter]);
+  }, [selectedDate, todos]);
 
   // 날짜 네비게이션
   const goToPreviousDay = () => {

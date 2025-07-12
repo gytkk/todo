@@ -10,6 +10,8 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   todos,
   onDateSelect,
   view,
+  allTodos = [],
+  hasActiveFilters = false,
 }) => {
   const calendarDates = view === 'week' 
     ? createWeekCalendarDates(currentDate, selectedDate, todos)
@@ -18,7 +20,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
 
   if (view === 'month') {
     return (
-      <div className="flex-1 bg-white flex flex-col">
+      <div className="flex-1 bg-white flex flex-col relative">
         {/* 요일 헤더 */}
         <div className="grid grid-cols-7 border-b border-gray-200 flex-shrink-0">
           {weekdayNames.map((day, index) => (
@@ -43,16 +45,34 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
               isCurrentMonth={calendarDate.isCurrentMonth}
               todos={calendarDate.todos}
               onSelect={onDateSelect}
+              allTodos={allTodos.filter(todo => {
+                const todoDate = new Date(todo.date);
+                return todoDate.getDate() === calendarDate.date.getDate() &&
+                       todoDate.getMonth() === calendarDate.date.getMonth() &&
+                       todoDate.getFullYear() === calendarDate.date.getFullYear();
+              })}
+              hasActiveFilters={hasActiveFilters}
             />
           ))}
         </div>
+        
+        {/* 필터링 결과가 없을 때 안내 메시지 */}
+        {hasActiveFilters && todos.length === 0 && allTodos.length > 0 && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90 pointer-events-none">
+            <div className="text-center p-6">
+              <div className="text-gray-500 mb-2">🔍</div>
+              <p className="text-gray-600 font-medium">선택한 카테고리에 할일이 없습니다</p>
+              <p className="text-gray-500 text-sm mt-1">왼쪽 필터를 확인해보세요</p>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
 
   if (view === 'week') {
     return (
-      <div className="flex-1 bg-white">
+      <div className="flex-1 bg-white relative">
         {/* 요일 헤더 */}
         <div className="grid grid-cols-7 border-b border-gray-200">
           {weekdayNames.map((day, index) => (
@@ -136,6 +156,17 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
             </div>
           ))}
         </div>
+        
+        {/* 필터링 결과가 없을 때 안내 메시지 */}
+        {hasActiveFilters && todos.length === 0 && allTodos.length > 0 && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90 pointer-events-none">
+            <div className="text-center p-6">
+              <div className="text-gray-500 mb-2">🔍</div>
+              <p className="text-gray-600 font-medium">선택한 카테고리에 할일이 없습니다</p>
+              <p className="text-gray-500 text-sm mt-1">왼쪽 필터를 확인해보세요</p>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -143,7 +174,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   if (view === 'day') {
     const dayData = createDayCalendarDate(currentDate, selectedDate, todos);
     return (
-      <div className="flex-1 bg-white p-6">
+      <div className="flex-1 bg-white p-6 relative">
         <div className="max-w-2xl mx-auto">
           {/* 선택된 날짜 표시 영역에 배경색과 테두리 추가 */}
           <div className={`rounded-lg p-6 mb-6 transition-colors ${dayData.isSelected ? 'bg-blue-50 border-2 border-blue-200' : 'bg-gray-50 border-2 border-gray-200'}`}>
@@ -169,7 +200,15 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
           <div className="space-y-3">
             {dayData.todos.length === 0 ? (
               <div className="text-center text-gray-500 py-12">
-                이 날에는 할일이 없습니다.
+                {hasActiveFilters && allTodos.length > 0 ? (
+                  <div>
+                    <div className="text-gray-500 mb-2">🔍</div>
+                    <p className="text-gray-600 font-medium">선택한 카테고리에 할일이 없습니다</p>
+                    <p className="text-gray-500 text-sm mt-1">왼쪽 필터를 확인해보세요</p>
+                  </div>
+                ) : (
+                  '이 날에는 할일이 없습니다.'
+                )}
               </div>
             ) : (
               dayData.todos.map((todo) => (

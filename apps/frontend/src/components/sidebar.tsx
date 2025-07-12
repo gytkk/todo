@@ -29,9 +29,15 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
   const [isExpanded, setIsExpanded] = useState(true);
   const [isVisible, setIsVisible] = useState(true);
   const [isFullyExpanded, setIsFullyExpanded] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
   const { categories, categoryFilter, toggleCategoryFilter } = useCategoryContext();
   const { user, isAuthenticated, logout } = useAuth();
   const pathname = usePathname();
+
+  // Hydration 이슈 방지를 위한 마운트 상태 체크
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const menuItems: MenuItem[] = [
     {
@@ -121,7 +127,7 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
       >
         {/* 헤더 */}
         <div className="flex items-center justify-between h-16 px-4 border-b border-gray-100">
-          {isFullyExpanded && (
+          {isMounted && isFullyExpanded && (
             <div className="flex items-center gap-3 overflow-hidden">
               <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
                 <User className="h-4 w-4 text-gray-500" />
@@ -168,8 +174,8 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
                       !isExpanded && "justify-center px-0"
                     )}
                   >
-                    <Icon className={cn("h-5 w-5", isFullyExpanded && "mr-3")} />
-                    {isFullyExpanded && (
+                    <Icon className={cn("h-5 w-5", isMounted && isFullyExpanded && "mr-3")} />
+                    {isMounted && isFullyExpanded && (
                       <div className="flex flex-col items-start overflow-hidden">
                         <span className="font-medium text-sm truncate">{item.name}</span>
                         <span className="text-xs text-gray-400 truncate">로그인 필요</span>
@@ -195,8 +201,8 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
                     }
                   }}
                 >
-                  <Icon className={cn("h-5 w-5", isFullyExpanded && "mr-3")} />
-                  {isFullyExpanded && (
+                  <Icon className={cn("h-5 w-5", isMounted && isFullyExpanded && "mr-3")} />
+                  {isMounted && isFullyExpanded && (
                     <div className="flex flex-col items-start">
                       <span className="font-medium text-sm">{item.name}</span>
                     </div>
@@ -207,27 +213,26 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
           })}
         </div>
 
-        {/* 카테고리 필터 - 홈 페이지에서만 표시, 인증된 사용자만 */}
-        {isFullyExpanded && pathname === "/" && isAuthenticated && (
+        {/* 카테고리 필터 - 홈 페이지에서만 표시 */}
+        {isFullyExpanded && pathname === "/" && (
           <div className="flex-1 overflow-y-auto scrollbar-thin">
             <CategoryFilter
               categories={categories}
               categoryFilter={categoryFilter}
               onToggleCategory={toggleCategoryFilter}
             />
-          </div>
-        )}
-
-        {/* 미인증 사용자를 위한 안내 메시지 */}
-        {isFullyExpanded && !isAuthenticated && (
-          <div className="flex-1 p-4 overflow-hidden">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-              <div className="text-blue-600 mb-2">
-                <LogIn className="h-6 w-6 mx-auto" />
+            {/* 미인증 사용자를 위한 안내 메시지 */}
+            {!isAuthenticated && (
+              <div className="p-4">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
+                  <div className="text-blue-600 mb-2">
+                    <LogIn className="h-5 w-5 mx-auto" />
+                  </div>
+                  <p className="text-xs text-blue-700 font-medium mb-1">로그인하면 더 많은 기능을 사용할 수 있습니다</p>
+                  <p className="text-xs text-blue-600">설정과 통계 기능을 이용해보세요.</p>
+                </div>
               </div>
-              <p className="text-sm text-blue-700 font-medium mb-1">로그인이 필요합니다</p>
-              <p className="text-xs text-blue-600">모든 기능을 이용하려면 로그인해주세요.</p>
-            </div>
+            )}
           </div>
         )}
 

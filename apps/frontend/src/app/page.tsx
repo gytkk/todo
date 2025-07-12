@@ -13,7 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 function HomeContent() {
   const { todos } = useTodoContext();
-  const { refreshCategories } = useCategoryContext();
+  const { getFilteredTodos, refreshCategories, categoryFilter, categories } = useCategoryContext();
   const { isAuthenticated } = useAuth();
   const {
     selectedDate,
@@ -55,6 +55,20 @@ function HomeContent() {
     }
   }, [closeSidebar]);
 
+  // 필터가 활성화되어 있는지 확인
+  const hasActiveFilters = categories.some(category => 
+    categoryFilter[category.id] === false
+  );
+
+  // 활성화된 필터 목록 생성
+  const activeFilters = categories.filter(category => 
+    categoryFilter[category.id] !== false
+  ).map(category => ({
+    id: category.id,
+    name: category.name,
+    color: category.color
+  }));
+
   return (
     <AppLayout>
       <ErrorBoundary>
@@ -71,10 +85,13 @@ function HomeContent() {
               <CalendarView
                 currentDate={currentDate}
                 selectedDate={selectedDate}
-                todos={todos} // 인증 여부와 관계없이 todos 전달 (useTodos에서 처리)
+                todos={getFilteredTodos(todos)} // 카테고리 필터가 적용된 todos 전달
                 onDateSelect={handleDateSelect} // 인증 여부와 관계없이 날짜 선택 허용
                 onNavigate={handleNavigate} // 달력 네비게이션은 허용
                 onCalendarClick={isAuthenticated ? handleCalendarClick : () => {}} // 미인증 시 비활성화
+                allTodos={todos} // 필터링 전 전체 할일 목록
+                hasActiveFilters={hasActiveFilters} // 필터 활성화 여부
+                activeFilters={activeFilters} // 활성화된 필터 목록
               />
             }
           />

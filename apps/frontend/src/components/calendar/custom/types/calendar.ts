@@ -18,6 +18,9 @@ export interface CalendarProps {
   onNavigate: (date: Date) => void;
   view?: CalendarView;
   onViewChange?: (view: CalendarView) => void;
+  allTodos?: TodoItem[]; // 필터링 전 전체 할일 목록
+  hasActiveFilters?: boolean; // 필터가 활성화되어 있는지 여부
+  activeFilters?: { id: string; name: string; color: string }[]; // 활성화된 필터 목록
 }
 
 export interface CalendarHeaderProps {
@@ -26,6 +29,8 @@ export interface CalendarHeaderProps {
   onNavigate: (date: Date) => void;
   onViewChange: (view: CalendarView) => void;
   onDateSelect: (date: Date) => void;
+  activeFilters?: { id: string; name: string; color: string }[]; // 활성화된 필터 목록
+  hasActiveFilters?: boolean; // 필터가 활성화되어 있는지 여부
 }
 
 export interface CalendarGridProps {
@@ -34,6 +39,8 @@ export interface CalendarGridProps {
   todos: TodoItem[];
   onDateSelect: (date: Date) => void;
   view: CalendarView;
+  allTodos?: TodoItem[]; // 필터링 전 전체 할일 목록
+  hasActiveFilters?: boolean; // 필터가 활성화되어 있는지 여부
 }
 
 export interface CalendarCellProps {
@@ -43,6 +50,8 @@ export interface CalendarCellProps {
   isCurrentMonth: boolean;
   todos: TodoItem[];
   onSelect: (date: Date) => void;
+  allTodos?: TodoItem[]; // 필터링 전 전체 할일 목록
+  hasActiveFilters?: boolean; // 필터가 활성화되어 있는지 여부
 }
 
 export interface CalendarTodosProps {

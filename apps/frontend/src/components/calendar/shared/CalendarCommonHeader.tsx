@@ -18,6 +18,8 @@ interface CalendarCommonHeaderProps {
     next: string;
   };
   isTodayDisabled?: boolean;
+  activeFilters?: { id: string; name: string; color: string }[];
+  hasActiveFilters?: boolean;
 }
 
 export const CalendarCommonHeader: React.FC<CalendarCommonHeaderProps> = ({
@@ -28,7 +30,9 @@ export const CalendarCommonHeader: React.FC<CalendarCommonHeaderProps> = ({
   onToday,
   title,
   navigationLabels,
-  isTodayDisabled = false
+  isTodayDisabled = false,
+  activeFilters = [],
+  hasActiveFilters = false
 }) => {
   return (
     <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
@@ -57,9 +61,29 @@ export const CalendarCommonHeader: React.FC<CalendarCommonHeaderProps> = ({
           <ChevronLeft className="w-4 h-4 text-gray-600" />
         </Button>
 
-        <h2 className="text-lg font-semibold text-gray-900 min-w-[200px] text-center">
-          {title}
-        </h2>
+        <div className="flex flex-col items-center min-w-[200px]">
+          <h2 className="text-lg font-semibold text-gray-900 text-center">
+            {title}
+          </h2>
+          {hasActiveFilters && (
+            <div className="flex items-center gap-1 mt-1">
+              <span className="text-xs text-gray-500">필터:</span>
+              {activeFilters.map((filter) => (
+                <div
+                  key={filter.id}
+                  className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-50 border"
+                  style={{ borderColor: filter.color }}
+                >
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: filter.color }}
+                  />
+                  <span className="text-xs text-gray-700">{filter.name}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         <Button
           variant="ghost"

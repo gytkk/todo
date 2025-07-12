@@ -10,11 +10,17 @@ export const CalendarCell: React.FC<CalendarCellProps> = ({
   isCurrentMonth,
   todos,
   onSelect,
+  allTodos = [],
+  hasActiveFilters = false,
 }) => {
   const { total, completed } = getTodoCompletionStats(todos);
   const hasIncomplete = hasIncompleteTodos(todos);
   const primaryColor = getPrimaryCategoryColor(todos);
   const showMixedIndicator = shouldShowMixedCategoryIndicator(todos);
+  
+  // 필터링 정보 계산
+  const { total: allTotal } = getTodoCompletionStats(allTodos);
+  const hasHiddenTodos = hasActiveFilters && allTotal > total;
 
   const handleClick = () => {
     onSelect(date);
@@ -65,7 +71,7 @@ export const CalendarCell: React.FC<CalendarCellProps> = ({
 
         {/* 할일 개수 표시 (오른쪽) */}
         <div className="w-8 flex justify-end">
-          {total > 0 && (
+          {(total > 0 || hasHiddenTodos) && (
             <div className="flex items-center gap-1">
               {hasIncomplete && (
                 <div className="relative">
@@ -79,7 +85,14 @@ export const CalendarCell: React.FC<CalendarCellProps> = ({
                 </div>
               )}
               <div className="text-xs text-gray-500">
-                {completed}/{total}
+                {hasHiddenTodos ? (
+                  <span className="flex items-center gap-1">
+                    <span>{completed}/{total}</span>
+                    <span className="text-gray-400">({allTotal})</span>
+                  </span>
+                ) : (
+                  <span>{completed}/{total}</span>
+                )}
               </div>
             </div>
           )}

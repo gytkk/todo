@@ -16,6 +16,9 @@ interface CalendarViewProps {
   onNavigate: (date: Date) => void;
   onCalendarClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
   defaultView?: CalendarViewType;
+  allTodos?: TodoItem[]; // 필터링 전 전체 할일 목록
+  hasActiveFilters?: boolean; // 필터가 활성화되어 있는지 여부
+  activeFilters?: { id: string; name: string; color: string }[]; // 활성화된 필터 목록
 }
 
 function CalendarViewComponent({
@@ -25,7 +28,10 @@ function CalendarViewComponent({
   onDateSelect,
   onNavigate,
   onCalendarClick,
-  defaultView = 'month'
+  defaultView = 'month',
+  allTodos = [],
+  hasActiveFilters = false,
+  activeFilters = []
 }: CalendarViewProps) {
   const [currentView, setCurrentView] = useState<CalendarViewType>(defaultView);
 
@@ -55,6 +61,9 @@ function CalendarViewComponent({
               onNavigate={handleNavigate}
               view={currentView}
               onViewChange={handleViewChange}
+              allTodos={allTodos}
+              hasActiveFilters={hasActiveFilters}
+              activeFilters={activeFilters}
             />
           </div>
         </NoSSR>

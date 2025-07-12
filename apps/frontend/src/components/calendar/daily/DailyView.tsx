@@ -25,14 +25,10 @@ export const DailyView: React.FC<DailyViewProps> = ({
   } = useTodoContext();
   const {
     categories,
-    categoryFilter,
-    getFilteredTodos,
     refreshCategories
   } = useCategoryContext();
 
-  // 카테고리 필터가 적용된 할일들
-  const filteredTodos = getFilteredTodos(todos);
-
+  // 이미 필터링된 todos를 받으므로 추가 필터링 불필요
   const {
     dailyData,
     selectedDate,
@@ -42,7 +38,7 @@ export const DailyView: React.FC<DailyViewProps> = ({
     goToDate,
     formatDate,
     isToday
-  } = useDailyView(initialDate, filteredTodos, categoryFilter);
+  } = useDailyView(initialDate, todos);
 
   // 날짜 변경 시 부모 컴포넌트에 알림
   useEffect(() => {
