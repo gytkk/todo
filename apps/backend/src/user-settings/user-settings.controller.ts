@@ -8,6 +8,8 @@ import {
   Param,
   UseGuards,
   Request,
+  UsePipes,
+  ValidationPipe,
 } from "@nestjs/common";
 import { User } from "../users/user.entity";
 import {
@@ -24,6 +26,7 @@ import { UserSettingsService } from "./user-settings.service";
 import { CreateCategoryDto } from "./dto/create-category.dto";
 import { UpdateCategoryDto } from "./dto/update-category.dto";
 import { UpdateSettingsDto } from "./dto/update-settings.dto";
+import { ReorderCategoriesDto } from "./dto/reorder-categories.dto";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 
 @ApiTags("User Settings")
@@ -154,5 +157,27 @@ export class UserSettingsController {
       req.user.id,
     );
     return { filter };
+  }
+
+  @Put("categories/reorder")
+  @UsePipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: false,
+      transform: true,
+    }),
+  )
+  @ApiOperation({ summary: "카테고리 순서 변경" })
+  @ApiResponse({ status: 200, description: "카테고리 순서 변경 성공" })
+  @ApiResponse({ status: 400, description: "잘못된 카테고리 순서 요청" })
+  async reorderCategories(
+    @Request() req: RequestWithUser,
+    @Body() reorderCategoriesDto: ReorderCategoriesDto,
+  ) {
+    const categories = await this.userSettingsService.reorderCategories(
+      req.user.id,
+      reorderCategoriesDto.categoryIds,
+    );
+    return { categories };
   }
 }

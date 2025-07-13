@@ -25,8 +25,8 @@ export class UserSettingsRepository {
             id: string;
             name: string;
             color: string;
-            isDefault: boolean;
             createdAt: string;
+            order?: number;
           }>;
           categoryFilter: { [categoryId: string]: boolean };
           theme: "light" | "dark" | "system";

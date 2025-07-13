@@ -333,14 +333,11 @@ describe("UserSettingsEntity", () => {
       entity = new UserSettingsEntity({ userId: "user-1" });
     });
 
-    it("사용되지 않은 색상들을 반환해야 함", () => {
+    it("모든 사용 가능한 색상들을 반환해야 함 (중복 허용)", () => {
       const availableColors = entity.getAvailableColors();
-      const usedColors = entity.settings.categories.map((cat) => cat.color);
 
-      // 사용된 색상이 available colors에 포함되지 않아야 함
-      usedColors.forEach((usedColor) => {
-        expect(availableColors).not.toContain(usedColor);
-      });
+      // 중복 색상을 허용하므로 모든 색상이 반환되어야 함
+      expect(availableColors).toHaveLength(9); // 기본 9개 색상
 
       // 모든 반환된 색상이 유효한 헥스 색상이어야 함
       availableColors.forEach((color) => {
@@ -348,16 +345,17 @@ describe("UserSettingsEntity", () => {
       });
     });
 
-    it("새 카테고리를 추가하면 해당 색상이 available colors에서 제거되어야 함", () => {
+    it("새 카테고리를 추가해도 available colors는 변하지 않아야 함 (중복 허용)", () => {
       const initialAvailableColors = entity.getAvailableColors();
       const colorToUse = initialAvailableColors[0];
 
       entity.addCategory("새 카테고리", colorToUse);
 
       const updatedAvailableColors = entity.getAvailableColors();
-      expect(updatedAvailableColors).not.toContain(colorToUse);
+      // 중복 색상을 허용하므로 색상이 여전히 존재해야 함
+      expect(updatedAvailableColors).toContain(colorToUse);
       expect(updatedAvailableColors).toHaveLength(
-        initialAvailableColors.length - 1,
+        initialAvailableColors.length,
       );
     });
   });
@@ -418,6 +416,202 @@ describe("UserSettingsEntity", () => {
       expect(entity.settings.language).toBe("ko");
       expect(entity.createdAt).toBeInstanceOf(Date);
       expect(entity.updatedAt).toBeInstanceOf(Date);
+    });
+  });
+
+  describe("reorderCategories", () => {
+    let entity: UserSettingsEntity;
+
+    beforeEach(() => {
+      entity = new UserSettingsEntity({ userId: "user-1" });
+    });
+
+    it("유효한 카테고리 순서로 재정렬해야 함", () => {
+      const categories = entity.getCategories();
+      const originalFirstId = categories[0].id;
+      const originalSecondId = categories[1].id;
+
+      // 순서를 바꾼 배열
+      const newOrder = [originalSecondId, originalFirstId];
+
+      const result = entity.reorderCategories(newOrder);
+
+      expect(result).toBe(true);
+
+      const reorderedCategories = entity.getCategories();
+      expect(reorderedCategories[0].id).toBe(originalSecondId);
+      expect(reorderedCategories[1].id).toBe(originalFirstId);
+      expect(reorderedCategories[0].order).toBe(0);
+      expect(reorderedCategories[1].order).toBe(1);
+    });
+
+    it("잘못된 길이의 배열로 재정렬 시 false를 반환해야 함", () => {
+      const result = entity.reorderCategories(["only-one-id"]);
+      expect(result).toBe(false);
+    });
+
+    it("존재하지 않는 카테고리 ID로 재정렬 시 false를 반환해야 함", () => {
+      const categories = entity.getCategories();
+      const invalidOrder = ["invalid-id", categories[1].id];
+
+      const result = entity.reorderCategories(invalidOrder);
+      expect(result).toBe(false);
+    });
+
+    it("빈 배열로 재정렬 시 false를 반환해야 함", () => {
+      const result = entity.reorderCategories([]);
+      expect(result).toBe(false);
+    });
+
+    it("중복된 ID가 있는 배열로 재정렬 시 false를 반환해야 함", () => {
+      const categories = entity.getCategories();
+      const duplicateOrder = [categories[0].id, categories[0].id]; // 같은 ID 중복
+
+      const result = entity.reorderCategories(duplicateOrder);
+      expect(result).toBe(false);
+    });
+  });
+
+  describe("ensureCategoryOrder 마이그레이션", () => {
+    it("order 필드가 없는 기존 카테고리에 order를 추가해야 함", () => {
+      // order 필드가 없는 카테고리 데이터로 엔티티 생성
+      const entity = new UserSettingsEntity({
+        userId: "user-1",
+        settings: {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          categories: [
+            {
+              id: "cat-1",
+              name: "개인",
+              color: "#3b82f6",
+              createdAt: new Date("2023-01-01"),
+              // order 필드 없음
+            },
+            {
+              id: "cat-2",
+              name: "회사",
+              color: "#10b981",
+              createdAt: new Date("2023-01-01"),
+              // order 필드 없음
+            },
+          ] as any,
+          categoryFilter: {},
+          theme: "system",
+          language: "ko",
+        },
+      });
+
+      // getCategories 호출 시 마이그레이션이 자동으로 실행됨
+      const categories = entity.getCategories();
+
+      expect(categories[0].order).toBe(0);
+      expect(categories[1].order).toBe(1);
+      expect(categories).toHaveLength(2);
+    });
+
+    it("order 필드가 이미 있는 카테고리는 변경하지 않아야 함", () => {
+      const entity = new UserSettingsEntity({
+        userId: "user-1",
+        settings: {
+          categories: [
+            {
+              id: "cat-1",
+              name: "개인",
+              color: "#3b82f6",
+              createdAt: new Date("2023-01-01"),
+              order: 5, // 이미 order 필드 존재
+            },
+            {
+              id: "cat-2",
+              name: "회사",
+              color: "#10b981",
+              createdAt: new Date("2023-01-01"),
+              order: 3, // 이미 order 필드 존재
+            },
+          ],
+          categoryFilter: {},
+          theme: "system",
+          language: "ko",
+        },
+      });
+
+      const categories = entity.getCategories();
+
+      // 기존 order 값이 유지되어야 함
+      expect(categories.find((c) => c.id === "cat-2")?.order).toBe(3);
+      expect(categories.find((c) => c.id === "cat-1")?.order).toBe(5);
+    });
+
+    it("일부 카테고리만 order 필드가 없을 때 올바르게 마이그레이션해야 함", () => {
+      const entity = new UserSettingsEntity({
+        userId: "user-1",
+        settings: {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          categories: [
+            {
+              id: "cat-1",
+              name: "개인",
+              color: "#3b82f6",
+              createdAt: new Date("2023-01-01"),
+              order: 0, // 이미 order 필드 존재
+            },
+            {
+              id: "cat-2",
+              name: "회사",
+              color: "#10b981",
+              createdAt: new Date("2023-01-01"),
+              // order 필드 없음
+            },
+            {
+              id: "cat-3",
+              name: "프로젝트",
+              color: "#8b5cf6",
+              createdAt: new Date("2023-01-01"),
+              // order 필드 없음
+            },
+          ] as any,
+          categoryFilter: {},
+          theme: "system",
+          language: "ko",
+        },
+      });
+
+      const categories = entity.getCategories();
+
+      expect(categories.find((c) => c.id === "cat-1")?.order).toBe(0); // 기존 값 유지
+      expect(categories.find((c) => c.id === "cat-2")?.order).toBe(1); // 인덱스로 설정
+      expect(categories.find((c) => c.id === "cat-3")?.order).toBe(2); // 인덱스로 설정
+    });
+  });
+
+  describe("addCategory with order", () => {
+    let entity: UserSettingsEntity;
+
+    beforeEach(() => {
+      entity = new UserSettingsEntity({ userId: "user-1" });
+    });
+
+    it("새 카테고리 추가 시 올바른 order 값을 할당해야 함", () => {
+      const existingCategories = entity.getCategories();
+      const maxOrder = Math.max(...existingCategories.map((c) => c.order));
+
+      const newCategoryId = entity.addCategory("새 카테고리", "#ff0000");
+      const newCategory = entity.getCategoryById(newCategoryId);
+
+      expect(newCategory?.order).toBe(maxOrder + 1);
+    });
+
+    it("첫 번째 카테고리들을 모두 삭제 후 새 카테고리 추가 시 order가 올바르게 설정되어야 함", () => {
+      // 모든 기본 카테고리 삭제 (마지막 하나 제외)
+      const categories = entity.getCategories();
+      for (let i = categories.length - 1; i > 0; i--) {
+        entity.deleteCategory(categories[i].id);
+      }
+
+      const newCategoryId = entity.addCategory("새 카테고리", "#ff0000");
+      const newCategory = entity.getCategoryById(newCategoryId);
+
+      expect(newCategory?.order).toBe(1); // 남은 카테고리의 order + 1
     });
   });
 });
