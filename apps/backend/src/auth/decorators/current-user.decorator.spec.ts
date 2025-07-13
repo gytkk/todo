@@ -29,6 +29,13 @@ describe("CurrentUser Decorator", () => {
       switchToHttp: jest.fn().mockReturnValue({
         getRequest: jest.fn().mockReturnValue(mockRequest),
       }),
+      getClass: jest.fn(),
+      getHandler: jest.fn(),
+      getArgs: jest.fn(),
+      getArgByIndex: jest.fn(),
+      switchToRpc: jest.fn(),
+      switchToWs: jest.fn(),
+      getType: jest.fn(),
     } as jest.Mocked<ExecutionContext>;
 
     // 데코레이터 팩토리 함수를 직접 정의하여 테스트
@@ -59,7 +66,7 @@ describe("CurrentUser Decorator", () => {
 
     it("data가 null일 때 전체 user 객체를 반환해야 함", () => {
       const result = decoratorFactory(
-        null as keyof User | undefined,
+        null as unknown as keyof User | undefined,
         mockExecutionContext,
       );
 
@@ -282,7 +289,7 @@ describe("CurrentUser Decorator", () => {
       expect(result).toBe(mockUser);
 
       result = decoratorFactory(
-        null as keyof User | undefined,
+        null as unknown as keyof User | undefined,
         mockExecutionContext,
       ) as User;
       expect(result).toBe(mockUser);
