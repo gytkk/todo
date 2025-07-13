@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { DailyViewHeader } from './DailyViewHeader';
 import { DaySection } from './DaySection';
 import { useDailyView } from './hooks/useDailyView';
 import { useTodoContext, useCategoryContext } from '@/contexts/AppContext';
@@ -9,13 +8,11 @@ import { useTodoContext, useCategoryContext } from '@/contexts/AppContext';
 interface DailyViewProps {
   selectedDate?: Date;
   onDateChange?: (date: Date) => void;
-  onViewChange?: (view: 'month' | 'week' | 'day') => void;
 }
 
 export const DailyView: React.FC<DailyViewProps> = ({
   selectedDate: initialDate,
   onDateChange,
-  onViewChange
 }) => {
   const {
     todos,
@@ -29,7 +26,7 @@ export const DailyView: React.FC<DailyViewProps> = ({
   } = useCategoryContext();
 
   // 스크롤 기반 날짜 선택을 위한 상태
-  const [visibleDate, setVisibleDate] = useState<Date>(initialDate || new Date());
+  const [, setVisibleDate] = useState<Date>(initialDate || new Date());
   
   // 디바운스를 위한 ref
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -40,7 +37,6 @@ export const DailyView: React.FC<DailyViewProps> = ({
     selectedDate,
     goToToday,
     goToDate,
-    formatDate,
     isToday
   } = useDailyView(initialDate, todos);
 
@@ -103,6 +99,23 @@ export const DailyView: React.FC<DailyViewProps> = ({
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [goToToday]);
+
+  // 휠 이벤트 핸들러 추가
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const handleWheel = (event: WheelEvent) => {
+      // 기본 스크롤 동작 허용
+      event.stopPropagation();
+    };
+
+    container.addEventListener('wheel', handleWheel, { passive: true });
+
+    return () => {
+      container.removeEventListener('wheel', handleWheel);
+    };
+  }, []);
 
   // 할일 추가 핸들러 (날짜 지정)
   const handleAddTodo = (date: Date) => (title: string, categoryId: string) => {
@@ -213,26 +226,18 @@ export const DailyView: React.FC<DailyViewProps> = ({
 
   return (
     <div className="h-full flex flex-col bg-gray-50">
-      {/* 헤더 */}
-      <DailyViewHeader
-        selectedDate={visibleDate}
-        onToday={goToToday}
-        onDateSelect={goToDate}
-        formatDate={formatDate}
-        isToday={isToday}
-        onViewChange={onViewChange}
-      />
-
       {/* 메인 콘텐츠: 세로 스크롤 */}
       <div
         ref={scrollContainerRef}
-        className="flex-1 overflow-y-auto scroll-smooth"
+        className="flex-1 overflow-y-scroll overflow-x-hidden"
         style={{
           scrollBehavior: 'smooth',
-          overscrollBehavior: 'contain'
+          minHeight: '0',
+          height: 'calc(100vh - 140px)',
+          WebkitOverflowScrolling: 'touch'
         }}
       >
-        <div className="max-w-4xl mx-auto p-6 space-y-8">
+        <div className="max-w-4xl mx-auto p-6 space-y-8" style={{ minHeight: 'calc(200vh)' }}>
           {days.map((dayData, index) => {
             const isSelectedDay = index === selectedDayIndex;
             const isTodayActual = isToday(dayData.date);
@@ -248,7 +253,7 @@ export const DailyView: React.FC<DailyViewProps> = ({
                   }
                   setDayRef(dayData.date, element);
                 }}
-                className={`transition-all duration-200 ${isSelectedDay
+                className={`transition-all duration-200 min-h-[600px] ${isSelectedDay
                     ? 'border-l-4 border-blue-500 pl-4'
                     : 'pl-4'
                   }`}
