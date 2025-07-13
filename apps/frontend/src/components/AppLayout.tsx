@@ -35,15 +35,32 @@ export function AppLayout({ children }: AppLayoutProps) {
   // 보호된 페이지 확인 (메인 페이지는 제외)
   const isProtectedPage = ['/settings', '/statistics'].includes(pathname);
 
-  // 로딩 중일 때 스피너 표시
+  // 로딩 중일 때 스피너 표시 - 서버/클라이언트 일관성을 위해 같은 레이아웃 사용
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-white">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-muted-foreground">로딩 중...</p>
+      <ErrorBoundary>
+        <div className="h-screen bg-white relative overflow-hidden">
+          <Sidebar
+            currentPage={getCurrentPage()}
+            onSidebarStateChange={(expanded, visible) => {
+              setSidebarExpanded(expanded);
+              setSidebarVisible(visible);
+            }}
+            onCloseTodoSidebar={closeSidebar}
+          />
+          <div className={`h-screen transition-all duration-300 ease-in-out ${sidebarVisible
+            ? (sidebarExpanded ? 'ml-64' : 'ml-16')
+            : 'ml-0'
+            }`}>
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                <p className="text-muted-foreground">로딩 중...</p>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </ErrorBoundary>
     );
   }
 
