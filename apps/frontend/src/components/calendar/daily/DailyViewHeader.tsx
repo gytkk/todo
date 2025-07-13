@@ -7,8 +7,6 @@ type CalendarViewType = 'month' | 'week' | 'day';
 
 interface DailyViewHeaderProps {
   selectedDate: Date;
-  onPreviousDay: () => void;
-  onNextDay: () => void;
   onToday: () => void;
   onDateSelect?: (date: Date) => void;
   formatDate: (date: Date, formatStr?: string) => string;
@@ -18,8 +16,6 @@ interface DailyViewHeaderProps {
 
 export const DailyViewHeader: React.FC<DailyViewHeaderProps> = ({
   selectedDate,
-  onPreviousDay,
-  onNextDay,
   onToday,
   formatDate,
   isToday,
@@ -41,14 +37,9 @@ export const DailyViewHeader: React.FC<DailyViewHeaderProps> = ({
     <CalendarCommonHeader
       currentView="day"
       onViewChange={handleViewChange}
-      onPrevious={onPreviousDay}
-      onNext={onNextDay}
       onToday={onToday}
       title={getTitle()}
-      navigationLabels={{
-        prev: '이전 날',
-        next: '다음 날'
-      }}
+      hideNavigation={true}
       isTodayDisabled={todayDate}
     />
   );

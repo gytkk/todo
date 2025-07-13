@@ -9,15 +9,16 @@ type CalendarViewType = 'month' | 'week' | 'day';
 interface CalendarCommonHeaderProps {
   currentView: CalendarViewType;
   onViewChange: (view: CalendarViewType) => void;
-  onPrevious: () => void;
-  onNext: () => void;
+  onPrevious?: () => void;
+  onNext?: () => void;
   onToday: () => void;
   title: string;
-  navigationLabels: {
+  navigationLabels?: {
     prev: string;
     next: string;
   };
   isTodayDisabled?: boolean;
+  hideNavigation?: boolean;
 }
 
 export const CalendarCommonHeader: React.FC<CalendarCommonHeaderProps> = ({
@@ -28,7 +29,8 @@ export const CalendarCommonHeader: React.FC<CalendarCommonHeaderProps> = ({
   onToday,
   title,
   navigationLabels,
-  isTodayDisabled = false
+  isTodayDisabled = false,
+  hideNavigation = false
 }) => {
   return (
     <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
@@ -47,29 +49,33 @@ export const CalendarCommonHeader: React.FC<CalendarCommonHeaderProps> = ({
 
       {/* 중앙: 현재 날짜/기간 표시 with 네비게이션 */}
       <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onPrevious}
-          className="rounded-full w-8 h-8 p-0 hover:bg-gray-100"
-          title={navigationLabels.prev}
-        >
-          <ChevronLeft className="w-4 h-4 text-gray-600" />
-        </Button>
+        {!hideNavigation && onPrevious && navigationLabels && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onPrevious}
+            className="rounded-full w-8 h-8 p-0 hover:bg-gray-100"
+            title={navigationLabels.prev}
+          >
+            <ChevronLeft className="w-4 h-4 text-gray-600" />
+          </Button>
+        )}
 
         <h2 className="text-lg font-semibold text-gray-900 min-w-[200px] text-center">
           {title}
         </h2>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onNext}
-          className="rounded-full w-8 h-8 p-0 hover:bg-gray-100"
-          title={navigationLabels.next}
-        >
-          <ChevronRight className="w-4 h-4 text-gray-600" />
-        </Button>
+        {!hideNavigation && onNext && navigationLabels && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onNext}
+            className="rounded-full w-8 h-8 p-0 hover:bg-gray-100"
+            title={navigationLabels.next}
+          >
+            <ChevronRight className="w-4 h-4 text-gray-600" />
+          </Button>
+        )}
       </div>
 
       {/* 오른쪽: 뷰 선택 버튼 */}

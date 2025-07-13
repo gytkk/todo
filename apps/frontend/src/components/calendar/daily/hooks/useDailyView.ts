@@ -25,7 +25,7 @@ export const useDailyView = (
 ) => {
   const [selectedDate, setSelectedDate] = useState(initialDate);
 
-  // 더 많은 날짜 데이터 생성 (선택된 날짜 기준으로 앞뒤 30일씩)
+  // 더 많은 날짜 데이터 생성 (선택된 날짜 기준으로 앞뒤 90일씩)
   const dailyData: DailyViewData = useMemo(() => {
     // 날짜별 할일 필터링 함수 (이미 필터링된 todos를 받으므로 카테고리 필터링 불필요)
     const getDayTodos = (date: Date): TodoItem[] => {
@@ -42,8 +42,8 @@ export const useDailyView = (
     };
 
     const days: DayData[] = [];
-    const totalDays = 61; // 앞뒤 30일씩 + 선택날짜 = 총 61일
-    const selectedDayIndex = 30; // 가운데가 선택된 날짜
+    const totalDays = 181; // 앞뒤 90일씩 + 선택날짜 = 총 181일
+    const selectedDayIndex = 90; // 가운데가 선택된 날짜
 
     for (let i = 0; i < totalDays; i++) {
       const dayOffset = i - selectedDayIndex;

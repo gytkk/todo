@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { DailyViewHeader } from './DailyViewHeader';
 import { DaySection } from './DaySection';
 import { useDailyView } from './hooks/useDailyView';
@@ -28,12 +28,16 @@ export const DailyView: React.FC<DailyViewProps> = ({
     refreshCategories
   } = useCategoryContext();
 
+  // 스크롤 기반 날짜 선택을 위한 상태
+  const [visibleDate, setVisibleDate] = useState<Date>(initialDate || new Date());
+  
+  // 디바운스를 위한 ref
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   // 이미 필터링된 todos를 받으므로 추가 필터링 불필요
   const {
     dailyData,
     selectedDate,
-    goToPreviousDay,
-    goToNextDay,
     goToToday,
     goToDate,
     formatDate,
@@ -61,7 +65,7 @@ export const DailyView: React.FC<DailyViewProps> = ({
     };
   }, [refreshCategories]);
 
-  // 키보드 단축키 처리
+  // 키보드 단축키 처리 (스크롤 기반으로 변경)
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       // 입력 필드에 포커스가 있을 때는 단축키 비활성화
@@ -72,16 +76,19 @@ export const DailyView: React.FC<DailyViewProps> = ({
         return;
       }
 
+      const container = scrollContainerRef.current;
+      if (!container) return;
+
       switch (event.key) {
         case 'ArrowLeft':
         case 'ArrowUp':
           event.preventDefault();
-          goToPreviousDay();
+          container.scrollBy({ top: -200, behavior: 'smooth' });
           break;
         case 'ArrowRight':
         case 'ArrowDown':
           event.preventDefault();
-          goToNextDay();
+          container.scrollBy({ top: 200, behavior: 'smooth' });
           break;
         case 't':
         case 'T':
@@ -95,7 +102,7 @@ export const DailyView: React.FC<DailyViewProps> = ({
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [goToPreviousDay, goToNextDay, goToToday]);
+  }, [goToToday]);
 
   // 할일 추가 핸들러 (날짜 지정)
   const handleAddTodo = (date: Date) => (title: string, categoryId: string) => {
@@ -105,8 +112,76 @@ export const DailyView: React.FC<DailyViewProps> = ({
   const { days, selectedDayIndex } = dailyData;
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const selectedDayRef = useRef<HTMLDivElement>(null);
+  const dayRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
-  // 선택된 날짜로 스크롤하기
+  // Intersection Observer를 사용한 스크롤 기반 날짜 선택
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    let timeoutId: NodeJS.Timeout | null = null;
+    const currentDebounceTimer = debounceTimerRef.current;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // 가장 많이 보이는 날짜 찾기
+        let maxRatio = 0;
+        let mostVisibleDate: Date | null = null;
+
+        entries.forEach((entry) => {
+          if (entry.intersectionRatio > maxRatio) {
+            maxRatio = entry.intersectionRatio;
+            const dateKey = entry.target.getAttribute('data-date');
+            if (dateKey) {
+              mostVisibleDate = new Date(dateKey);
+            }
+          }
+        });
+
+        if (mostVisibleDate && maxRatio > 0.3) {
+          setVisibleDate(mostVisibleDate);
+          
+          // 디바운스 타이머 취소
+          if (debounceTimerRef.current) {
+            clearTimeout(debounceTimerRef.current);
+          }
+          
+          // 이전 타이머 취소
+          if (timeoutId) {
+            clearTimeout(timeoutId);
+          }
+          
+          // 선택된 날짜도 업데이트 (부드러운 변경을 위해 약간의 지연)
+          timeoutId = setTimeout(() => {
+            goToDate(mostVisibleDate!);
+            timeoutId = null;
+          }, 150);
+        }
+      },
+      {
+        root: container,
+        rootMargin: '-20% 0px -20% 0px', // 중앙 60% 영역에서만 감지
+        threshold: [0.1, 0.3, 0.5, 0.7]
+      }
+    );
+
+    // 모든 날짜 섹션을 관찰
+    dayRefs.current.forEach((element) => {
+      observer.observe(element);
+    });
+
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      if (currentDebounceTimer) {
+        clearTimeout(currentDebounceTimer);
+      }
+      observer.disconnect();
+    };
+  }, [days, goToDate]);
+
+  // 선택된 날짜로 스크롤하기 (초기 로드 및 오늘 버튼 클릭 시)
   useEffect(() => {
     if (selectedDayRef.current && scrollContainerRef.current) {
       const container = scrollContainerRef.current;
@@ -126,13 +201,21 @@ export const DailyView: React.FC<DailyViewProps> = ({
     }
   }, [selectedDate]);
 
+  // dayRefs 설정 콜백
+  const setDayRef = useCallback((date: Date, element: HTMLDivElement | null) => {
+    const dateKey = date.toISOString();
+    if (element) {
+      dayRefs.current.set(dateKey, element);
+    } else {
+      dayRefs.current.delete(dateKey);
+    }
+  }, []);
+
   return (
     <div className="h-full flex flex-col bg-gray-50">
       {/* 헤더 */}
       <DailyViewHeader
-        selectedDate={selectedDate}
-        onPreviousDay={goToPreviousDay}
-        onNextDay={goToNextDay}
+        selectedDate={visibleDate}
         onToday={goToToday}
         onDateSelect={goToDate}
         formatDate={formatDate}
@@ -144,16 +227,27 @@ export const DailyView: React.FC<DailyViewProps> = ({
       <div
         ref={scrollContainerRef}
         className="flex-1 overflow-y-auto scroll-smooth"
+        style={{
+          scrollBehavior: 'smooth',
+          overscrollBehavior: 'contain'
+        }}
       >
         <div className="max-w-4xl mx-auto p-6 space-y-8">
           {days.map((dayData, index) => {
             const isSelectedDay = index === selectedDayIndex;
             const isTodayActual = isToday(dayData.date);
+            const dateKey = dayData.date.toISOString();
 
             return (
               <div
                 key={dayData.date.getTime()}
-                ref={isSelectedDay ? selectedDayRef : undefined}
+                data-date={dateKey}
+                ref={(element) => {
+                  if (isSelectedDay) {
+                    selectedDayRef.current = element;
+                  }
+                  setDayRef(dayData.date, element);
+                }}
                 className={`transition-all duration-200 ${isSelectedDay
                     ? 'border-l-4 border-blue-500 pl-4'
                     : 'pl-4'
