@@ -22,8 +22,8 @@ export class JwtAuthService {
       email,
     };
 
-    // 로그인 유지 시 30일, 기본 15분
-    const expiresIn = rememberMe ? "30d" : "15m";
+    // 로그인 유지 시 3개월, 기본 24시간
+    const expiresIn = rememberMe ? "90d" : "24h";
 
     return this.jwtService.sign(payload, {
       secret: this.configService.get<string>("JWT_SECRET"),

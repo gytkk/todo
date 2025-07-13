@@ -11,6 +11,7 @@ import { createMockCategory } from "../test-helpers/category.helper";
 
 describe("UserSettingsController", () => {
   let controller: UserSettingsController;
+  let consoleErrorSpy: jest.SpyInstance;
 
   const mockUser = new User({
     id: "user-1",
@@ -73,6 +74,8 @@ describe("UserSettingsController", () => {
   };
 
   beforeEach(async () => {
+    consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UserSettingsController],
       providers: [
@@ -87,6 +90,7 @@ describe("UserSettingsController", () => {
   });
 
   afterEach(() => {
+    consoleErrorSpy.mockRestore();
     jest.clearAllMocks();
   });
 

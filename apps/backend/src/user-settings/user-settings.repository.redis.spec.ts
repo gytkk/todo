@@ -5,6 +5,7 @@ import { RedisService } from "../redis/redis.service";
 
 describe("UserSettingsRepository", () => {
   let repository: UserSettingsRepository;
+  let consoleErrorSpy: jest.SpyInstance;
 
   const mockRedisService = {
     generateKey: jest.fn(),
@@ -16,6 +17,8 @@ describe("UserSettingsRepository", () => {
   };
 
   beforeEach(async () => {
+    consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UserSettingsRepository,
@@ -27,6 +30,10 @@ describe("UserSettingsRepository", () => {
     }).compile();
 
     repository = module.get<UserSettingsRepository>(UserSettingsRepository);
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
   });
 
   afterEach(() => {
@@ -94,6 +101,10 @@ describe("UserSettingsRepository", () => {
       const result = await repository.findByUserId(userId);
 
       expect(result).toBeNull();
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "Error parsing user settings from Redis:",
+        expect.any(SyntaxError),
+      );
     });
   });
 
