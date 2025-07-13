@@ -34,7 +34,20 @@ export class UserSettingsService {
   // Get user categories
   async getUserCategories(userId: string): Promise<TodoCategory[]> {
     const settings = await this.userSettingsRepository.findOrCreate(userId);
-    return settings.getCategories();
+
+    // Check if migration is needed before getting categories
+    const needsMigration = settings.settings.categories.some(
+      (cat) => typeof cat.order === "undefined",
+    );
+
+    const categories = settings.getCategories();
+
+    // Save migration if it was applied
+    if (needsMigration) {
+      await this.userSettingsRepository.update(userId, settings);
+    }
+
+    return categories;
   }
 
   // Add new category
@@ -51,12 +64,7 @@ export class UserSettingsService {
       throw new BadRequestException("Category name already exists");
     }
 
-    // Check if color is already used
-    if (existingCategories.some((cat) => cat.color === color)) {
-      throw new BadRequestException(
-        "Color is already used by another category",
-      );
-    }
+    // Allow duplicate colors - removed color uniqueness check
 
     // Check category limit (max 11: 3 default + 8 custom)
     if (existingCategories.length >= 11) {
@@ -74,6 +82,7 @@ export class UserSettingsService {
       name: newCategory!.name,
       color: newCategory!.color,
       createdAt: newCategory!.createdAt,
+      order: newCategory!.order || 0,
     };
   }
 
@@ -103,19 +112,7 @@ export class UserSettingsService {
       }
     }
 
-    // Check if new color is already used (if updating color)
-    if (updates.color && updates.color !== category.color) {
-      const existingCategories = settings.getCategories();
-      if (
-        existingCategories.some(
-          (cat) => cat.color === updates.color && cat.id !== categoryId,
-        )
-      ) {
-        throw new BadRequestException(
-          "Color is already used by another category",
-        );
-      }
-    }
+    // Allow duplicate colors - removed color uniqueness check for updates
 
     const success = settings.updateCategory(categoryId, updates);
     if (!success) {
@@ -130,6 +127,7 @@ export class UserSettingsService {
       name: updatedCategory!.name,
       color: updatedCategory!.color,
       createdAt: updatedCategory!.createdAt,
+      order: updatedCategory!.order || 0,
     };
   }
 
@@ -178,6 +176,7 @@ export class UserSettingsService {
       name: category.name,
       color: category.color,
       createdAt: category.createdAt,
+      order: category.order || 0,
     };
   }
 
@@ -198,5 +197,23 @@ export class UserSettingsService {
   ): Promise<{ [categoryId: string]: boolean }> {
     const settings = await this.userSettingsRepository.findOrCreate(userId);
     return settings.settings.categoryFilter;
+  }
+
+  // Reorder categories
+  async reorderCategories(
+    userId: string,
+    categoryIds: string[],
+  ): Promise<TodoCategory[]> {
+    const settings = await this.userSettingsRepository.findOrCreate(userId);
+
+    const success = settings.reorderCategories(categoryIds);
+    if (!success) {
+      throw new BadRequestException("Invalid category order provided");
+    }
+
+    await this.userSettingsRepository.update(userId, settings);
+
+    // 업데이트된 카테고리 목록 반환
+    return settings.getCategories();
   }
 }

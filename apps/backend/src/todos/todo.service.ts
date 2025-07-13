@@ -28,6 +28,7 @@ export class TodoService {
       color: categoryDto.color,
       icon: categoryDto.icon,
       createdAt: new Date(categoryDto.createdAt),
+      order: 0, // Default order for DTO conversions
     };
   }
 

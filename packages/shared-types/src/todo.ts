@@ -14,6 +14,7 @@ export interface TodoCategory {
   color: string;
   icon?: string;
   createdAt: Date;      // 생성일
+  order: number;        // 순서 (0부터 시작)
 }
 
 export interface CategoryFilter {

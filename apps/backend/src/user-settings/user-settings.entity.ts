@@ -6,6 +6,7 @@ export interface UserCategoryData {
   name: string;
   color: string;
   createdAt: Date;
+  order?: number; // optional for backward compatibility
 }
 
 export interface UserSettingsData {
@@ -54,33 +55,64 @@ export class UserSettingsEntity {
         name: "개인",
         color: "#3b82f6",
         createdAt: new Date(),
+        order: 0,
       },
       {
         id: uuidv4(),
         name: "회사",
         color: "#10b981",
         createdAt: new Date(),
+        order: 1,
       },
     ];
   }
 
   // Get categories as TodoCategory array for frontend
   getCategories(): TodoCategory[] {
-    return this.settings.categories.map((cat) => ({
-      id: cat.id,
-      name: cat.name,
-      color: cat.color,
-      createdAt: cat.createdAt,
-    }));
+    // 기존 카테고리들의 order 필드 migration
+    this.ensureCategoryOrder();
+
+    return this.settings.categories
+      .sort((a, b) => (a.order || 0) - (b.order || 0)) // 순서대로 정렬 (order가 없을 경우 0으로 처리)
+      .map((cat) => ({
+        id: cat.id,
+        name: cat.name,
+        color: cat.color,
+        createdAt: cat.createdAt,
+        order: cat.order || 0,
+      }));
+  }
+
+  // 기존 카테고리들에 order 필드가 없는 경우 추가
+  private ensureCategoryOrder(): void {
+    let hasChanges = false;
+
+    this.settings.categories.forEach((cat, index) => {
+      if (typeof cat.order === "undefined") {
+        cat.order = index;
+        hasChanges = true;
+      }
+    });
+
+    if (hasChanges) {
+      this.updatedAt = new Date();
+    }
   }
 
   // Add new category
   addCategory(name: string, color: string): string {
+    // 새 카테고리의 순서는 기존 카테고리 수
+    const maxOrder =
+      this.settings.categories.length > 0
+        ? Math.max(...this.settings.categories.map((cat) => cat.order || 0))
+        : -1;
+
     const newCategory: UserCategoryData = {
       id: uuidv4(),
       name,
       color,
       createdAt: new Date(),
+      order: maxOrder + 1,
     };
 
     this.settings.categories.push(newCategory);
@@ -130,6 +162,7 @@ export class UserSettingsEntity {
 
   // Get category by ID
   getCategoryById(categoryId: string): UserCategoryData | null {
+    this.ensureCategoryOrder(); // order 필드 migration
     return (
       this.settings.categories.find((cat) => cat.id === categoryId) || null
     );
@@ -141,24 +174,62 @@ export class UserSettingsEntity {
     this.updatedAt = new Date();
   }
 
-  // Get available colors (not used by existing categories)
+  // Get all available colors (allowing duplicates)
   getAvailableColors(): string[] {
-    const usedColors = this.settings.categories.map((cat) => cat.color);
+    // Colors sorted by HSL hue for better visual organization
     const allColors = [
-      "#3b82f6", // Blue
-      "#10b981", // Emerald
-      "#f97316", // Orange
-      "#ef4444", // Red
-      "#8b5cf6", // Purple
-      "#ec4899", // Pink
-      "#0ea5e9", // Sky
-      "#22c55e", // Green
-      "#eab308", // Yellow
-      "#6366f1", // Indigo
-      "#f43f5e", // Rose
-      "#14b8a6", // Teal
+      "#ef4444", // Red (H: 0°)
+      "#f97316", // Orange (H: 25°)
+      "#eab308", // Yellow (H: 45°)
+      "#22c55e", // Light Green (H: 142°)
+      "#14b8a6", // Teal (H: 174°)
+      "#0ea5e9", // Sky (H: 199°)
+      "#3b82f6", // Blue (H: 221°)
+      "#6366f1", // Indigo (H: 239°)
+      "#8b5cf6", // Purple (H: 262°)
     ];
-    return allColors.filter((color) => !usedColors.includes(color));
+    return allColors; // Return all colors without filtering
+  }
+
+  // Reorder categories
+  reorderCategories(categoryIds: string[]): boolean {
+    // 먼저 order 필드 migration 수행
+    this.ensureCategoryOrder();
+
+    const currentCategories = this.settings.categories;
+
+    // 전달된 ID 배열이 현재 카테고리와 일치하는지 확인
+    if (categoryIds.length !== currentCategories.length) {
+      return false;
+    }
+
+    // 중복 ID 검증
+    const uniqueIds = new Set(categoryIds);
+    if (uniqueIds.size !== categoryIds.length) {
+      return false;
+    }
+
+    const hasAllIds = categoryIds.every((id) =>
+      currentCategories.some((cat) => cat.id === id),
+    );
+
+    if (!hasAllIds) {
+      return false;
+    }
+
+    // 새로운 순서로 카테고리 배열 재정렬
+    const reorderedCategories = categoryIds.map((id, index) => {
+      const category = currentCategories.find((cat) => cat.id === id)!;
+      return {
+        ...category,
+        order: index,
+      };
+    });
+
+    this.settings.categories = reorderedCategories;
+    this.updatedAt = new Date();
+
+    return true;
   }
 
   // Update entire settings

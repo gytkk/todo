@@ -3,6 +3,7 @@ import { TodoRepository } from "./todo.repository";
 import { RedisService } from "../redis/redis.service";
 import { TodoEntity } from "./todo.entity";
 import { TodoCategory } from "@calendar-todo/shared-types";
+import { createMockCategory } from "../test-helpers/category.helper";
 
 describe("TodoRepository (Redis)", () => {
   let repository: TodoRepository;
@@ -18,12 +19,12 @@ describe("TodoRepository (Redis)", () => {
   let zcardSpy: jest.SpyInstance;
   let scardSpy: jest.SpyInstance;
 
-  const mockCategory: TodoCategory = {
+  const mockCategory: TodoCategory = createMockCategory({
     id: "category-1",
     name: "일반",
     color: "#3B82F6",
     createdAt: new Date("2023-01-01"),
-  };
+  });
 
   beforeEach(async () => {
     const mockPipeline = {

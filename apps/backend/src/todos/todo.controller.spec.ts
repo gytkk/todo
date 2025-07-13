@@ -7,6 +7,7 @@ import { UpdateTodoDto } from "./dto/update-todo.dto";
 import { TodoItem, TodoCategory, TodoStats } from "@calendar-todo/shared-types";
 import { User } from "../users/user.entity";
 import { NotFoundException, ForbiddenException } from "@nestjs/common";
+import { createMockCategory } from "../test-helpers/category.helper";
 
 describe("TodoController", () => {
   let controller: TodoController;
@@ -25,12 +26,12 @@ describe("TodoController", () => {
     toProfile: jest.fn(),
   } as unknown as User;
 
-  const mockCategory: TodoCategory = {
+  const mockCategory: TodoCategory = createMockCategory({
     id: "work",
     name: "업무",
     color: "#FF6B6B",
     createdAt: new Date("2023-01-01"),
-  };
+  });
 
   const mockTodo: TodoItem = {
     id: "todo-1",

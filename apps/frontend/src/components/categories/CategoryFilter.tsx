@@ -28,10 +28,15 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
           return (
             <label
               key={category.id}
-              className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200 ease-in-out ${isActive
-                ? 'bg-gray-50 border-2 border-gray-200 shadow-sm'
-                : 'bg-gray-25 opacity-60 border-2 border-gray-100'
-                } hover:bg-gray-100 hover:shadow-md active:scale-95`}
+              className={`flex items-center gap-3 py-2 px-3 rounded-lg cursor-pointer transition-all duration-200 ease-in-out border hover:shadow-md active:scale-95 ${
+                isActive 
+                  ? 'shadow-sm' 
+                  : 'opacity-60'
+              }`}
+              style={{
+                backgroundColor: isActive ? `${category.color}15` : `${category.color}08`,
+                borderColor: isActive ? `${category.color}40` : `${category.color}20`,
+              }}
             >
               <div className="relative flex items-center">
                 <input
@@ -65,8 +70,9 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
                 )}
               </div>
               <div className="flex items-center gap-2 flex-1">
-                <span className={`text-sm font-medium transition-all duration-200 ${isActive ? 'text-gray-700' : 'text-gray-400'
-                  }`}>
+                <span className={`text-sm font-medium transition-all duration-200 ${
+                  isActive ? 'text-gray-800' : 'text-gray-500'
+                }`}>
                   {category.name}
                 </span>
               </div>

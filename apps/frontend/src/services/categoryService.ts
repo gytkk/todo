@@ -29,7 +29,7 @@ export class CategoryService extends BaseApiClient {
       }
 
       const data = await response.json();
-      
+
       // 날짜 문자열을 Date 객체로 변환
       const categories = data.categories.map((category: TodoCategory) => ({
         ...category,
@@ -181,6 +181,58 @@ export class CategoryService extends BaseApiClient {
     } catch (error) {
       console.error('Error updating category filter:', error);
       return false;
+    }
+  }
+
+  async reorderCategories(categoryIds: string[]): Promise<TodoCategory[] | null> {
+    try {
+      const payload = { categoryIds };
+      console.log('CategoryService: Sending reorder request:', payload);
+
+      const response = await fetch(`${this.BASE_URL}/categories/reorder`, {
+        method: 'PUT',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(payload),
+      });
+
+      console.log('CategoryService: Response status:', response.status);
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          this.handle401Error();
+          return null;
+        }
+        
+        // Get the error details from the response
+        let errorMessage = `카테고리 순서 변경 실패: ${response.status}`;
+        try {
+          const responseText = await response.text();
+          console.error('CategoryService: Raw error response:', responseText);
+
+          if (responseText.trim()) {
+            const errorData = JSON.parse(responseText);
+            console.error('CategoryService: Parsed error details:', errorData);
+            errorMessage = errorData.message || errorData.error || errorMessage;
+          }
+        } catch (e) {
+          console.error('CategoryService: Failed to parse error response:', e);
+        }
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+      console.log('CategoryService: Success response:', data);
+
+      // 날짜 문자열을 Date 객체로 변환
+      const categories = data.categories.map((category: TodoCategory) => ({
+        ...category,
+        createdAt: new Date(category.createdAt),
+      }));
+
+      return categories;
+    } catch (error) {
+      console.error('CategoryService: Error reordering categories:', error);
+      return null;
     }
   }
 }

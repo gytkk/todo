@@ -207,8 +207,25 @@ export const useCategories = () => {
     return categories.find(cat => cat.id === id);
   }, [categories]);
 
-  // 새 카테고리가 추가될 때 필터에 자동 추가 (서버에서 처리되므로 불필요)
-  // useEffect는 제거함
+  // 카테고리 순서 변경
+  const reorderCategories = useAuthenticatedCallback(
+    async (categoryIds: string[]): Promise<boolean> => {
+      try {
+        const service = CategoryService.getInstance();
+        const reorderedCategories = await service.reorderCategories(categoryIds);
+        if (reorderedCategories) {
+          setCategories(reorderedCategories);
+          return true;
+        }
+        return false;
+      } catch (error) {
+        console.error('Failed to reorder categories:', error);
+        return false;
+      }
+    },
+    Promise.resolve(false), // fallback value
+    [] // deps
+  );
 
   return {
     categories,
@@ -222,6 +239,7 @@ export const useCategories = () => {
     deleteCategory,
     getCategoryById,
     getAvailableColors,
+    reorderCategories,
     loadCategories, // 새로고침을 위한 함수 추가
   };
 };

@@ -174,10 +174,21 @@ export class UserSettingsController {
     @Request() req: RequestWithUser,
     @Body() reorderCategoriesDto: ReorderCategoriesDto,
   ) {
-    const categories = await this.userSettingsService.reorderCategories(
-      req.user.id,
-      reorderCategoriesDto.categoryIds,
-    );
-    return { categories };
+    try {
+      console.log('=== Reorder Categories Controller ===');
+      console.log('User ID:', req.user.id);
+      console.log('Category IDs:', reorderCategoriesDto.categoryIds);
+      
+      const categories = await this.userSettingsService.reorderCategories(
+        req.user.id,
+        reorderCategoriesDto.categoryIds,
+      );
+      
+      console.log('Reorder successful, returning categories:', categories.length);
+      return { categories };
+    } catch (error) {
+      console.error('Reorder categories error:', error);
+      throw error;
+    }
   }
 }

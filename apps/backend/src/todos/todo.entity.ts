@@ -38,6 +38,7 @@ export class TodoEntity {
         name: "Unknown",
         color: "#64748b",
         createdAt: new Date(),
+        order: 0,
       },
       userId: this.userId,
     };

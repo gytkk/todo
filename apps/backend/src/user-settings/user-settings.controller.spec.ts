@@ -7,6 +7,7 @@ import { UpdateSettingsDto } from "./dto/update-settings.dto";
 import { TodoCategory } from "@calendar-todo/shared-types";
 import { NotFoundException, BadRequestException } from "@nestjs/common";
 import { User } from "../users/user.entity";
+import { createMockCategory } from "../test-helpers/category.helper";
 
 describe("UserSettingsController", () => {
   let controller: UserSettingsController;
@@ -44,18 +45,18 @@ describe("UserSettingsController", () => {
   };
 
   const mockCategories: TodoCategory[] = [
-    {
+    createMockCategory({
       id: "cat-1",
       name: "개인",
       color: "#3b82f6",
       createdAt: new Date("2023-01-01"),
-    },
-    {
+    }),
+    createMockCategory({
       id: "cat-2",
       name: "회사",
       color: "#10b981",
       createdAt: new Date("2023-01-01"),
-    },
+    }),
   ];
 
   const mockUserSettingsService = {
@@ -68,6 +69,7 @@ describe("UserSettingsController", () => {
     getAvailableColors: jest.fn(),
     updateCategoryFilter: jest.fn(),
     getCategoryFilter: jest.fn(),
+    reorderCategories: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -153,12 +155,11 @@ describe("UserSettingsController", () => {
         name: "프로젝트",
         color: "#8b5cf6",
       };
-      const newCategory: TodoCategory = {
+      const newCategory: TodoCategory = createMockCategory({
         id: "cat-3",
         name: "프로젝트",
         color: "#8b5cf6",
-        createdAt: new Date(),
-      };
+      });
 
       mockUserSettingsService.addCategory.mockResolvedValue(newCategory);
 
@@ -229,12 +230,12 @@ describe("UserSettingsController", () => {
         name: "업무",
         color: "#ff0000",
       };
-      const updatedCategory: TodoCategory = {
+      const updatedCategory: TodoCategory = createMockCategory({
         id: categoryId,
         name: "업무",
         color: "#ff0000",
         createdAt: new Date("2023-01-01"),
-      };
+      });
 
       mockUserSettingsService.updateCategory.mockResolvedValue(updatedCategory);
 
@@ -476,6 +477,110 @@ describe("UserSettingsController", () => {
       await expect(controller.getUserCategories(req)).rejects.toThrow(
         unexpectedError,
       );
+    });
+  });
+
+  describe("reorderCategories", () => {
+    it("카테고리 순서를 성공적으로 변경해야 함", async () => {
+      const req = { user: mockUser };
+      const reorderDto = { categoryIds: ["cat-2", "cat-1"] };
+      const reorderedCategories = [
+        createMockCategory({
+          id: "cat-2",
+          name: "회사",
+          color: "#10b981",
+          order: 0,
+        }),
+        createMockCategory({
+          id: "cat-1",
+          name: "개인",
+          color: "#3b82f6",
+          order: 1,
+        }),
+      ];
+
+      mockUserSettingsService.reorderCategories.mockResolvedValue(
+        reorderedCategories,
+      );
+
+      const result = await controller.reorderCategories(req, reorderDto);
+
+      expect(mockUserSettingsService.reorderCategories).toHaveBeenCalledWith(
+        "user-1",
+        reorderDto.categoryIds,
+      );
+      expect(result).toEqual({ categories: reorderedCategories });
+    });
+
+    it("잘못된 카테고리 순서 요청 시 BadRequestException을 던져야 함", async () => {
+      const req = { user: mockUser };
+      const invalidDto = { categoryIds: ["invalid-id", "cat-1"] };
+
+      mockUserSettingsService.reorderCategories.mockRejectedValue(
+        new BadRequestException("Invalid category order provided"),
+      );
+
+      await expect(
+        controller.reorderCategories(req, invalidDto),
+      ).rejects.toThrow(
+        new BadRequestException("Invalid category order provided"),
+      );
+
+      expect(mockUserSettingsService.reorderCategories).toHaveBeenCalledWith(
+        "user-1",
+        invalidDto.categoryIds,
+      );
+    });
+
+    it("빈 배열로 순서 변경 요청 시 BadRequestException을 던져야 함", async () => {
+      const req = { user: mockUser };
+      const emptyDto = { categoryIds: [] };
+
+      // 컨트롤러의 수동 validation에서 차단되어야 함
+      await expect(controller.reorderCategories(req, emptyDto)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it("categoryIds가 없는 요청 시 BadRequestException을 던져야 함", async () => {
+      const req = { user: mockUser };
+      const invalidDto = {}; // categoryIds 누락
+
+      await expect(
+        controller.reorderCategories(req, invalidDto as any),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it("categoryIds가 배열이 아닌 요청 시 BadRequestException을 던져야 함", async () => {
+      const req = { user: mockUser };
+      const invalidDto = { categoryIds: "not-an-array" };
+
+      await expect(
+        controller.reorderCategories(req, invalidDto as any),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it("문자열이 아닌 요소를 포함한 배열로 요청 시 BadRequestException을 던져야 함", async () => {
+      const req = { user: mockUser };
+      const invalidDto = { categoryIds: ["cat-1", 123, "cat-2"] }; // 숫자 포함
+
+      await expect(
+        controller.reorderCategories(req, invalidDto as any),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it("서비스에서 예외 발생 시 예외를 전파해야 함", async () => {
+      const req = { user: mockUser };
+      const reorderDto = { categoryIds: ["cat-1", "cat-2"] };
+      const unexpectedError = new Error("Database connection failed");
+
+      mockUserSettingsService.reorderCategories.mockRejectedValue(
+        unexpectedError,
+      );
+
+      await expect(
+        controller.reorderCategories(req, reorderDto),
+      ).rejects.toThrow(unexpectedError);
     });
   });
 });

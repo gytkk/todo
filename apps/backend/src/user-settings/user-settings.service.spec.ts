@@ -105,12 +105,14 @@ describe("UserSettingsService", () => {
           name: "개인",
           color: "#3b82f6",
           createdAt: new Date("2023-01-01"),
+          order: 0,
         },
         {
           id: "cat-2",
           name: "회사",
           color: "#10b981",
           createdAt: new Date("2023-01-01"),
+          order: 1,
         },
       ]);
     });
@@ -141,6 +143,7 @@ describe("UserSettingsService", () => {
         name: "프로젝트",
         color: "#8b5cf6",
         createdAt: expect.any(Date) as Date,
+        order: 2,
       });
     });
 
@@ -154,14 +157,18 @@ describe("UserSettingsService", () => {
       );
     });
 
-    it("중복된 색상으로 추가 시 BadRequestException을 던져야 함", async () => {
+    it("중복된 색상으로 추가할 수 있어야 함 (색상 중복 허용)", async () => {
       mockRepository.findOrCreate.mockResolvedValue(mockUserSettingsEntity);
 
-      await expect(
-        service.addCategory("user-1", "새 카테고리", "#3b82f6"),
-      ).rejects.toThrow(
-        new BadRequestException("Color is already used by another category"),
+      const result = await service.addCategory(
+        "user-1",
+        "새 카테고리",
+        "#3b82f6",
       );
+
+      expect(result).toBeDefined();
+      expect(result.color).toBe("#3b82f6");
+      expect(result.name).toBe("새 카테고리");
     });
 
     it("카테고리 수 제한 초과 시 BadRequestException을 던져야 함", async () => {
@@ -208,6 +215,7 @@ describe("UserSettingsService", () => {
         name: "개인",
         color: "#ff0000",
         createdAt: new Date("2023-01-01"),
+        order: 0,
       });
     });
 
@@ -229,14 +237,15 @@ describe("UserSettingsService", () => {
       );
     });
 
-    it("중복된 색상으로 수정 시 BadRequestException을 던져야 함", async () => {
+    it("중복된 색상으로 수정할 수 있어야 함 (색상 중복 허용)", async () => {
       mockRepository.findOrCreate.mockResolvedValue(mockUserSettingsEntity);
 
-      await expect(
-        service.updateCategory("user-1", "cat-1", { color: "#10b981" }),
-      ).rejects.toThrow(
-        new BadRequestException("Color is already used by another category"),
-      );
+      const result = await service.updateCategory("user-1", "cat-1", {
+        color: "#10b981",
+      });
+
+      expect(result).toBeDefined();
+      expect(result.color).toBe("#10b981");
     });
 
     it("카테고리 업데이트 실패 시 BadRequestException을 던져야 함", async () => {
@@ -393,17 +402,24 @@ describe("UserSettingsService", () => {
         name: "개인",
         color: "#3b82f6",
         createdAt: new Date("2023-01-01"),
+        order: 0,
       });
 
       entitySpy.mockRestore();
     });
 
     it("존재하지 않는 카테고리에 대해 null을 반환해야 함", async () => {
+      const entitySpy = jest
+        .spyOn(mockUserSettingsEntity, "getCategoryById")
+        .mockReturnValue(null);
+
       mockRepository.findOrCreate.mockResolvedValue(mockUserSettingsEntity);
 
       const result = await service.getCategoryById("user-1", "nonexistent");
 
       expect(result).toBeNull();
+
+      entitySpy.mockRestore();
     });
   });
 
@@ -432,6 +448,84 @@ describe("UserSettingsService", () => {
       expect(typeof result).toBe("object");
       expect(result).toHaveProperty("cat-1");
       expect(result).toHaveProperty("cat-2");
+    });
+  });
+
+  describe("reorderCategories", () => {
+    it("카테고리 순서를 성공적으로 변경해야 함", async () => {
+      const reorderedIds = ["cat-2", "cat-1"]; // 순서 바꿈
+      const reorderSpy = jest
+        .spyOn(mockUserSettingsEntity, "reorderCategories")
+        .mockReturnValue(true);
+
+      mockRepository.findOrCreate.mockResolvedValue(mockUserSettingsEntity);
+      mockRepository.update.mockResolvedValue(mockUserSettingsEntity);
+
+      const result = await service.reorderCategories("user-1", reorderedIds);
+
+      expect(mockRepository.findOrCreate).toHaveBeenCalledWith("user-1");
+      expect(reorderSpy).toHaveBeenCalledWith(reorderedIds);
+      expect(mockRepository.update).toHaveBeenCalledWith(
+        "user-1",
+        mockUserSettingsEntity,
+      );
+      expect(Array.isArray(result)).toBe(true);
+
+      reorderSpy.mockRestore();
+    });
+
+    it("잘못된 카테고리 순서 요청 시 BadRequestException을 던져야 함", async () => {
+      const invalidIds = ["cat-1", "invalid-id"];
+      const reorderSpy = jest
+        .spyOn(mockUserSettingsEntity, "reorderCategories")
+        .mockReturnValue(false);
+
+      mockRepository.findOrCreate.mockResolvedValue(mockUserSettingsEntity);
+
+      await expect(
+        service.reorderCategories("user-1", invalidIds),
+      ).rejects.toThrow(
+        new BadRequestException("Invalid category order provided"),
+      );
+
+      expect(reorderSpy).toHaveBeenCalledWith(invalidIds);
+      reorderSpy.mockRestore();
+    });
+
+    it("빈 배열로 순서 변경 시 BadRequestException을 던져야 함", async () => {
+      const emptyIds: string[] = [];
+      const reorderSpy = jest
+        .spyOn(mockUserSettingsEntity, "reorderCategories")
+        .mockReturnValue(false);
+
+      mockRepository.findOrCreate.mockResolvedValue(mockUserSettingsEntity);
+
+      await expect(
+        service.reorderCategories("user-1", emptyIds),
+      ).rejects.toThrow(
+        new BadRequestException("Invalid category order provided"),
+      );
+
+      expect(reorderSpy).toHaveBeenCalledWith(emptyIds);
+      reorderSpy.mockRestore();
+    });
+
+    it("길이가 다른 배열로 순서 변경 시 BadRequestException을 던져야 함", async () => {
+      const tooManyIds = ["cat-1", "cat-2", "extra-id"];
+      const reorderSpy = jest
+        .spyOn(mockUserSettingsEntity, "reorderCategories")
+        .mockReturnValue(false);
+
+      mockRepository.findOrCreate.mockResolvedValue(mockUserSettingsEntity);
+
+      await expect(
+        service.reorderCategories("user-1", tooManyIds),
+      ).rejects.toThrow(
+        new BadRequestException("Invalid category order provided"),
+      );
+
+      expect(reorderSpy).toHaveBeenCalledWith(tooManyIds);
+      reorderSpy.mockRestore();
     });
   });
 });

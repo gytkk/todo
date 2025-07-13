@@ -8,16 +8,17 @@ import { TodoItem, TodoCategory } from "@calendar-todo/shared-types";
 import { NotFoundException, ForbiddenException } from "@nestjs/common";
 import { UserSettingsService } from "../user-settings/user-settings.service";
 import { subDays } from "date-fns";
+import { createMockCategory } from "../test-helpers/category.helper";
 
 describe("TodoService", () => {
   let service: TodoService;
 
-  const mockCategory: TodoCategory = {
+  const mockCategory: TodoCategory = createMockCategory({
     id: "work",
     name: "업무",
     color: "#FF6B6B",
     createdAt: new Date("2023-01-01"),
-  };
+  });
 
   const mockTodoEntity: TodoEntity = new TodoEntity({
     id: "todo-1",
@@ -447,19 +448,17 @@ describe("TodoService", () => {
 
   describe("updateCategoryForUser", () => {
     it("사용자의 카테고리를 업데이트해야 함", async () => {
-      const oldCategory: TodoCategory = {
+      const oldCategory: TodoCategory = createMockCategory({
         id: "old-category",
         name: "이전 카테고리",
         color: "#000000",
-        createdAt: new Date(),
-      };
+      });
 
-      const newCategory: TodoCategory = {
+      const newCategory: TodoCategory = createMockCategory({
         id: "new-category",
         name: "새 카테고리",
         color: "#ffffff",
-        createdAt: new Date(),
-      };
+      });
 
       mockRepository.updateCategoryForUser.mockResolvedValue(3);
 
