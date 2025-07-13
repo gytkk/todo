@@ -29,15 +29,9 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
   const [isExpanded, setIsExpanded] = useState(true);
   const [isVisible, setIsVisible] = useState(true);
   const [isFullyExpanded, setIsFullyExpanded] = useState(true);
-  const [isMounted, setIsMounted] = useState(false);
   const { categories, categoryFilter, toggleCategoryFilter } = useCategoryContext();
   const { user, isAuthenticated, logout } = useAuth();
   const pathname = usePathname();
-
-  // Hydration 이슈 방지를 위한 마운트 상태 체크
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   const menuItems: MenuItem[] = [
     {
@@ -96,11 +90,6 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
   useEffect(() => {
     onSidebarStateChange?.(isExpanded, isVisible);
   }, [isExpanded, isVisible, onSidebarStateChange]);
-
-  // 클라이언트에서만 렌더링
-  if (!isMounted) {
-    return null;
-  }
 
   return (
     <>

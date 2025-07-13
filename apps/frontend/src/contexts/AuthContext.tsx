@@ -18,22 +18,9 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-// 초기 상태를 즉시 결정하는 함수
+// 서버와 클라이언트 모두에서 동일한 초기 상태 사용
 const getInitialAuthState = () => {
-  if (typeof window === 'undefined') return { user: null, isLoading: true };
-  
-  try {
-    const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
-    const userData = localStorage.getItem('user_data') || sessionStorage.getItem('user_data');
-    
-    if (token && userData) {
-      const parsedUser = JSON.parse(userData);
-      return { user: parsedUser, isLoading: false };
-    }
-  } catch (error) {
-    console.error('초기 인증 상태 로드 오류:', error);
-  }
-  
+  // 항상 동일한 초기 상태로 시작 (hydration mismatch 방지)
   return { user: null, isLoading: false };
 };
 
@@ -41,7 +28,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const initialState = getInitialAuthState();
   const [user, setUser] = useState<User | null>(initialState.user);
   const [isLoading, setIsLoading] = useState(initialState.isLoading);
-  const [hydrated, setHydrated] = useState(typeof window !== 'undefined');
+  const [hydrated, setHydrated] = useState(false);
 
   const isAuthenticated = !!user;
 
@@ -107,18 +94,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  // 컴포넌트 마운트 시 쿠키 설정 및 정리 작업만 수행
+  // 컴포넌트 마운트 시 localStorage에서 사용자 정보 로드
   useEffect(() => {
-    // 이미 초기 상태에서 사용자 정보를 로드했으므로 쿠키 설정만 수행
-    if (user) {
-      const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
-      if (token) {
-        document.cookie = `auth-token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`;
+    // 클라이언트에서만 실행
+    if (typeof window !== 'undefined') {
+      try {
+        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+        const userData = localStorage.getItem('user_data') || sessionStorage.getItem('user_data');
+        
+        if (token && userData) {
+          const parsedUser = JSON.parse(userData);
+          setUser(parsedUser);
+          
+          // 쿠키 설정
+          document.cookie = `auth-token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=strict`;
+        }
+      } catch (error) {
+        console.error('사용자 정보 로드 오류:', error);
       }
     }
 
-    // 이미 클라이언트 사이드이므로 즉시 완료 처리
-    setIsLoading(false);
+    // 하이드레이션 완료
     setHydrated(true);
 
     // 토큰 갱신 interval은 한 번만 설정하고 user 상태 변경에 의존하지 않음
@@ -139,7 +135,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => {
       clearInterval(tokenRefreshInterval);
     };
-  }, [user]); // user 의존성 추가 // 의존성 배열 비움
+  }, []); // 의존성 배열을 비워서 한 번만 실행
 
   const login = async (credentials: LoginRequest): Promise<void> => {
     setIsLoading(true);
@@ -238,16 +234,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     updateUser,
   };
 
-  // 하이드레이션이 완료되지 않았을 때 최소한의 로딩 표시 (또는 제거)
-  if (!hydrated && typeof window !== 'undefined') {
-    // 클라이언트에서는 매우 빠르게 하이드레이션되므로 로딩 화면 최소화
-    return (
-      <AuthContext.Provider value={value}>
-        {children}
-      </AuthContext.Provider>
-    );
-  }
-
+  // 항상 동일한 구조를 렌더링하여 hydration mismatch 방지
   return (
     <AuthContext.Provider value={value}>
       {children}
