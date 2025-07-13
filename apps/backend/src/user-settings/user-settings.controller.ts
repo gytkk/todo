@@ -34,7 +34,7 @@ import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 @UseGuards(JwtAuthGuard)
 @Controller("user-settings")
 export class UserSettingsController {
-  constructor(private readonly userSettingsService: UserSettingsService) {}
+  constructor(private readonly userSettingsService: UserSettingsService) { }
 
   @Get()
   @ApiOperation({ summary: "사용자 설정 조회" })
@@ -160,13 +160,6 @@ export class UserSettingsController {
   }
 
   @Put("categories/reorder")
-  @UsePipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: false,
-      transform: true,
-    }),
-  )
   @ApiOperation({ summary: "카테고리 순서 변경" })
   @ApiResponse({ status: 200, description: "카테고리 순서 변경 성공" })
   @ApiResponse({ status: 400, description: "잘못된 카테고리 순서 요청" })
@@ -178,12 +171,12 @@ export class UserSettingsController {
       console.log('=== Reorder Categories Controller ===');
       console.log('User ID:', req.user.id);
       console.log('Category IDs:', reorderCategoriesDto.categoryIds);
-      
+
       const categories = await this.userSettingsService.reorderCategories(
         req.user.id,
         reorderCategoriesDto.categoryIds,
       );
-      
+
       console.log('Reorder successful, returning categories:', categories.length);
       return { categories };
     } catch (error) {

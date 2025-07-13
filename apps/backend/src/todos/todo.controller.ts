@@ -73,9 +73,13 @@ export class TodoController {
     },
   })
   async create(
-    @Body(ValidationPipe) createTodoDto: CreateTodoDto,
+    @Body() createTodoDto: CreateTodoDto,
     @CurrentUser() user: User,
   ): Promise<TodoResponseDto> {
+    console.log('=== Todo Create Controller ===');
+    console.log('User ID:', user.id);
+    console.log('Create Todo DTO:', JSON.stringify(createTodoDto, null, 2));
+    
     const todo = await this.todoService.create(createTodoDto, user.id);
     return { todo };
   }

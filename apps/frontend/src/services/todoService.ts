@@ -69,17 +69,34 @@ export class TodoService extends BaseApiClient {
         date: todo.date.toISOString(),
       };
 
+      console.log('TodoService: Sending create request:', createRequest);
+
       const response = await fetch(this.BASE_URL, {
         method: 'POST',
         headers: this.getAuthHeaders(),
         body: JSON.stringify(createRequest),
       });
 
+      console.log('TodoService: Response status:', response.status);
+
       if (!response.ok) {
         if (response.status === 401) {
           this.handle401Error();
           return null;
         }
+        
+        // Get the error details from the response
+        try {
+          const responseText = await response.text();
+          console.error('TodoService: Raw error response:', responseText);
+          if (responseText.trim()) {
+            const errorData = JSON.parse(responseText);
+            console.error('TodoService: Parsed error details:', errorData);
+          }
+        } catch (e) {
+          console.error('TodoService: Failed to parse error response:', e);
+        }
+        
         throw new Error(`할일 생성 실패: ${response.status}`);
       }
 

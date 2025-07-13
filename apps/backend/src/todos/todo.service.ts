@@ -28,7 +28,7 @@ export class TodoService {
       color: categoryDto.color,
       icon: categoryDto.icon,
       createdAt: new Date(categoryDto.createdAt),
-      order: 0, // Default order for DTO conversions
+      order: categoryDto.order,
     };
   }
 
@@ -264,6 +264,7 @@ export class TodoService {
         color: todoData.category.color,
         icon: todoData.category.icon,
         createdAt: todoData.category.createdAt.toISOString(),
+        order: todoData.category.order,
       };
 
       const createDto: CreateTodoDto = {

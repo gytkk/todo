@@ -3,6 +3,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsDateString,
+  IsNumber,
   Matches,
 } from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
@@ -48,4 +49,11 @@ export class TodoCategoryDto {
   })
   @IsDateString()
   createdAt: string;
+
+  @ApiProperty({
+    description: "카테고리 순서",
+    example: 0,
+  })
+  @IsNumber()
+  order: number;
 }
