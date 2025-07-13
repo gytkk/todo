@@ -35,7 +35,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   // 보호된 페이지 확인 (메인 페이지는 제외)
   const isProtectedPage = ['/settings', '/statistics'].includes(pathname);
 
-  // 로딩 중일 때 스피너 표시 - 서버/클라이언트 일관성을 위해 같은 레이아웃 사용
+  // 로딩 중일 때는 항상 로딩 화면 표시 (인증 상태와 무관하게)
   if (isLoading) {
     return (
       <ErrorBoundary>

@@ -30,7 +30,7 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
   const [isVisible, setIsVisible] = useState(true);
   const [isFullyExpanded, setIsFullyExpanded] = useState(true);
   const { categories, categoryFilter, toggleCategoryFilter } = useCategoryContext();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
   const pathname = usePathname();
 
   const menuItems: MenuItem[] = [
@@ -127,7 +127,9 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
                 <User className="h-4 w-4 text-gray-500" />
               </div>
               <div className="text-sm overflow-hidden">
-                {isAuthenticated ? (
+                {isLoading ? (
+                  <div className="text-gray-500 italic truncate">로딩 중...</div>
+                ) : isAuthenticated ? (
                   <div className="overflow-hidden">
                     <div className="font-medium text-gray-900 truncate">
                       {user?.name || user?.email}
@@ -155,7 +157,7 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
           {menuItems.map((item: MenuItem) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
-            const isDisabled = (item.id === "statistics" || item.id === "settings") && !isAuthenticated;
+            const isDisabled = (item.id === "statistics" || item.id === "settings") && (!isAuthenticated && !isLoading);
 
             if (isDisabled) {
               return (
@@ -172,7 +174,9 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
                     {isFullyExpanded && (
                       <div className="flex flex-col items-start overflow-hidden">
                         <span className="font-medium text-sm truncate">{item.name}</span>
-                        <span className="text-xs text-gray-400 truncate">로그인 필요</span>
+                        <span className="text-xs text-gray-400 truncate">
+                          {isLoading ? "로딩 중..." : "로그인 필요"}
+                        </span>
                       </div>
                     )}
                   </Button>
@@ -210,13 +214,27 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
         {/* 카테고리 필터 - 홈 페이지에서만 표시 */}
         {isFullyExpanded && pathname === "/" && (
           <div className="flex-1 overflow-y-auto scrollbar-thin">
-            <CategoryFilter
-              categories={categories}
-              categoryFilter={categoryFilter}
-              onToggleCategory={toggleCategoryFilter}
-            />
+            {isLoading ? (
+              <div className="p-4 border-t border-gray-200">
+                <div className="mb-3">
+                  <h3 className="text-sm font-medium text-gray-700">카테고리 필터</h3>
+                </div>
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-400 mx-auto mb-2"></div>
+                    <p className="text-xs text-gray-500">로딩 중...</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <CategoryFilter
+                categories={categories}
+                categoryFilter={categoryFilter}
+                onToggleCategory={toggleCategoryFilter}
+              />
+            )}
             {/* 미인증 사용자를 위한 안내 메시지 */}
-            {!isAuthenticated && (
+            {!isLoading && !isAuthenticated && (
               <div className="p-4">
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
                   <div className="text-blue-600 mb-2">
@@ -232,7 +250,19 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
 
         {/* 인증 컨트롤 */}
         <div className="p-2 border-t border-gray-100 mt-auto">
-          {isAuthenticated ? (
+          {isLoading ? (
+            <Button
+              variant="ghost"
+              disabled
+              className={cn(
+                "w-full justify-start h-12 px-3 py-2 text-left opacity-50",
+                !isExpanded && "justify-center px-0"
+              )}
+            >
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400" />
+              {isFullyExpanded && <span className="ml-3">로딩 중...</span>}
+            </Button>
+          ) : isAuthenticated ? (
             <Button
               variant="ghost"
               onClick={logout}

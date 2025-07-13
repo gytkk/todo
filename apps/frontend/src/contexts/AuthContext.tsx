@@ -20,8 +20,8 @@ interface AuthProviderProps {
 
 // 서버와 클라이언트 모두에서 동일한 초기 상태 사용
 const getInitialAuthState = () => {
-  // 항상 동일한 초기 상태로 시작 (hydration mismatch 방지)
-  return { user: null, isLoading: false };
+  // localStorage 확인 전까지는 로딩 상태로 시작 (깜빡임 방지)
+  return { user: null, isLoading: true };
 };
 
 export function AuthProvider({ children }: AuthProviderProps) {
@@ -112,6 +112,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       } catch (error) {
         console.error('사용자 정보 로드 오류:', error);
       }
+      
+      // localStorage 확인 완료 후 로딩 상태 종료
+      setIsLoading(false);
     }
 
     // 하이드레이션 완료
