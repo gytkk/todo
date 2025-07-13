@@ -8,8 +8,6 @@ import {
   Param,
   UseGuards,
   Request,
-  UsePipes,
-  ValidationPipe,
 } from "@nestjs/common";
 import { User } from "../users/user.entity";
 import {
@@ -34,7 +32,7 @@ import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 @UseGuards(JwtAuthGuard)
 @Controller("user-settings")
 export class UserSettingsController {
-  constructor(private readonly userSettingsService: UserSettingsService) { }
+  constructor(private readonly userSettingsService: UserSettingsService) {}
 
   @Get()
   @ApiOperation({ summary: "사용자 설정 조회" })
@@ -168,19 +166,22 @@ export class UserSettingsController {
     @Body() reorderCategoriesDto: ReorderCategoriesDto,
   ) {
     try {
-      console.log('=== Reorder Categories Controller ===');
-      console.log('User ID:', req.user.id);
-      console.log('Category IDs:', reorderCategoriesDto.categoryIds);
+      console.log("=== Reorder Categories Controller ===");
+      console.log("User ID:", req.user.id);
+      console.log("Category IDs:", reorderCategoriesDto.categoryIds);
 
       const categories = await this.userSettingsService.reorderCategories(
         req.user.id,
         reorderCategoriesDto.categoryIds,
       );
 
-      console.log('Reorder successful, returning categories:', categories.length);
+      console.log(
+        "Reorder successful, returning categories:",
+        categories.length,
+      );
       return { categories };
     } catch (error) {
-      console.error('Reorder categories error:', error);
+      console.error("Reorder categories error:", error);
       throw error;
     }
   }
