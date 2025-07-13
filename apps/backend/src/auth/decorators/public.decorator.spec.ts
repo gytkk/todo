@@ -52,7 +52,7 @@ describe("Public Decorator", () => {
     it("Public 함수를 여러 번 호출해도 매번 SetMetadata가 호출되어야 함", () => {
       const mockReturnValue1 = jest.fn();
       const mockReturnValue2 = jest.fn();
-      
+
       mockSetMetadata
         .mockReturnValueOnce(mockReturnValue1 as any)
         .mockReturnValueOnce(mockReturnValue2 as any);
@@ -137,7 +137,7 @@ describe("Public Decorator", () => {
       expect(mockMethodDecorator).toHaveBeenCalledWith(
         TestController.prototype,
         "testMethod",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });
@@ -145,9 +145,9 @@ describe("Public Decorator", () => {
   describe("상수와 함수의 독립성", () => {
     it("IS_PUBLIC_KEY와 Public 함수가 독립적이어야 함", () => {
       const originalKey = IS_PUBLIC_KEY;
-      
+
       Public();
-      
+
       expect(IS_PUBLIC_KEY).toBe(originalKey);
       expect(mockSetMetadata).toHaveBeenCalledWith(originalKey, true);
     });
