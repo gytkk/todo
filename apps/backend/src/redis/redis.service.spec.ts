@@ -14,6 +14,10 @@ const mockRedis = {
   hdel: jest.fn(),
   hgetall: jest.fn(),
   hmset: jest.fn(),
+  hkeys: jest.fn(),
+  hvals: jest.fn(),
+  hlen: jest.fn(),
+  hexists: jest.fn(),
   zadd: jest.fn(),
   zrem: jest.fn(),
   zrange: jest.fn(),
@@ -21,13 +25,32 @@ const mockRedis = {
   zrevrange: jest.fn(),
   zcard: jest.fn(),
   zscore: jest.fn(),
+  zcount: jest.fn(),
+  sadd: jest.fn(),
+  srem: jest.fn(),
+  smembers: jest.fn(),
+  sismember: jest.fn(),
+  scard: jest.fn(),
+  lpush: jest.fn(),
+  rpush: jest.fn(),
+  lpop: jest.fn(),
+  rpop: jest.fn(),
+  lrange: jest.fn(),
+  llen: jest.fn(),
   expire: jest.fn(),
   ttl: jest.fn(),
   flushdb: jest.fn(),
+  flushall: jest.fn(),
+  info: jest.fn(),
+  dbsize: jest.fn(),
   keys: jest.fn(),
   scan: jest.fn(),
+  eval: jest.fn(),
   pipeline: jest.fn(() => ({
     exec: jest.fn(),
+    set: jest.fn(),
+    get: jest.fn(),
+    hgetall: jest.fn(),
   })),
   multi: jest.fn(() => ({
     exec: jest.fn(),
@@ -396,6 +419,620 @@ describe("RedisService", () => {
         const result = service.deserializeData("invalid json");
 
         expect(result).toBeNull();
+      });
+    });
+  });
+
+  describe("expire and ttl operations", () => {
+    describe("expire", () => {
+      it("should set TTL for key", async () => {
+        const testKey = "test:key";
+        const ttl = 3600;
+        mockRedis.expire.mockResolvedValue(1);
+
+        const result = await service.expire(testKey, ttl);
+
+        expect(result).toBe(1);
+        expect(mockRedis.expire).toHaveBeenCalledWith(testKey, ttl);
+      });
+    });
+
+    describe("ttl", () => {
+      it("should get TTL for key", async () => {
+        const testKey = "test:key";
+        const expectedTtl = 3600;
+        mockRedis.ttl.mockResolvedValue(expectedTtl);
+
+        const result = await service.ttl(testKey);
+
+        expect(result).toBe(expectedTtl);
+        expect(mockRedis.ttl).toHaveBeenCalledWith(testKey);
+      });
+    });
+  });
+
+  describe("additional hash operations", () => {
+    describe("hkeys", () => {
+      it("should get all hash field names", async () => {
+        const testKey = "test:hash";
+        const expectedKeys = ["field1", "field2"];
+        mockRedis.hkeys.mockResolvedValue(expectedKeys);
+
+        const result = await service.hkeys(testKey);
+
+        expect(result).toEqual(expectedKeys);
+        expect(mockRedis.hkeys).toHaveBeenCalledWith(testKey);
+      });
+    });
+
+    describe("hvals", () => {
+      it("should get all hash field values", async () => {
+        const testKey = "test:hash";
+        const expectedValues = ["value1", "value2"];
+        mockRedis.hvals.mockResolvedValue(expectedValues);
+
+        const result = await service.hvals(testKey);
+
+        expect(result).toEqual(expectedValues);
+        expect(mockRedis.hvals).toHaveBeenCalledWith(testKey);
+      });
+    });
+
+    describe("hlen", () => {
+      it("should get hash field count", async () => {
+        const testKey = "test:hash";
+        const expectedCount = 5;
+        mockRedis.hlen.mockResolvedValue(expectedCount);
+
+        const result = await service.hlen(testKey);
+
+        expect(result).toBe(expectedCount);
+        expect(mockRedis.hlen).toHaveBeenCalledWith(testKey);
+      });
+    });
+
+    describe("hexists", () => {
+      it("should return true for existing hash field", async () => {
+        const testKey = "test:hash";
+        const testField = "field1";
+        mockRedis.hexists.mockResolvedValue(1);
+
+        const result = await service.hexists(testKey, testField);
+
+        expect(result).toBe(true);
+        expect(mockRedis.hexists).toHaveBeenCalledWith(testKey, testField);
+      });
+
+      it("should return false for non-existent hash field", async () => {
+        const testKey = "test:hash";
+        const testField = "nonexistent";
+        mockRedis.hexists.mockResolvedValue(0);
+
+        const result = await service.hexists(testKey, testField);
+
+        expect(result).toBe(false);
+        expect(mockRedis.hexists).toHaveBeenCalledWith(testKey, testField);
+      });
+    });
+  });
+
+  describe("additional sorted set operations", () => {
+    describe("zrevrange", () => {
+      it("should get range of members in reverse order", async () => {
+        const testKey = "test:zset";
+        const start = 0;
+        const stop = -1;
+        const expectedMembers = ["member2", "member1"];
+        mockRedis.zrevrange.mockResolvedValue(expectedMembers);
+
+        const result = await service.zrevrange(testKey, start, stop);
+
+        expect(result).toEqual(expectedMembers);
+        expect(mockRedis.zrevrange).toHaveBeenCalledWith(testKey, start, stop);
+      });
+    });
+
+    describe("zcard", () => {
+      it("should get sorted set cardinality", async () => {
+        const testKey = "test:zset";
+        const expectedCount = 10;
+        mockRedis.zcard.mockResolvedValue(expectedCount);
+
+        const result = await service.zcard(testKey);
+
+        expect(result).toBe(expectedCount);
+        expect(mockRedis.zcard).toHaveBeenCalledWith(testKey);
+      });
+    });
+
+    describe("zscore", () => {
+      it("should get member score", async () => {
+        const testKey = "test:zset";
+        const testMember = "member1";
+        const expectedScore = "100";
+        mockRedis.zscore.mockResolvedValue(expectedScore);
+
+        const result = await service.zscore(testKey, testMember);
+
+        expect(result).toBe(expectedScore);
+        expect(mockRedis.zscore).toHaveBeenCalledWith(testKey, testMember);
+      });
+    });
+
+    describe("zcount", () => {
+      it("should count members in score range", async () => {
+        const testKey = "test:zset";
+        const min = 0;
+        const max = 100;
+        const expectedCount = 5;
+        mockRedis.zcount.mockResolvedValue(expectedCount);
+
+        const result = await service.zcount(testKey, min, max);
+
+        expect(result).toBe(expectedCount);
+        expect(mockRedis.zcount).toHaveBeenCalledWith(testKey, min, max);
+      });
+    });
+  });
+
+  describe("set operations", () => {
+    describe("sadd", () => {
+      it("should add member to set", async () => {
+        const testKey = "test:set";
+        const testMember = "member1";
+        mockRedis.sadd.mockResolvedValue(1);
+
+        const result = await service.sadd(testKey, testMember);
+
+        expect(result).toBe(1);
+        expect(mockRedis.sadd).toHaveBeenCalledWith(testKey, testMember);
+      });
+    });
+
+    describe("srem", () => {
+      it("should remove member from set", async () => {
+        const testKey = "test:set";
+        const testMember = "member1";
+        mockRedis.srem.mockResolvedValue(1);
+
+        const result = await service.srem(testKey, testMember);
+
+        expect(result).toBe(1);
+        expect(mockRedis.srem).toHaveBeenCalledWith(testKey, testMember);
+      });
+    });
+
+    describe("smembers", () => {
+      it("should get all set members", async () => {
+        const testKey = "test:set";
+        const expectedMembers = ["member1", "member2"];
+        mockRedis.smembers.mockResolvedValue(expectedMembers);
+
+        const result = await service.smembers(testKey);
+
+        expect(result).toEqual(expectedMembers);
+        expect(mockRedis.smembers).toHaveBeenCalledWith(testKey);
+      });
+    });
+
+    describe("sismember", () => {
+      it("should return true for existing set member", async () => {
+        const testKey = "test:set";
+        const testMember = "member1";
+        mockRedis.sismember.mockResolvedValue(1);
+
+        const result = await service.sismember(testKey, testMember);
+
+        expect(result).toBe(true);
+        expect(mockRedis.sismember).toHaveBeenCalledWith(testKey, testMember);
+      });
+
+      it("should return false for non-existent set member", async () => {
+        const testKey = "test:set";
+        const testMember = "nonexistent";
+        mockRedis.sismember.mockResolvedValue(0);
+
+        const result = await service.sismember(testKey, testMember);
+
+        expect(result).toBe(false);
+        expect(mockRedis.sismember).toHaveBeenCalledWith(testKey, testMember);
+      });
+    });
+
+    describe("scard", () => {
+      it("should get set cardinality", async () => {
+        const testKey = "test:set";
+        const expectedCount = 5;
+        mockRedis.scard.mockResolvedValue(expectedCount);
+
+        const result = await service.scard(testKey);
+
+        expect(result).toBe(expectedCount);
+        expect(mockRedis.scard).toHaveBeenCalledWith(testKey);
+      });
+    });
+  });
+
+  describe("list operations", () => {
+    describe("lpush", () => {
+      it("should push value to left of list", async () => {
+        const testKey = "test:list";
+        const testValue = "value1";
+        mockRedis.lpush.mockResolvedValue(1);
+
+        const result = await service.lpush(testKey, testValue);
+
+        expect(result).toBe(1);
+        expect(mockRedis.lpush).toHaveBeenCalledWith(testKey, testValue);
+      });
+    });
+
+    describe("rpush", () => {
+      it("should push value to right of list", async () => {
+        const testKey = "test:list";
+        const testValue = "value1";
+        mockRedis.rpush.mockResolvedValue(1);
+
+        const result = await service.rpush(testKey, testValue);
+
+        expect(result).toBe(1);
+        expect(mockRedis.rpush).toHaveBeenCalledWith(testKey, testValue);
+      });
+    });
+
+    describe("lpop", () => {
+      it("should pop value from left of list", async () => {
+        const testKey = "test:list";
+        const expectedValue = "value1";
+        mockRedis.lpop.mockResolvedValue(expectedValue);
+
+        const result = await service.lpop(testKey);
+
+        expect(result).toBe(expectedValue);
+        expect(mockRedis.lpop).toHaveBeenCalledWith(testKey);
+      });
+    });
+
+    describe("rpop", () => {
+      it("should pop value from right of list", async () => {
+        const testKey = "test:list";
+        const expectedValue = "value1";
+        mockRedis.rpop.mockResolvedValue(expectedValue);
+
+        const result = await service.rpop(testKey);
+
+        expect(result).toBe(expectedValue);
+        expect(mockRedis.rpop).toHaveBeenCalledWith(testKey);
+      });
+    });
+
+    describe("lrange", () => {
+      it("should get range of list values", async () => {
+        const testKey = "test:list";
+        const start = 0;
+        const stop = -1;
+        const expectedValues = ["value1", "value2"];
+        mockRedis.lrange.mockResolvedValue(expectedValues);
+
+        const result = await service.lrange(testKey, start, stop);
+
+        expect(result).toEqual(expectedValues);
+        expect(mockRedis.lrange).toHaveBeenCalledWith(testKey, start, stop);
+      });
+    });
+
+    describe("llen", () => {
+      it("should get list length", async () => {
+        const testKey = "test:list";
+        const expectedLength = 5;
+        mockRedis.llen.mockResolvedValue(expectedLength);
+
+        const result = await service.llen(testKey);
+
+        expect(result).toBe(expectedLength);
+        expect(mockRedis.llen).toHaveBeenCalledWith(testKey);
+      });
+    });
+  });
+
+  describe("scan operations", () => {
+    describe("keys", () => {
+      it("should get keys matching pattern", async () => {
+        const pattern = "test:*";
+        const expectedKeys = ["test:key1", "test:key2"];
+        mockRedis.keys.mockResolvedValue(expectedKeys);
+
+        const result = await service.keys(pattern);
+
+        expect(result).toEqual(expectedKeys);
+        expect(mockRedis.keys).toHaveBeenCalledWith(pattern);
+      });
+    });
+
+    describe("scan", () => {
+      it("should scan keys with default parameters", async () => {
+        const cursor = 0;
+        const expectedResult: [string, string[]] = ["0", ["key1", "key2"]];
+        mockRedis.scan.mockResolvedValue(expectedResult);
+
+        const result = await service.scan(cursor);
+
+        expect(result).toEqual(expectedResult);
+        expect(mockRedis.scan).toHaveBeenCalledWith(cursor);
+      });
+
+      it("should scan keys with pattern", async () => {
+        const cursor = 0;
+        const pattern = "test:*";
+        const expectedResult: [string, string[]] = ["0", ["test:key1"]];
+        mockRedis.scan.mockResolvedValue(expectedResult);
+
+        const result = await service.scan(cursor, pattern);
+
+        expect(result).toEqual(expectedResult);
+        expect(mockRedis.scan).toHaveBeenCalledWith(cursor, "MATCH", pattern);
+      });
+
+      it("should scan keys with count", async () => {
+        const cursor = 0;
+        const count = 100;
+        const expectedResult: [string, string[]] = ["0", ["key1", "key2"]];
+        mockRedis.scan.mockResolvedValue(expectedResult);
+
+        const result = await service.scan(cursor, undefined, count);
+
+        expect(result).toEqual(expectedResult);
+        expect(mockRedis.scan).toHaveBeenCalledWith(cursor, "COUNT", count);
+      });
+
+      it("should scan keys with pattern and count", async () => {
+        const cursor = 0;
+        const pattern = "test:*";
+        const count = 100;
+        const expectedResult: [string, string[]] = ["0", ["test:key1"]];
+        mockRedis.scan.mockResolvedValue(expectedResult);
+
+        const result = await service.scan(cursor, pattern, count);
+
+        expect(result).toEqual(expectedResult);
+        expect(mockRedis.scan).toHaveBeenCalledWith(
+          cursor,
+          "MATCH",
+          pattern,
+          "COUNT",
+          count,
+        );
+      });
+    });
+  });
+
+  describe("transaction operations", () => {
+    describe("pipeline", () => {
+      it("should return pipeline instance", () => {
+        const mockPipeline = {
+          exec: jest.fn(),
+          set: jest.fn(),
+          get: jest.fn(),
+          hgetall: jest.fn(),
+        };
+        mockRedis.pipeline.mockReturnValue(mockPipeline);
+
+        const result = service.pipeline();
+
+        expect(result).toBe(mockPipeline);
+        expect(mockRedis.pipeline).toHaveBeenCalled();
+      });
+    });
+
+    describe("multi", () => {
+      it("should return multi instance", () => {
+        const mockMulti = { exec: jest.fn() };
+        mockRedis.multi.mockReturnValue(mockMulti);
+
+        const result = service.multi();
+
+        expect(result).toBe(mockMulti);
+        expect(mockRedis.multi).toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe("database operations", () => {
+    describe("flushdb", () => {
+      it("should flush current database", async () => {
+        mockRedis.flushdb.mockResolvedValue("OK");
+
+        const result = await service.flushdb();
+
+        expect(result).toBe("OK");
+        expect(mockRedis.flushdb).toHaveBeenCalled();
+      });
+    });
+
+    describe("flushall", () => {
+      it("should flush all databases", async () => {
+        mockRedis.flushall.mockResolvedValue("OK");
+
+        const result = await service.flushall();
+
+        expect(result).toBe("OK");
+        expect(mockRedis.flushall).toHaveBeenCalled();
+      });
+    });
+
+    describe("info", () => {
+      it("should get Redis info", async () => {
+        const expectedInfo = "redis_version:6.2.0";
+        mockRedis.info.mockResolvedValue(expectedInfo);
+
+        const result = await service.info();
+
+        expect(result).toBe(expectedInfo);
+        expect(mockRedis.info).toHaveBeenCalled();
+      });
+
+      it("should get Redis info for specific section", async () => {
+        const section = "memory";
+        const expectedInfo = "used_memory:1024";
+        mockRedis.info.mockResolvedValue(expectedInfo);
+
+        const result = await service.info(section);
+
+        expect(result).toBe(expectedInfo);
+        expect(mockRedis.info).toHaveBeenCalledWith(section);
+      });
+    });
+
+    describe("dbsize", () => {
+      it("should get database size", async () => {
+        const expectedSize = 42;
+        mockRedis.dbsize.mockResolvedValue(expectedSize);
+
+        const result = await service.dbsize();
+
+        expect(result).toBe(expectedSize);
+        expect(mockRedis.dbsize).toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe("connection status", () => {
+    describe("status", () => {
+      it("should return Redis connection status", () => {
+        const result = service.status;
+
+        expect(result).toBe("ready");
+      });
+    });
+
+    describe("isConnected", () => {
+      it("should return true when Redis is ready", () => {
+        const result = service.isConnected;
+
+        expect(result).toBe(true);
+      });
+
+      it("should return false when Redis is not ready", () => {
+        mockRedis.status = "connecting";
+
+        const result = service.isConnected;
+
+        expect(result).toBe(false);
+      });
+    });
+  });
+
+  describe("advanced operations", () => {
+    describe("batch", () => {
+      it("should execute batch operations", async () => {
+        const operations = [
+          { command: "set", args: ["key1", "value1"] },
+          { command: "get", args: ["key1"] },
+        ];
+        const mockPipeline = {
+          set: jest.fn(),
+          get: jest.fn(),
+          hgetall: jest.fn(),
+          exec: jest.fn().mockResolvedValue([
+            [null, "OK"],
+            [null, "value1"],
+          ]),
+        };
+        mockRedis.pipeline.mockReturnValue(mockPipeline);
+
+        const result = await service.batch(operations);
+
+        expect(result).toEqual(["OK", "value1"]);
+        expect(mockPipeline.set).toHaveBeenCalledWith("key1", "value1");
+        expect(mockPipeline.get).toHaveBeenCalledWith("key1");
+        expect(mockPipeline.exec).toHaveBeenCalled();
+      });
+
+      it("should handle empty results", async () => {
+        const operations = [{ command: "set", args: ["key1", "value1"] }];
+        const mockPipeline = {
+          set: jest.fn(),
+          get: jest.fn(),
+          hgetall: jest.fn(),
+          exec: jest.fn().mockResolvedValue(null),
+        };
+        mockRedis.pipeline.mockReturnValue(mockPipeline);
+
+        const result = await service.batch(operations);
+
+        expect(result).toEqual([]);
+      });
+    });
+
+    describe("lock", () => {
+      it("should acquire lock successfully", async () => {
+        const key = "lock:key";
+        const value = "lock-value";
+        const ttl = 10;
+        mockRedis.set.mockResolvedValue("OK");
+
+        const result = await service.lock(key, value, ttl);
+
+        expect(result).toBe(true);
+        expect(mockRedis.set).toHaveBeenCalledWith(
+          key,
+          value,
+          "PX",
+          ttl * 1000,
+          "NX",
+        );
+      });
+
+      it("should fail to acquire lock", async () => {
+        const key = "lock:key";
+        const value = "lock-value";
+        const ttl = 10;
+        mockRedis.set.mockResolvedValue(null);
+
+        const result = await service.lock(key, value, ttl);
+
+        expect(result).toBe(false);
+        expect(mockRedis.set).toHaveBeenCalledWith(
+          key,
+          value,
+          "PX",
+          ttl * 1000,
+          "NX",
+        );
+      });
+    });
+
+    describe("unlock", () => {
+      it("should unlock successfully", async () => {
+        const key = "lock:key";
+        const value = "lock-value";
+        mockRedis.eval.mockResolvedValue(1);
+
+        const result = await service.unlock(key, value);
+
+        expect(result).toBe(true);
+        expect(mockRedis.eval).toHaveBeenCalledWith(
+          expect.stringContaining("redis.call"),
+          1,
+          key,
+          value,
+        );
+      });
+
+      it("should fail to unlock", async () => {
+        const key = "lock:key";
+        const value = "wrong-value";
+        mockRedis.eval.mockResolvedValue(0);
+
+        const result = await service.unlock(key, value);
+
+        expect(result).toBe(false);
+        expect(mockRedis.eval).toHaveBeenCalledWith(
+          expect.stringContaining("redis.call"),
+          1,
+          key,
+          value,
+        );
       });
     });
   });
