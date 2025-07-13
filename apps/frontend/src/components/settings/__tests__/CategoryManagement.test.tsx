@@ -49,7 +49,10 @@ const mockCategories: TodoCategory[] = [
   },
 ];
 
-const mockAvailableColors = ['#10b981', '#f59e0b', '#8b5cf6'];
+const mockAvailableColors = [
+  '#ef4444', '#f97316', '#eab308', '#22c55e', '#14b8a6', 
+  '#0ea5e9', '#3b82f6', '#6366f1', '#8b5cf6'
+]; // Match CATEGORY_COLORS from constants
 
 const mockUseCategoriesReturn = {
   categories: mockCategories,
@@ -391,29 +394,38 @@ describe('CategoryManagement', () => {
       });
     });
 
-    it('should show message when no colors are available', () => {
-      // Mock categories that use all available colors
-      const allColorsUsed: TodoCategory[] = [
-        { id: '1', name: '카테고리1', color: '#10b981', isDefault: false, createdAt: new Date() },
-        { id: '2', name: '카테고리2', color: '#f59e0b', isDefault: false, createdAt: new Date() },
-        { id: '3', name: '카테고리3', color: '#8b5cf6', isDefault: false, createdAt: new Date() },
-        { id: '4', name: '카테고리4', color: '#ef4444', isDefault: false, createdAt: new Date() },
-        { id: '5', name: '카테고리5', color: '#3b82f6', isDefault: false, createdAt: new Date() },
+    it('should allow selecting colors even when some are already used', async () => {
+      // Multiple categories can use the same color in this implementation
+      const existingCategories: TodoCategory[] = [
+        { id: '1', name: '카테고리1', color: '#ef4444', isDefault: false, createdAt: new Date() },
+        { id: '2', name: '카테고리2', color: '#f97316', isDefault: false, createdAt: new Date() },
       ];
       
-      const mockWithAllColors = {
+      const mockWithColors = {
         ...mockUseCategoriesReturn,
-        categories: allColorsUsed,
+        categories: existingCategories,
       };
       
-      mockedUseCategories.mockReturnValue(mockWithAllColors);
+      mockedUseCategories.mockReturnValue(mockWithColors);
       
+      const user = userEvent.setup();
       render(<CategoryManagement />);
       
-      expect(screen.getByText('사용 가능한 색상이 없습니다. 기존 카테고리를 삭제해주세요.')).toBeInTheDocument();
+      // Should still show all available colors since multiple categories can use same color
+      const colorButtons = screen.getAllByRole('button').filter(button => 
+        button.style.backgroundColor && button.title?.includes('색상:')
+      );
+      expect(colorButtons.length).toBe(mockAvailableColors.length);
+      
+      // Add name and select color to enable the button
+      const nameInput = screen.getByPlaceholderText('카테고리 이름을 입력하세요');
+      await user.type(nameInput, '새 카테고리');
+      
+      const firstColorButton = colorButtons[0];
+      await user.click(firstColorButton);
       
       const addButton = screen.getByText('카테고리 추가');
-      expect(addButton).toBeDisabled();
+      expect(addButton).toBeEnabled(); // Should be enabled when both name and color are provided
     });
   });
 
@@ -461,11 +473,11 @@ describe('CategoryManagement', () => {
       expect(screen.getByText(/카테고리를 삭제하면.*다른 카테고리로 이동됩니다/)).toBeInTheDocument();
     });
 
-    it('should show correct category count limit', () => {
+    it('should show correct color information', () => {
       render(<CategoryManagement />);
       
       // Check that guidance text exists (simplified check)
-      expect(screen.getByText(/최대.*개의 카테고리를 만들 수 있습니다/)).toBeInTheDocument();
+      expect(screen.getByText(/총.*가지 색상을 사용할 수 있습니다/)).toBeInTheDocument();
     });
   });
 

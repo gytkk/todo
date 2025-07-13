@@ -11,6 +11,9 @@ jest.mock('@/utils/errorHandler', () => ({
 const mockSafeLocalStorageGet = safeLocalStorageGet as jest.MockedFunction<typeof safeLocalStorageGet>;
 const mockSafeLocalStorageSet = safeLocalStorageSet as jest.MockedFunction<typeof safeLocalStorageSet>;
 
+// Mock console.error to keep test output clean
+let mockConsoleError: jest.SpyInstance;
+
 describe('SettingsService', () => {
   let service: SettingsService;
   
@@ -50,6 +53,9 @@ describe('SettingsService', () => {
     // Reset mocks
     jest.clearAllMocks();
     
+    // Setup console.error mock for each test
+    mockConsoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+    
     // Get fresh instance for each test
     service = SettingsService.getInstance();
   });
@@ -57,6 +63,9 @@ describe('SettingsService', () => {
   afterEach(() => {
     // Reset the singleton instance for clean tests
     (SettingsService as unknown as { instance: undefined }).instance = undefined;
+    
+    // Restore console.error mock
+    mockConsoleError.mockRestore();
   });
 
   describe('Singleton Pattern', () => {
@@ -507,17 +516,13 @@ describe('SettingsService', () => {
     });
 
     it('콘솔에 오류를 기록해야 함', async () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-      
       mockSafeLocalStorageGet.mockImplementation(() => {
         throw new Error('Test error');
       });
 
       await service.getSettings();
 
-      expect(consoleSpy).toHaveBeenCalledWith('Error loading settings:', expect.any(Error));
-      
-      consoleSpy.mockRestore();
+      expect(mockConsoleError).toHaveBeenCalledWith('Error loading settings:', expect.any(Error));
     });
   });
 

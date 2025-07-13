@@ -23,13 +23,27 @@ global.ResizeObserver = jest.fn().mockImplementation(() => ({
 }))
 
 // Mock localStorage
-const localStorageMock = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn(),
-}
-global.localStorage = localStorageMock
+const localStorageMock = (() => {
+  let store = {};
+  return {
+    getItem: jest.fn((key) => store[key] || null),
+    setItem: jest.fn((key, value) => {
+      store[key] = String(value);
+    }),
+    removeItem: jest.fn((key) => {
+      delete store[key];
+    }),
+    clear: jest.fn(() => {
+      store = {};
+    }),
+    get length() {
+      return Object.keys(store).length;
+    },
+    key: jest.fn((index) => Object.keys(store)[index] || null),
+  };
+})();
+
+global.localStorage = localStorageMock;
 
 // Mock sessionStorage
-global.sessionStorage = localStorageMock
+global.sessionStorage = localStorageMock;

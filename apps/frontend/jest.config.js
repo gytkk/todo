@@ -13,6 +13,10 @@ const customJestConfig = {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@calendar-todo/shared-types$': '<rootDir>/../../packages/shared-types/src',
     '^@calendar-todo/ui$': '<rootDir>/../../packages/ui/src',
+    // Mock @dnd-kit packages
+    '^@dnd-kit/core$': '<rootDir>/src/__mocks__/@dnd-kit/core.ts',
+    '^@dnd-kit/sortable$': '<rootDir>/src/__mocks__/@dnd-kit/sortable.ts',
+    '^@dnd-kit/utilities$': '<rootDir>/src/__mocks__/@dnd-kit/utilities.ts',
   },
   testEnvironment: 'jest-environment-jsdom',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
