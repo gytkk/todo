@@ -13,7 +13,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   allTodos = [],
   hasActiveFilters = false,
 }) => {
-  const calendarDates = view === 'week' 
+  const calendarDates = view === 'week'
     ? createWeekCalendarDates(currentDate, selectedDate, todos)
     : createCalendarDates(currentDate, selectedDate, todos);
   const weekdayNames = getWeekdayNames();
@@ -35,7 +35,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
         </div>
 
         {/* 날짜 그리드 - 6주 고정 높이 */}
-        <div className="grid grid-cols-7 border-l border-gray-200" style={{ height: 'calc(100vh - 250px)', gridTemplateRows: 'repeat(6, minmax(80px, 1fr))' }}>
+        <div className="grid grid-cols-7 border-l border-gray-200" style={{ height: 'calc(100vh - 210px', gridTemplateRows: 'repeat(6, minmax(80px, 1fr))' }}>
           {calendarDates.map((calendarDate) => (
             <CalendarCell
               key={calendarDate.date.getTime()}
@@ -48,14 +48,14 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
               allTodos={allTodos.filter(todo => {
                 const todoDate = new Date(todo.date);
                 return todoDate.getDate() === calendarDate.date.getDate() &&
-                       todoDate.getMonth() === calendarDate.date.getMonth() &&
-                       todoDate.getFullYear() === calendarDate.date.getFullYear();
+                  todoDate.getMonth() === calendarDate.date.getMonth() &&
+                  todoDate.getFullYear() === calendarDate.date.getFullYear();
               })}
               hasActiveFilters={hasActiveFilters}
             />
           ))}
         </div>
-        
+
         {/* 필터링 결과가 없을 때 안내 메시지 */}
         {hasActiveFilters && todos.length === 0 && allTodos.length > 0 && (
           <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90 pointer-events-none">
@@ -87,14 +87,13 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
         </div>
 
         {/* 주 뷰 그리드 - 1행 7열 */}
-        <div className="grid grid-cols-7 border-l border-gray-200" style={{ height: 'calc(100vh - 200px)' }}>
+        <div className="grid grid-cols-7 border-l border-gray-200" style={{ height: 'calc(100vh - 150px)' }}>
           {calendarDates.map((calendarDate) => (
             <div
               key={calendarDate.date.getTime()}
-              className={`p-3 border-r border-gray-200 cursor-pointer transition-colors ${
-                calendarDate.isToday
-                  ? 'bg-blue-50 hover:bg-blue-100'
-                  : 'bg-white hover:bg-gray-50'
+              className={`p-3 border-r border-gray-200 cursor-pointer transition-colors ${calendarDate.isToday
+                ? 'bg-blue-50 hover:bg-blue-100'
+                : 'bg-white hover:bg-gray-50'
                 } ${calendarDate.isSelected ? 'ring-2 ring-blue-500 ring-inset' : ''}`}
               onClick={() => onDateSelect(calendarDate.date)}
             >
@@ -104,14 +103,13 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
 
                 {/* 날짜 표시 (중앙) */}
                 <div
-                  className={`text-lg font-semibold ${
-                    calendarDate.isSelected
-                      ? 'w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-md'
-                      : calendarDate.isToday
+                  className={`text-lg font-semibold ${calendarDate.isSelected
+                    ? 'w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-md'
+                    : calendarDate.isToday
+                      ? 'text-gray-900'
+                      : calendarDate.isCurrentMonth
                         ? 'text-gray-900'
-                        : calendarDate.isCurrentMonth
-                          ? 'text-gray-900'
-                          : 'text-gray-400'
+                        : 'text-gray-400'
                     }`}
                 >
                   {calendarDate.date.getDate()}
@@ -122,8 +120,8 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                   {calendarDate.todos.length > 0 && (
                     <div className="flex items-center gap-1">
                       {calendarDate.todos.some(t => !t.completed) && (
-                        <div 
-                          className="w-2 h-2 rounded-full" 
+                        <div
+                          className="w-2 h-2 rounded-full"
                           style={{ backgroundColor: getPrimaryCategoryColor(calendarDate.todos.filter(t => !t.completed)) }}
                         />
                       )}
@@ -156,7 +154,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
             </div>
           ))}
         </div>
-        
+
         {/* 필터링 결과가 없을 때 안내 메시지 */}
         {hasActiveFilters && todos.length === 0 && allTodos.length > 0 && (
           <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90 pointer-events-none">
@@ -180,8 +178,8 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
           <div className={`rounded-lg p-6 mb-6 transition-colors ${dayData.isSelected ? 'bg-blue-50 border-2 border-blue-200' : 'bg-gray-50 border-2 border-gray-200'}`}>
             <div className="flex items-center justify-between">
               <div
-                className={`text-3xl font-bold ${dayData.isToday 
-                  ? 'text-blue-600 drop-shadow-sm' 
+                className={`text-3xl font-bold ${dayData.isToday
+                  ? 'text-blue-600 drop-shadow-sm'
                   : dayData.isSelected
                     ? 'text-blue-700'
                     : 'text-gray-900'

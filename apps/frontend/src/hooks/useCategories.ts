@@ -4,7 +4,7 @@ import { TodoItem } from '@calendar-todo/shared-types';
 import { CategoryService } from '@/services/categoryService';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthenticatedCallback } from './useAuthenticatedCallback';
-import { DEFAULT_CATEGORIES } from '@/constants/categories';
+import { DEFAULT_CATEGORIES, STORAGE_KEYS } from '@/constants/categories';
 
 export const useCategories = () => {
   const [categories, setCategories] = useState<TodoCategory[]>([]);
@@ -18,12 +18,29 @@ export const useCategories = () => {
       // 미인증 사용자에게는 기본 카테고리 2개 제공
       setCategories(DEFAULT_CATEGORIES);
       
-      // 기본 카테고리 필터 설정 (모두 활성화)
-      const defaultFilter = DEFAULT_CATEGORIES.reduce((filter, cat) => {
-        filter[cat.id] = true;
-        return filter;
-      }, {} as CategoryFilter);
-      setCategoryFilter(defaultFilter);
+      // localStorage에서 카테고리 필터 상태 복원
+      try {
+        const savedFilter = localStorage.getItem(STORAGE_KEYS.CATEGORY_FILTER);
+        if (savedFilter) {
+          setCategoryFilter(JSON.parse(savedFilter));
+        } else {
+          // 기본 카테고리 필터 설정 (모두 활성화)
+          const defaultFilter = DEFAULT_CATEGORIES.reduce((filter, cat) => {
+            filter[cat.id] = true;
+            return filter;
+          }, {} as CategoryFilter);
+          setCategoryFilter(defaultFilter);
+          localStorage.setItem(STORAGE_KEYS.CATEGORY_FILTER, JSON.stringify(defaultFilter));
+        }
+      } catch (error) {
+        console.error('Failed to load category filter from localStorage:', error);
+        // 기본 카테고리 필터 설정 (모두 활성화)
+        const defaultFilter = DEFAULT_CATEGORIES.reduce((filter, cat) => {
+          filter[cat.id] = true;
+          return filter;
+        }, {} as CategoryFilter);
+        setCategoryFilter(defaultFilter);
+      }
       setLoading(false);
       return;
     }
@@ -173,10 +190,27 @@ export const useCategories = () => {
   );
 
   // 카테고리 필터 토글
-  const toggleCategoryFilter = useAuthenticatedCallback(
+  const toggleCategoryFilter = useCallback(
     async (categoryId: string): Promise<boolean> => {
       const newValue = !categoryFilter[categoryId];
       
+      if (!isAuthenticated) {
+        // 미인증 사용자: localStorage에 상태 저장
+        try {
+          const updatedFilter = {
+            ...categoryFilter,
+            [categoryId]: newValue
+          };
+          setCategoryFilter(updatedFilter);
+          localStorage.setItem(STORAGE_KEYS.CATEGORY_FILTER, JSON.stringify(updatedFilter));
+          return true;
+        } catch (error) {
+          console.error('Failed to save category filter to localStorage:', error);
+          return false;
+        }
+      }
+      
+      // 인증 사용자: 서버에 상태 저장
       try {
         const service = CategoryService.getInstance();
         const success = await service.updateCategoryFilter(categoryId, newValue);
@@ -193,8 +227,7 @@ export const useCategories = () => {
         return false;
       }
     },
-    Promise.resolve(false), // fallback value
-    [categoryFilter] // deps
+    [categoryFilter, isAuthenticated] // deps
   );
 
   // 필터링된 할일 목록 반환
