@@ -1,14 +1,12 @@
 "use client";
 
-import { useRef, useEffect, useCallback } from 'react';
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { useCallback } from 'react';
 import { Button, Badge } from "@calendar-todo/ui";
 import { TodoForm } from '@/components/todo/TodoForm';
 import { TodoList } from '@/components/todo/TodoList';
 import { TodoStats } from '@/components/todo/TodoStats';
-import { useTodoContext, useCategoryContext } from '@/contexts/AppContext';
-import { useMemo } from 'react';
+import { useTodoPanel } from '@/hooks/useTodoPanel';
+import { formatDate } from '@/utils/dateUtils';
 
 interface TabletSidePanelProps {
   isOpen: boolean;
@@ -17,45 +15,15 @@ interface TabletSidePanelProps {
 }
 
 export const TabletSidePanel = ({ isOpen, selectedDate, onClose }: TabletSidePanelProps) => {
-  const { addTodo, toggleTodo, deleteTodo, getTodosByDate } = useTodoContext();
-  const { categories } = useCategoryContext();
-  const panelRef = useRef<HTMLDivElement>(null);
-
-  const selectedDateTodos = useMemo(() => {
-    return selectedDate ? getTodosByDate(selectedDate) : [];
-  }, [selectedDate, getTodosByDate]);
-
-  const stats = useMemo(() => ({
-    total: selectedDateTodos.length,
-    completed: selectedDateTodos.filter(t => t.completed).length,
-    incomplete: selectedDateTodos.filter(t => !t.completed).length,
-    completionRate: 0,
-    recentCompletions: 0,
-  }), [selectedDateTodos]);
-
-  const handleAddTodo = useCallback((title: string, categoryId: string) => {
-    if (selectedDate) {
-      addTodo(title, selectedDate, categoryId);
-    }
-  }, [selectedDate, addTodo]);
-
-  // ESC 키 처리
-  useEffect(() => {
-    const handleEscapeKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isOpen) {
-        event.preventDefault();
-        onClose();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscapeKey);
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleEscapeKey);
-    };
-  }, [isOpen, onClose]);
+  const {
+    selectedDateTodos,
+    stats,
+    categories,
+    handleAddTodo,
+    toggleTodo,
+    deleteTodo,
+    panelRef,
+  } = useTodoPanel({ selectedDate, isOpen, onClose });
 
   // 배경 클릭 시 닫기
   const handleBackgroundClick = useCallback((e: React.MouseEvent) => {
@@ -86,7 +54,7 @@ export const TabletSidePanel = ({ isOpen, selectedDate, onClose }: TabletSidePan
           <div className="flex items-center justify-between p-4 border-b border-gray-100">
             <h2 className="text-lg font-semibold">
               {selectedDate
-                ? `${format(selectedDate, "MM월 dd일", { locale: ko })} 할일`
+                ? `${formatDate.monthDay(selectedDate)} 할일`
                 : "할일 목록"}
               {selectedDateTodos.length > 0 && (
                 <Badge className="ml-2">

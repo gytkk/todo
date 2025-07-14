@@ -4,7 +4,45 @@ interface ApiResponse<T = unknown> {
   status: number;
 }
 
+interface ApiRequestOptions extends RequestInit {
+  skipLogging?: boolean;
+}
+
 export class BaseApiClient {
+  private readonly isDevelopment = process.env.NODE_ENV === 'development';
+
+  protected log(message: string, data?: unknown): void {
+    if (this.isDevelopment) {
+      console.log(`[API] ${message}`, data || '');
+    }
+  }
+
+  protected logError(message: string, error?: unknown): void {
+    if (this.isDevelopment) {
+      console.error(`[API Error] ${message}`, error || '');
+    }
+  }
+
+  protected convertDateToISO(date: Date): string {
+    return date.toISOString();
+  }
+
+  protected convertResponseDates<T>(
+    data: T,
+    dateFields: string[]
+  ): T {
+    const converted = { ...data };
+    for (const field of dateFields) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const fieldValue = (converted as any)[field];
+      if (fieldValue && typeof fieldValue === 'string') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (converted as any)[field] = new Date(fieldValue);
+      }
+    }
+    return converted;
+  }
+
   protected handle401Error(): void {
     console.log('토큰 만료 또는 잘못된 토큰, 스토리지 정리');
     // localStorage와 sessionStorage 모두 정리
@@ -38,16 +76,26 @@ export class BaseApiClient {
 
   protected async makeRequest<T>(
     url: string,
-    options: RequestInit = {}
+    options: ApiRequestOptions = {}
   ): Promise<ApiResponse<T>> {
+    const { skipLogging, ...fetchOptions } = options;
+    
     try {
+      if (!skipLogging) {
+        this.log(`Making ${fetchOptions.method || 'GET'} request to: ${url}`);
+      }
+
       const response = await fetch(url, {
-        ...options,
+        ...fetchOptions,
         headers: {
           ...this.getAuthHeaders(),
-          ...options.headers,
+          ...fetchOptions.headers,
         },
       });
+
+      if (!skipLogging) {
+        this.log(`Response status: ${response.status}`);
+      }
 
       if (response.status === 401) {
         this.handle401Error();
@@ -57,15 +105,17 @@ export class BaseApiClient {
       const data = await response.json();
 
       if (!response.ok) {
+        const errorMessage = data.message || `HTTP error! status: ${response.status}`;
+        this.logError(`Request failed: ${errorMessage}`, data);
         return {
           status: response.status,
-          error: data.message || `HTTP error! status: ${response.status}`,
+          error: errorMessage,
         };
       }
 
       return { status: response.status, data };
     } catch (error) {
-      console.error('API request failed:', error);
+      this.logError('API request failed', error);
       return {
         status: 500,
         error: error instanceof Error ? error.message : 'Network error',

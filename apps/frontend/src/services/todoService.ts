@@ -28,12 +28,7 @@ export class TodoService extends BaseApiClient {
 
       const url = `${this.BASE_URL}${params.toString() ? `?${params.toString()}` : ''}`;
       
-      console.log('Making request to:', url);
-      console.log('Auth token exists:', !!localStorage.getItem('auth_token'));
-      
       const response = await this.get<{ todos: TodoItem[]; stats: TodoStats }>(url);
-
-      console.log('Response status:', response.status);
 
       if (response.status === 401) {
         return { todos: [], stats: { total: 0, completed: 0, incomplete: 0, completionRate: 0, recentCompletions: 0 } };
@@ -64,47 +59,23 @@ export class TodoService extends BaseApiClient {
         title: todo.title,
         category: {
           ...todo.category,
-          createdAt: todo.category.createdAt.toISOString(),
+          createdAt: this.convertDateToISO(todo.category.createdAt),
         },
-        date: todo.date.toISOString(),
+        date: this.convertDateToISO(todo.date),
       };
 
-      console.log('TodoService: Sending create request:', createRequest);
+      const response = await this.post<{ todo: TodoItem }>(this.BASE_URL, createRequest);
 
-      const response = await fetch(this.BASE_URL, {
-        method: 'POST',
-        headers: this.getAuthHeaders(),
-        body: JSON.stringify(createRequest),
-      });
-
-      console.log('TodoService: Response status:', response.status);
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          this.handle401Error();
-          return null;
-        }
-        
-        // Get the error details from the response
-        try {
-          const responseText = await response.text();
-          console.error('TodoService: Raw error response:', responseText);
-          if (responseText.trim()) {
-            const errorData = JSON.parse(responseText);
-            console.error('TodoService: Parsed error details:', errorData);
-          }
-        } catch (e) {
-          console.error('TodoService: Failed to parse error response:', e);
-        }
-        
-        throw new Error(`할일 생성 실패: ${response.status}`);
+      if (response.status === 401) {
+        return null;
       }
 
-      const data = await response.json();
-      const newTodo = {
-        ...data.todo,
-        date: new Date(data.todo.date),
-      };
+      if (response.error || !response.data) {
+        this.logError(`할일 생성 실패: ${response.error || response.status}`);
+        return null;
+      }
+
+      const newTodo = this.convertResponseDates(response.data.todo, ['date', 'category.createdAt']);
 
       // 완료 상태가 true인 경우 업데이트
       if (todo.completed) {
@@ -114,7 +85,7 @@ export class TodoService extends BaseApiClient {
 
       return newTodo;
     } catch (error) {
-      console.error('Error adding todo:', error);
+      this.logError('Error adding todo', error);
       return null;
     }
   }
@@ -128,105 +99,95 @@ export class TodoService extends BaseApiClient {
       if (updates.category !== undefined) {
         updateRequest.category = {
           ...updates.category,
-          createdAt: updates.category.createdAt.toISOString(),
+          createdAt: this.convertDateToISO(updates.category.createdAt),
         };
       }
-      if (updates.date !== undefined) updateRequest.date = updates.date.toISOString();
+      if (updates.date !== undefined) updateRequest.date = this.convertDateToISO(updates.date);
 
-      const response = await fetch(`${this.BASE_URL}/${id}`, {
-        method: 'PUT',
-        headers: this.getAuthHeaders(),
-        body: JSON.stringify(updateRequest),
-      });
+      const response = await this.put(`${this.BASE_URL}/${id}`, updateRequest);
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          this.handle401Error();
-          return false;
-        }
-        throw new Error(`할일 수정 실패: ${response.status}`);
+      if (response.status === 401) {
+        return false;
+      }
+
+      if (response.error) {
+        this.logError(`할일 수정 실패: ${response.error}`);
+        return false;
       }
 
       return true;
     } catch (error) {
-      console.error('Error updating todo:', error);
+      this.logError('Error updating todo', error);
       return false;
     }
   }
 
   async toggleTodo(id: string): Promise<boolean> {
     try {
-      const response = await fetch(`${this.BASE_URL}/${id}/toggle`, {
+      const response = await this.makeRequest(`${this.BASE_URL}/${id}/toggle`, {
         method: 'PATCH',
-        headers: this.getAuthHeaders(),
       });
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          this.handle401Error();
-          return false;
-        }
-        throw new Error(`할일 토글 실패: ${response.status}`);
+      if (response.status === 401) {
+        return false;
+      }
+
+      if (response.error) {
+        this.logError(`할일 토글 실패: ${response.error}`);
+        return false;
       }
 
       return true;
     } catch (error) {
-      console.error('Error toggling todo:', error);
+      this.logError('Error toggling todo', error);
       return false;
     }
   }
 
   async deleteTodo(id: string): Promise<boolean> {
     try {
-      const response = await fetch(`${this.BASE_URL}/${id}`, {
-        method: 'DELETE',
-        headers: this.getAuthHeaders(),
-      });
+      const response = await this.delete(`${this.BASE_URL}/${id}`);
 
-      if (!response.ok) {
-        throw new Error(`할일 삭제 실패: ${response.status}`);
+      if (response.error) {
+        this.logError(`할일 삭제 실패: ${response.error}`);
+        return false;
       }
 
       return true;
     } catch (error) {
-      console.error('Error deleting todo:', error);
+      this.logError('Error deleting todo', error);
       return false;
     }
   }
 
   async clearAllTodos(): Promise<boolean> {
     try {
-      const response = await fetch(this.BASE_URL, {
-        method: 'DELETE',
-        headers: this.getAuthHeaders(),
-      });
+      const response = await this.delete(this.BASE_URL);
 
-      if (!response.ok) {
-        throw new Error(`모든 할일 삭제 실패: ${response.status}`);
+      if (response.error) {
+        this.logError(`모든 할일 삭제 실패: ${response.error}`);
+        return false;
       }
 
       return true;
     } catch (error) {
-      console.error('Error clearing todos:', error);
+      this.logError('Error clearing todos', error);
       return false;
     }
   }
 
   async getStats(): Promise<TodoStats> {
     try {
-      const response = await fetch(`${this.BASE_URL}/stats`, {
-        method: 'GET',
-        headers: this.getAuthHeaders(),
-      });
+      const response = await this.get<{ stats: TodoStats }>(`${this.BASE_URL}/stats`);
 
-      if (!response.ok) {
-        throw new Error(`통계 조회 실패: ${response.status}`);
+      if (response.error || !response.data) {
+        this.logError(`통계 조회 실패: ${response.error || response.status}`);
+        return { total: 0, completed: 0, incomplete: 0, completionRate: 0, recentCompletions: 0 };
       }
 
-      const data = await response.json();
-      return data.stats;
+      return response.data.stats;
     } catch (error) {
-      console.error('Error getting stats:', error);
+      this.logError('Error getting stats', error);
       return { total: 0, completed: 0, incomplete: 0, completionRate: 0, recentCompletions: 0 };
     }
   }

@@ -31,13 +31,16 @@ export const DailyView: React.FC<DailyViewProps> = ({
   // 디바운스를 위한 ref
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   
+  // Observer 재활성화 타이머를 추적하는 ref
+  const observerActivationTimerRef = useRef<NodeJS.Timeout | null>(null);
+  
   // 초기 스크롤 완료 여부를 추적하는 ref
   const initialScrollCompleted = useRef(false);
 
   // 컴포넌트가 처음 마운트되었는지 추적하는 ref
   const isInitialMount = useRef(true);
   
-  // 스크롤 애니메이션 제어를 위한 상태
+  // 스크롤 애니메이션 제어를 위한 상태 (초기에는 auto, 이후 smooth)
   const [scrollBehavior, setScrollBehavior] = useState<'auto' | 'smooth'>('auto');
 
   // 이미 필터링된 todos를 받으므로 추가 필터링 불필요
@@ -89,12 +92,12 @@ export const DailyView: React.FC<DailyViewProps> = ({
         case 'ArrowLeft':
         case 'ArrowUp':
           event.preventDefault();
-          container.scrollBy({ top: -200, behavior: 'smooth' });
+          container.scrollBy({ top: -200, behavior: scrollBehavior });
           break;
         case 'ArrowRight':
         case 'ArrowDown':
           event.preventDefault();
-          container.scrollBy({ top: 200, behavior: 'smooth' });
+          container.scrollBy({ top: 200, behavior: scrollBehavior });
           break;
         case 't':
         case 'T':
@@ -108,7 +111,7 @@ export const DailyView: React.FC<DailyViewProps> = ({
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [goToToday]);
+  }, [goToToday, scrollBehavior]);
 
   // CSS Grid 레이아웃이 제대로 작동하면 자연스러운 스크롤이 가능해야 함
 
@@ -164,11 +167,14 @@ export const DailyView: React.FC<DailyViewProps> = ({
             clearTimeout(timeoutId);
           }
           
-          // 선택된 날짜도 업데이트 (부드러운 변경을 위해 약간의 지연)
+          // 선택된 날짜도 업데이트 (프로그래매틱 스크롤 중이 아닐 때만)
           timeoutId = setTimeout(() => {
-            goToDate(mostVisibleDate!);
+            // 프로그래매틱 스크롤이 완료된 후에만 날짜 변경
+            if (initialScrollCompleted.current) {
+              goToDate(mostVisibleDate!);
+            }
             timeoutId = null;
-          }, 150);
+          }, 200); // 스크롤 애니메이션과 조화
         }
       },
       {
@@ -196,6 +202,11 @@ export const DailyView: React.FC<DailyViewProps> = ({
 
   // 선택된 날짜로 스크롤하기 (모든 날짜 변경 시)
   useEffect(() => {
+    // 이전 Observer 재활성화 타이머 정리
+    if (observerActivationTimerRef.current) {
+      clearTimeout(observerActivationTimerRef.current);
+    }
+    
     // 날짜가 변경될 때마다 Observer 비활성화
     initialScrollCompleted.current = false;
     
@@ -205,7 +216,6 @@ export const DailyView: React.FC<DailyViewProps> = ({
         const container = scrollContainerRef.current;
         const selectedElement = selectedDayRef.current;
 
-        const containerHeight = container.clientHeight;
         const selectedTop = selectedElement.offsetTop;
 
         // 선택된 요소를 화면 상단에 위치시키기
@@ -214,33 +224,34 @@ export const DailyView: React.FC<DailyViewProps> = ({
         // 초기 마운트 여부를 미리 확인
         const isInitial = isInitialMount.current;
         
-        // 모든 스크롤을 애니메이션 없이 즉시 이동으로 통일
+        // 초기 로딩 시에는 애니메이션 없이, 이후에는 부드러운 애니메이션
         container.scrollTo({
           top: scrollTop,
-          behavior: 'auto'
+          behavior: isInitial ? 'auto' : 'smooth'
         });
         
-        // 초기 마운트 플래그 해제
+        // 초기 마운트 플래그 해제 및 애니메이션 활성화
         if (isInitial) {
           isInitialMount.current = false;
-          // 초기 스크롤 후 CSS 스크롤 애니메이션만 활성화
+          // 초기 스크롤 완료 후 부드러운 애니메이션 활성화
           setTimeout(() => {
             setScrollBehavior('smooth');
-          }, 200);
+          }, 100);
         }
         
-        // 스크롤 완료 후 Observer 활성화
-        setTimeout(() => {
+        // 스크롤 완료 후 Observer 활성화 (초기 로딩 시 빠르게, 이후 애니메이션 시간 고려)
+        observerActivationTimerRef.current = setTimeout(() => {
           initialScrollCompleted.current = true;
-        }, 100);
+          observerActivationTimerRef.current = null;
+        }, isInitial ? 50 : 300); // 초기 로딩은 빠르게, 애니메이션 시에는 완료 대기
       }
     };
 
-    // DOM이 업데이트된 후 스크롤 실행
-    const timeoutId = setTimeout(scrollToSelectedDate, 50);
+    // DOM이 업데이트된 후 즉시 스크롤 실행 (requestAnimationFrame 사용)
+    const frameId = requestAnimationFrame(scrollToSelectedDate);
 
     return () => {
-      clearTimeout(timeoutId);
+      cancelAnimationFrame(frameId);
     };
   }, [selectedDate]);
 
@@ -277,7 +288,7 @@ export const DailyView: React.FC<DailyViewProps> = ({
 
             return (
               <div
-                key={dayData.date.getTime()}
+                key={dateKey}
                 data-date={dateKey}
                 ref={(element) => {
                   if (isSelectedDay) {
@@ -285,9 +296,9 @@ export const DailyView: React.FC<DailyViewProps> = ({
                   }
                   setDayRef(dayData.date, element);
                 }}
-                className={`transition-all duration-200 min-h-[400px] ${isSelectedDay
-                    ? 'border-l-4 border-blue-500 pl-4'
-                    : 'pl-4'
+                className={`min-h-[400px] pl-4 ${isSelectedDay
+                    ? 'border-l-4 border-blue-500'
+                    : ''
                   }`}
               >
                 <DaySection
