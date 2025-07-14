@@ -128,62 +128,47 @@ export const DaySection: React.FC<DaySectionProps> = ({
 
       {/* 할일 목록 */}
       <div className="space-y-2">
-        {displayTodos.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <p>등록된 할일이 없습니다</p>
-            {!isMainSection && (
-              <QuickAddTodo
-                onAddTodo={handleAddTodo}
-                categories={categories}
-                compact={true}
-              />
+        {displayTodos.map((todo) => (
+          <TodoItemCard
+            key={todo.id}
+            todo={todo}
+            onToggle={onToggleTodo}
+            onDelete={onDeleteTodo}
+            onEdit={onEditTodo}
+            compact={!isMainSection}
+          />
+        ))}
+
+        {/* 더보기/접기 버튼 */}
+        {shouldShowExpandButton && (
+          <Button
+            variant="ghost"
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="w-full mt-2 text-gray-500 hover:text-gray-700"
+          >
+            {isExpanded ? (
+              <>
+                <ChevronUp className="h-4 w-4 mr-1" />
+                접기
+              </>
+            ) : (
+              <>
+                <ChevronDown className="h-4 w-4 mr-1" />
+                {todos.length - maxTodosInSideSection}개 더보기
+              </>
             )}
+          </Button>
+        )}
+
+        {/* 보조 섹션에서 할일 추가 */}
+        {!isMainSection && (
+          <div className="mt-3 pt-3 border-t border-gray-100">
+            <QuickAddTodo
+              onAddTodo={handleAddTodo}
+              categories={categories}
+              compact={true}
+            />
           </div>
-        ) : (
-          <>
-            {displayTodos.map((todo) => (
-              <TodoItemCard
-                key={todo.id}
-                todo={todo}
-                onToggle={onToggleTodo}
-                onDelete={onDeleteTodo}
-                onEdit={onEditTodo}
-                compact={!isMainSection}
-              />
-            ))}
-
-            {/* 더보기/접기 버튼 */}
-            {shouldShowExpandButton && (
-              <Button
-                variant="ghost"
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="w-full mt-2 text-gray-500 hover:text-gray-700"
-              >
-                {isExpanded ? (
-                  <>
-                    <ChevronUp className="h-4 w-4 mr-1" />
-                    접기
-                  </>
-                ) : (
-                  <>
-                    <ChevronDown className="h-4 w-4 mr-1" />
-                    {todos.length - maxTodosInSideSection}개 더보기
-                  </>
-                )}
-              </Button>
-            )}
-
-            {/* 보조 섹션에서 할일 추가 */}
-            {!isMainSection && (
-              <div className="mt-3 pt-3 border-t border-gray-100">
-                <QuickAddTodo
-                  onAddTodo={handleAddTodo}
-                  categories={categories}
-                  compact={true}
-                />
-              </div>
-            )}
-          </>
         )}
       </div>
     </div>

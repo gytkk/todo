@@ -54,12 +54,6 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
         })}
       </div>
 
-      {/* 선택된 카테고리 정보 */}
-      {selectedCategoryId && (
-        <div className="text-xs text-gray-500 mt-1">
-          선택된 카테고리: {categories.find(cat => cat.id === selectedCategoryId)?.name}
-        </div>
-      )}
     </div>
   );
 };

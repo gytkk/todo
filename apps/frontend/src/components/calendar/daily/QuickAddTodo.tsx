@@ -16,20 +16,15 @@ interface QuickAddTodoProps {
 export const QuickAddTodo: React.FC<QuickAddTodoProps> = ({
   onAddTodo,
   categories,
-  disabled = false,
-  compact = false
+  disabled = false
 }) => {
   const [title, setTitle] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState(categories[0]?.id || "personal");
-  const [isExpanded, setIsExpanded] = useState(!compact);
 
   const handleSubmit = () => {
     if (title.trim() && selectedCategoryId) {
       onAddTodo(title.trim(), selectedCategoryId);
       setTitle("");
-      if (compact) {
-        setIsExpanded(false);
-      }
     }
   };
 
@@ -39,29 +34,9 @@ export const QuickAddTodo: React.FC<QuickAddTodoProps> = ({
     }
     if (e.key === "Escape") {
       setTitle("");
-      if (compact) {
-        setIsExpanded(false);
-      }
     }
   };
 
-  const handleExpand = () => {
-    setIsExpanded(true);
-  };
-
-  if (compact && !isExpanded) {
-    return (
-      <Button
-        variant="outline"
-        onClick={handleExpand}
-        disabled={disabled}
-        className="w-full flex items-center gap-2 text-gray-500 border-dashed"
-      >
-        <Plus className="h-4 w-4" />
-        할일 추가
-      </Button>
-    );
-  }
 
   return (
     <div className={`border rounded-lg p-4 bg-gray-50 ${disabled ? 'opacity-50' : ''}`}>
@@ -76,7 +51,6 @@ export const QuickAddTodo: React.FC<QuickAddTodoProps> = ({
             className="flex-1 px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
             onKeyPress={handleKeyPress}
             disabled={disabled}
-            autoFocus={isExpanded}
           />
           <Button 
             onClick={handleSubmit} 
@@ -96,22 +70,6 @@ export const QuickAddTodo: React.FC<QuickAddTodoProps> = ({
           disabled={disabled}
         />
 
-        {/* 컴팩트 모드에서 취소 버튼 */}
-        {compact && (
-          <div className="flex justify-end">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setIsExpanded(false);
-                setTitle("");
-              }}
-              className="text-gray-500"
-            >
-              취소
-            </Button>
-          </div>
-        )}
       </div>
     </div>
   );
