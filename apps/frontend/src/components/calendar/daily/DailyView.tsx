@@ -7,13 +7,11 @@ import { useTodoContext, useCategoryContext } from '@/contexts/AppContext';
 
 interface DailyViewProps {
   selectedDate?: Date;
-  currentDate?: Date;
   onDateChange?: (date: Date) => void;
 }
 
 export const DailyView: React.FC<DailyViewProps> = ({
   selectedDate: initialDate,
-  currentDate,
   onDateChange,
 }) => {
   const {
@@ -49,7 +47,7 @@ export const DailyView: React.FC<DailyViewProps> = ({
     goToToday,
     goToDate,
     isToday
-  } = useDailyView(initialDate || currentDate, todos);
+  } = useDailyView(initialDate, todos);
 
   // 날짜 변경 시 부모 컴포넌트에 알림
   useEffect(() => {
@@ -58,13 +56,6 @@ export const DailyView: React.FC<DailyViewProps> = ({
     }
   }, [selectedDate, onDateChange]);
 
-  // 헤더에서 currentDate가 변경될 때 스크롤 이동
-  useEffect(() => {
-    if (currentDate && currentDate.getTime() !== selectedDate.getTime()) {
-      // 헤더 네비게이션으로 날짜가 변경된 경우 해당 날짜로 이동
-      goToDate(currentDate);
-    }
-  }, [currentDate, selectedDate, goToDate]);
 
   // 카테고리 변경 이벤트 리스너
   useEffect(() => {

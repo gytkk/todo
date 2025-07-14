@@ -175,7 +175,6 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
       <div className="flex-1 bg-white relative overflow-hidden">
         <DailyView
           selectedDate={selectedDate || new Date()}
-          currentDate={currentDate}
           onDateChange={onDateSelect}
         />
       </div>

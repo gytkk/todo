@@ -16,19 +16,16 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
     switch (view) {
       case 'month':
         newDate = navigateMonth(currentDate, 'prev');
+        onNavigate(newDate);
         break;
       case 'week':
         newDate = navigateWeek(currentDate, 'prev');
+        onNavigate(newDate);
         break;
       case 'day':
         newDate = navigateDay(currentDate, 'prev');
+        onDateSelect(newDate); // 일간 보기에서는 onDateSelect만 사용
         break;
-    }
-    onNavigate(newDate);
-    
-    // 일간 보기에서는 날짜 선택도 함께 처리하여 사이드 패널 연동
-    if (view === 'day') {
-      onDateSelect(newDate);
     }
   };
 
@@ -37,19 +34,16 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
     switch (view) {
       case 'month':
         newDate = navigateMonth(currentDate, 'next');
+        onNavigate(newDate);
         break;
       case 'week':
         newDate = navigateWeek(currentDate, 'next');
+        onNavigate(newDate);
         break;
       case 'day':
         newDate = navigateDay(currentDate, 'next');
+        onDateSelect(newDate); // 일간 보기에서는 onDateSelect만 사용
         break;
-    }
-    onNavigate(newDate);
-    
-    // 일간 보기에서는 날짜 선택도 함께 처리하여 사이드 패널 연동
-    if (view === 'day') {
-      onDateSelect(newDate);
     }
   };
 
