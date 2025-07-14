@@ -25,6 +25,11 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
         break;
     }
     onNavigate(newDate);
+    
+    // 일간 보기에서는 날짜 선택도 함께 처리하여 사이드 패널 연동
+    if (view === 'day') {
+      onDateSelect(newDate);
+    }
   };
 
   const handleNext = () => {
@@ -41,6 +46,11 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
         break;
     }
     onNavigate(newDate);
+    
+    // 일간 보기에서는 날짜 선택도 함께 처리하여 사이드 패널 연동
+    if (view === 'day') {
+      onDateSelect(newDate);
+    }
   };
 
   const handleToday = () => {

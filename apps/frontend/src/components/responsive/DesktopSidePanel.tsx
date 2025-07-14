@@ -57,56 +57,17 @@ export const DesktopSidePanel = ({ isOpen, selectedDate, onClose }: DesktopSideP
     };
   }, [isOpen, onClose]);
 
-  // 포커스 트랩 구현
-  useEffect(() => {
-    if (!isOpen || !panelRef.current) return;
-
-    const panel = panelRef.current;
-    const focusableSelector = 'button, input, select, textarea, [tabindex]:not([tabindex="-1"])';
-    
-    const focusableElements = panel.querySelectorAll(focusableSelector);
-    const firstElement = focusableElements[0] as HTMLElement;
-    
-    if (firstElement) {
-      firstElement.focus();
-    }
-
-    const handleTabKey = (event: KeyboardEvent) => {
-      if (event.key !== 'Tab') return;
-
-      const currentFocusableElements = panel.querySelectorAll(focusableSelector);
-      const firstFocusable = currentFocusableElements[0] as HTMLElement;
-      const lastFocusable = currentFocusableElements[currentFocusableElements.length - 1] as HTMLElement;
-
-      if (event.shiftKey) {
-        if (document.activeElement === firstFocusable) {
-          event.preventDefault();
-          lastFocusable.focus();
-        }
-      } else {
-        if (document.activeElement === lastFocusable) {
-          event.preventDefault();
-          firstFocusable.focus();
-        }
-      }
-    };
-
-    panel.addEventListener('keydown', handleTabKey);
-
-    return () => {
-      panel.removeEventListener('keydown', handleTabKey);
-    };
-  }, [isOpen]);
+  // 사이드 패널이므로 포커스 트랩을 제거하여 다른 영역과의 상호작용 허용
 
   if (!isOpen) return null;
 
   return (
     <div
       ref={panelRef}
-      className="h-full w-96 bg-white shadow-lg border-l border-gray-100 hidden lg:block"
-      role="dialog"
-      aria-modal="true"
+      className="h-full w-full bg-white shadow-lg border-l border-gray-100"
+      role="complementary"
       aria-label="할일 관리 사이드 패널"
+      style={{ minWidth: '300px' }}
     >
       <div className="h-full flex flex-col">
         {/* 헤더 */}

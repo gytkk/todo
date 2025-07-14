@@ -27,7 +27,7 @@ function CalendarViewComponent({
   onDateSelect,
   onNavigate,
   onCalendarClick,
-  defaultView = 'month',
+  defaultView = 'day',
   allTodos = [],
   hasActiveFilters = false
 }: CalendarViewProps) {

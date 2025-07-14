@@ -9,7 +9,7 @@ export const CalendarContainer: React.FC<CalendarProps> = ({
   todos,
   onDateSelect,
   onNavigate,
-  view: initialView = 'month',
+  view: initialView = 'day',
   onViewChange,
   allTodos = [],
   hasActiveFilters = false,

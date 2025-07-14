@@ -16,10 +16,10 @@ export const ResponsiveContainer = ({
 }: ResponsiveContainerProps) => {
   const { screenSize, isDesktopOrWider } = useResponsive();
 
-  // CSS Grid layout for desktop/wide screens when sidebar is open
+  // Flexbox layout for desktop/wide screens when sidebar is open
   const getLayoutClasses = () => {
     if (isDesktopOrWider && sidebarOpen) {
-      return 'grid grid-cols-[1fr_384px] h-full'; // 384px = w-96
+      return 'flex h-full'; // Flexbox 사용
     }
     return 'h-full';
   };

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { addDays, subDays, isSameDay, format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { TodoItem } from '@calendar-todo/shared-types';
@@ -23,7 +23,17 @@ export const useDailyView = (
   initialDate: Date = new Date(),
   todos: TodoItem[]
 ) => {
-  const [selectedDate, setSelectedDate] = useState(initialDate);
+  // initialDate가 undefined일 수 있으므로 항상 유효한 날짜를 보장
+  const validInitialDate = initialDate || new Date();
+  const [selectedDate, setSelectedDate] = useState(validInitialDate);
+
+  // initialDate가 변경될 때 selectedDate 업데이트
+  useEffect(() => {
+    const validDate = initialDate || new Date();
+    if (validDate.getTime() !== selectedDate.getTime()) {
+      setSelectedDate(validDate);
+    }
+  }, [initialDate, selectedDate]);
 
   // 더 많은 날짜 데이터 생성 (선택된 날짜 기준으로 앞뒤 90일씩)
   const dailyData: DailyViewData = useMemo(() => {
@@ -42,8 +52,8 @@ export const useDailyView = (
     };
 
     const days: DayData[] = [];
-    const totalDays = 181; // 앞뒤 90일씩 + 선택날짜 = 총 181일
-    const selectedDayIndex = 90; // 가운데가 선택된 날짜
+    const totalDays = 61; // 앞뒤 30일씩 + 선택날짜 = 총 61일
+    const selectedDayIndex = 30; // 가운데가 선택된 날짜
 
     for (let i = 0; i < totalDays; i++) {
       const dayOffset = i - selectedDayIndex;
@@ -57,10 +67,15 @@ export const useDailyView = (
       });
     }
 
+    // 실제 선택된 날짜의 인덱스 찾기
+    const actualSelectedDayIndex = days.findIndex(day => 
+      isSameDay(day.date, selectedDate)
+    );
+
     return {
       selectedDate,
       days,
-      selectedDayIndex
+      selectedDayIndex: actualSelectedDayIndex >= 0 ? actualSelectedDayIndex : selectedDayIndex
     };
   }, [selectedDate, todos]);
 

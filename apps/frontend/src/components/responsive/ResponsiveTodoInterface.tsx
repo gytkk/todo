@@ -20,7 +20,7 @@ export const ResponsiveTodoInterface = ({
   onClose,
   calendarContent
 }: ResponsiveTodoInterfaceProps) => {
-  const { screenSize } = useResponsive();
+  const { screenSize, isDesktopOrWider } = useResponsive();
 
   const renderTodoInterface = () => {
     switch (screenSize) {
@@ -60,6 +60,21 @@ export const ResponsiveTodoInterface = ({
     }
   };
 
+  // 데스크톱/와이드 화면에서 사이드바가 열린 경우, Flexbox로 레이아웃 구성
+  if (isDesktopOrWider && isOpen) {
+    return (
+      <>
+        <div className="flex-1 min-w-0">
+          {calendarContent}
+        </div>
+        <div className="w-96 flex-shrink-0">
+          {renderTodoInterface()}
+        </div>
+      </>
+    );
+  }
+
+  // 다른 경우는 기존 방식 유지
   return (
     <>
       {calendarContent}

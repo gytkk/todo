@@ -81,16 +81,16 @@ export const CalendarCommonHeader: React.FC<CalendarCommonHeaderProps> = ({
       {/* 오른쪽: 뷰 선택 버튼 */}
       <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
         <Button
-          variant={currentView === 'month' ? 'default' : 'ghost'}
+          variant={currentView === 'day' ? 'default' : 'ghost'}
           size="sm"
-          onClick={() => onViewChange('month')}
-          className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${currentView === 'month'
+          onClick={() => onViewChange('day')}
+          className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${currentView === 'day'
               ? 'bg-white text-gray-900 shadow-sm hover:bg-gray-50'
               : 'text-gray-600 hover:text-gray-900'
             }`}
         >
-          <Grid3X3 className="h-4 w-4" />
-          월간
+          <List className="h-4 w-4" />
+          일간
         </Button>
         <Button
           variant={currentView === 'week' ? 'default' : 'ghost'}
@@ -105,16 +105,16 @@ export const CalendarCommonHeader: React.FC<CalendarCommonHeaderProps> = ({
           주간
         </Button>
         <Button
-          variant={currentView === 'day' ? 'default' : 'ghost'}
+          variant={currentView === 'month' ? 'default' : 'ghost'}
           size="sm"
-          onClick={() => onViewChange('day')}
-          className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${currentView === 'day'
+          onClick={() => onViewChange('month')}
+          className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${currentView === 'month'
               ? 'bg-white text-gray-900 shadow-sm hover:bg-gray-50'
               : 'text-gray-600 hover:text-gray-900'
             }`}
         >
-          <List className="h-4 w-4" />
-          일간
+          <Grid3X3 className="h-4 w-4" />
+          월간
         </Button>
       </div>
     </div>

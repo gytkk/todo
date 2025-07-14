@@ -7,11 +7,13 @@ import { useTodoContext, useCategoryContext } from '@/contexts/AppContext';
 
 interface DailyViewProps {
   selectedDate?: Date;
+  currentDate?: Date;
   onDateChange?: (date: Date) => void;
 }
 
 export const DailyView: React.FC<DailyViewProps> = ({
   selectedDate: initialDate,
+  currentDate,
   onDateChange,
 }) => {
   const {
@@ -30,6 +32,15 @@ export const DailyView: React.FC<DailyViewProps> = ({
   
   // 디바운스를 위한 ref
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // 초기 스크롤 완료 여부를 추적하는 ref
+  const initialScrollCompleted = useRef(false);
+
+  // 컴포넌트가 처음 마운트되었는지 추적하는 ref
+  const isInitialMount = useRef(true);
+  
+  // 스크롤 애니메이션 제어를 위한 상태
+  const [scrollBehavior, setScrollBehavior] = useState<'auto' | 'smooth'>('auto');
 
   // 이미 필터링된 todos를 받으므로 추가 필터링 불필요
   const {
@@ -38,7 +49,7 @@ export const DailyView: React.FC<DailyViewProps> = ({
     goToToday,
     goToDate,
     isToday
-  } = useDailyView(initialDate, todos);
+  } = useDailyView(initialDate || currentDate, todos);
 
   // 날짜 변경 시 부모 컴포넌트에 알림
   useEffect(() => {
@@ -46,6 +57,14 @@ export const DailyView: React.FC<DailyViewProps> = ({
       onDateChange(selectedDate);
     }
   }, [selectedDate, onDateChange]);
+
+  // 헤더에서 currentDate가 변경될 때 스크롤 이동
+  useEffect(() => {
+    if (currentDate && currentDate.getTime() !== selectedDate.getTime()) {
+      // 헤더 네비게이션으로 날짜가 변경된 경우 해당 날짜로 이동
+      goToDate(currentDate);
+    }
+  }, [currentDate, selectedDate, goToDate]);
 
   // 카테고리 변경 이벤트 리스너
   useEffect(() => {
@@ -100,22 +119,7 @@ export const DailyView: React.FC<DailyViewProps> = ({
     };
   }, [goToToday]);
 
-  // 휠 이벤트 핸들러 추가
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    const handleWheel = (event: WheelEvent) => {
-      // 기본 스크롤 동작 허용
-      event.stopPropagation();
-    };
-
-    container.addEventListener('wheel', handleWheel, { passive: true });
-
-    return () => {
-      container.removeEventListener('wheel', handleWheel);
-    };
-  }, []);
+  // CSS Grid 레이아웃이 제대로 작동하면 자연스러운 스크롤이 가능해야 함
 
   // 할일 추가 핸들러 (날짜 지정)
   const handleAddTodo = (date: Date) => (title: string, categoryId: string) => {
@@ -151,6 +155,11 @@ export const DailyView: React.FC<DailyViewProps> = ({
           }
         });
 
+        // 초기 스크롤이 완료되지 않았으면 Observer 콜백을 무시
+        if (!initialScrollCompleted.current) {
+          return;
+        }
+        
         if (mostVisibleDate && maxRatio > 0.3) {
           setVisibleDate(mostVisibleDate);
           
@@ -194,24 +203,54 @@ export const DailyView: React.FC<DailyViewProps> = ({
     };
   }, [days, goToDate]);
 
-  // 선택된 날짜로 스크롤하기 (초기 로드 및 오늘 버튼 클릭 시)
+  // 선택된 날짜로 스크롤하기 (모든 날짜 변경 시)
   useEffect(() => {
-    if (selectedDayRef.current && scrollContainerRef.current) {
-      const container = scrollContainerRef.current;
-      const selectedElement = selectedDayRef.current;
+    // 날짜가 변경될 때마다 Observer 비활성화
+    initialScrollCompleted.current = false;
+    
+    // 약간의 지연을 주어 렌더링이 완료된 후 스크롤
+    const scrollToSelectedDate = () => {
+      if (selectedDayRef.current && scrollContainerRef.current) {
+        const container = scrollContainerRef.current;
+        const selectedElement = selectedDayRef.current;
 
-      const containerHeight = container.clientHeight;
-      const selectedTop = selectedElement.offsetTop;
-      const selectedHeight = selectedElement.clientHeight;
+        const containerHeight = container.clientHeight;
+        const selectedTop = selectedElement.offsetTop;
 
-      // 선택된 요소를 화면 중앙에 위치시키기
-      const scrollTop = selectedTop - (containerHeight / 2) + (selectedHeight / 2);
+        // 선택된 요소를 화면 상단에 위치시키기
+        const scrollTop = Math.max(0, selectedTop - 20); // 20px 여백만 추가
 
-      container.scrollTo({
-        top: scrollTop,
-        behavior: 'smooth'
-      });
-    }
+        // 초기 마운트 여부를 미리 확인
+        const isInitial = isInitialMount.current;
+        
+        // 모든 스크롤을 애니메이션 없이 즉시 이동으로 통일
+        container.scrollTo({
+          top: scrollTop,
+          behavior: 'auto'
+        });
+        
+        // 초기 마운트 플래그 해제
+        if (isInitial) {
+          isInitialMount.current = false;
+          // 초기 스크롤 후 CSS 스크롤 애니메이션만 활성화
+          setTimeout(() => {
+            setScrollBehavior('smooth');
+          }, 200);
+        }
+        
+        // 스크롤 완료 후 Observer 활성화
+        setTimeout(() => {
+          initialScrollCompleted.current = true;
+        }, 100);
+      }
+    };
+
+    // DOM이 업데이트된 후 스크롤 실행
+    const timeoutId = setTimeout(scrollToSelectedDate, 50);
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
   }, [selectedDate]);
 
   // dayRefs 설정 콜백
@@ -229,15 +268,17 @@ export const DailyView: React.FC<DailyViewProps> = ({
       {/* 메인 콘텐츠: 세로 스크롤 */}
       <div
         ref={scrollContainerRef}
-        className="flex-1 overflow-y-scroll overflow-x-hidden"
+        className="flex-1 overflow-y-auto overflow-x-hidden"
         style={{
-          scrollBehavior: 'smooth',
+          scrollBehavior: scrollBehavior,
           minHeight: '0',
-          height: 'calc(100vh - 140px)',
-          WebkitOverflowScrolling: 'touch'
+          maxHeight: '100%',
+          WebkitOverflowScrolling: 'touch',
+          overscrollBehavior: 'contain',
+          touchAction: 'pan-y'
         }}
       >
-        <div className="max-w-4xl mx-auto p-6 space-y-8" style={{ minHeight: 'calc(200vh)' }}>
+        <div className="max-w-4xl mx-auto p-6 space-y-8">
           {days.map((dayData, index) => {
             const isSelectedDay = index === selectedDayIndex;
             const isTodayActual = isToday(dayData.date);
@@ -253,7 +294,7 @@ export const DailyView: React.FC<DailyViewProps> = ({
                   }
                   setDayRef(dayData.date, element);
                 }}
-                className={`transition-all duration-200 min-h-[600px] ${isSelectedDay
+                className={`transition-all duration-200 min-h-[400px] ${isSelectedDay
                     ? 'border-l-4 border-blue-500 pl-4'
                     : 'pl-4'
                   }`}
