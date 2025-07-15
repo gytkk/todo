@@ -14,5 +14,4 @@ export type {
   CalendarTodosProps,
 } from './types/calendar';
 
-export * from './utils/dateUtils';
 export * from './utils/calendarUtils';

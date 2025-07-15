@@ -32,8 +32,7 @@ export function decodeJWT(token: string): JWTPayload | null {
     // JSON 파싱
     const decoded = JSON.parse(atob(padded));
     return decoded as JWTPayload;
-  } catch (error) {
-    console.error('JWT 디코딩 오류:', error);
+  } catch {
     return null;
   }
 }
@@ -45,13 +44,11 @@ export function decodeJWT(token: string): JWTPayload | null {
  */
 export function isTokenValid(token: string): boolean {
   if (!token) {
-    console.log('JWT 검증: 토큰 없음');
     return false;
   }
 
   const payload = decodeJWT(token);
   if (!payload || !payload.exp) {
-    console.log('JWT 검증: 페이로드 없음 또는 만료 시간 없음');
     return false;
   }
 
@@ -63,9 +60,6 @@ export function isTokenValid(token: string): boolean {
   const bufferTime = 1 * 60; // 1분
   
   const isValid = expireTime > (currentTime + bufferTime);
-  const remainingTime = expireTime - currentTime;
-  
-  console.log(`JWT 검증: 현재시간=${currentTime}, 만료시간=${expireTime}, 남은시간=${remainingTime}초, 유효=${isValid}`);
   
   return isValid;
 }

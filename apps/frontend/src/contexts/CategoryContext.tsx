@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode, useMemo, useCallback } from 'react';
 import { TodoCategory, CategoryFilter, TodoItem } from '@calendar-todo/shared-types';
 import { useCategories } from '@/hooks/useCategories';
 
@@ -31,14 +31,14 @@ export function CategoryProvider({ children }: CategoryProviderProps) {
   const categoryHook = useCategories();
 
   // 강제 새로고침 함수
-  const refreshCategories = async () => {
+  const refreshCategories = useCallback(async () => {
     await categoryHook.loadCategories();
-  };
+  }, [categoryHook.loadCategories]);
 
-  const contextValue: CategoryContextType = {
+  const contextValue: CategoryContextType = useMemo(() => ({
     ...categoryHook,
     refreshCategories,
-  };
+  }), [categoryHook, refreshCategories]);
 
   return (
     <CategoryContext.Provider value={contextValue}>

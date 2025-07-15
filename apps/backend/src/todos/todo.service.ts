@@ -208,26 +208,24 @@ export class TodoService {
   }
 
   async getStats(userId: string): Promise<TodoStats> {
-    const allTodos = await this.todoRepository.findByUserId(userId);
-    const completedTodos = allTodos.filter((todo) => todo.completed);
-    const incompleteTodos = allTodos.filter((todo) => !todo.completed);
-
-    // 최근 7일 내 완료된 할일 수
+    // Use efficient Redis counters instead of loading all todos
+    const stats = await this.todoRepository.getStatsForUser(userId);
+    
+    // For recent completions, query only completed todos and filter by date
+    // This is more efficient than loading all todos
     const sevenDaysAgo = subDays(new Date(), 7);
+    const completedTodos = await this.todoRepository.findByUserIdAndCompleted(userId, true);
     const recentCompletions = completedTodos.filter(
-      (todo) => todo.updatedAt >= sevenDaysAgo && todo.completed,
+      (todo) => todo.updatedAt >= sevenDaysAgo
     ).length;
-
-    const total = allTodos.length;
-    const completed = completedTodos.length;
-    const incomplete = incompleteTodos.length;
+    
     const completionRate =
-      total > 0 ? Math.round((completed / total) * 100) : 0;
+      stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
 
     return {
-      total,
-      completed,
-      incomplete,
+      total: stats.total,
+      completed: stats.completed,
+      incomplete: stats.incomplete,
       completionRate,
       recentCompletions,
     };

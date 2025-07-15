@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode, useMemo } from 'react';
 import { CalendarEvent } from '@calendar-todo/shared-types';
 import { useCalendar } from '@/hooks/useCalendar';
 import { useTodoContext } from './TodoContext';
@@ -28,9 +28,9 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
   const { todos } = useTodoContext();
   const calendarHook = useCalendar(todos);
 
-  const contextValue: CalendarContextType = {
+  const contextValue: CalendarContextType = useMemo(() => ({
     ...calendarHook,
-  };
+  }), [calendarHook]);
 
   return (
     <CalendarContext.Provider value={contextValue}>

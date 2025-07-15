@@ -1,4 +1,5 @@
 import { TodoItem } from '@calendar-todo/shared-types';
+import { calendarUtils, dateUtils } from '@/utils/dateUtils';
 
 interface CalendarDate {
   date: Date;
@@ -10,6 +11,7 @@ interface CalendarDate {
 
 /**
  * Creates calendar dates for the month view
+ * Optimized with Map lookup for O(n) performance instead of O(n*35)
  */
 export function createCalendarDates(
   currentDate: Date,
@@ -18,90 +20,35 @@ export function createCalendarDates(
 ): CalendarDate[] {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
-  const today = new Date();
   
-  // Get first day of month and last day of month
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
+  // Pre-group todos by date key for O(1) lookup instead of O(n) filtering
+  const todosByDate = new Map<string, TodoItem[]>();
+  todos.forEach(todo => {
+    const dateKey = `${todo.date.getFullYear()}-${todo.date.getMonth()}-${todo.date.getDate()}`;
+    if (!todosByDate.has(dateKey)) {
+      todosByDate.set(dateKey, []);
+    }
+    todosByDate.get(dateKey)!.push(todo);
+  });
   
-  // Get the day of week for first day (0 = Sunday, 1 = Monday, etc.)
-  const firstDayOfWeek = firstDay.getDay();
+  // Use consolidated dateUtils for calendar date generation
+  const calendarDates = calendarUtils.getCalendarDates(year, month);
   
-  // Get days from previous month to fill the first week
-  const daysFromPrevMonth = firstDayOfWeek;
-  const prevMonthLastDay = new Date(year, month, 0);
-  
-  // Get days from next month to fill the last week
-  const totalCells = Math.ceil((lastDay.getDate() + daysFromPrevMonth) / 7) * 7;
-  const daysFromNextMonth = totalCells - (lastDay.getDate() + daysFromPrevMonth);
-  
-  const calendarDates: CalendarDate[] = [];
-  
-  // Add days from previous month
-  for (let i = daysFromPrevMonth - 1; i >= 0; i--) {
-    const date = new Date(prevMonthLastDay.getFullYear(), prevMonthLastDay.getMonth(), prevMonthLastDay.getDate() - i);
-    const dayTodos = todos.filter(todo => 
-      todo.date.getFullYear() === date.getFullYear() &&
-      todo.date.getMonth() === date.getMonth() &&
-      todo.date.getDate() === date.getDate()
-    );
+  return calendarDates.map(date => {
+    const dateKey = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+    const dayTodos = todosByDate.get(dateKey) || [];
     
-    calendarDates.push({
+    return {
       date,
-      isToday: isSameDay(date, today),
-      isSelected: selectedDate ? isSameDay(date, selectedDate) : false,
-      isCurrentMonth: false,
+      isToday: dateUtils.isToday(date),
+      isSelected: selectedDate ? dateUtils.isSameDay(date, selectedDate) : false,
+      isCurrentMonth: calendarUtils.isCurrentMonth(date, currentDate),
       todos: dayTodos,
-    });
-  }
-  
-  // Add days from current month
-  for (let day = 1; day <= lastDay.getDate(); day++) {
-    const date = new Date(year, month, day);
-    const dayTodos = todos.filter(todo => 
-      todo.date.getFullYear() === date.getFullYear() &&
-      todo.date.getMonth() === date.getMonth() &&
-      todo.date.getDate() === date.getDate()
-    );
-    
-    calendarDates.push({
-      date,
-      isToday: isSameDay(date, today),
-      isSelected: selectedDate ? isSameDay(date, selectedDate) : false,
-      isCurrentMonth: true,
-      todos: dayTodos,
-    });
-  }
-  
-  // Add days from next month
-  for (let day = 1; day <= daysFromNextMonth; day++) {
-    const date = new Date(year, month + 1, day);
-    const dayTodos = todos.filter(todo => 
-      todo.date.getFullYear() === date.getFullYear() &&
-      todo.date.getMonth() === date.getMonth() &&
-      todo.date.getDate() === date.getDate()
-    );
-    
-    calendarDates.push({
-      date,
-      isToday: isSameDay(date, today),
-      isSelected: selectedDate ? isSameDay(date, selectedDate) : false,
-      isCurrentMonth: false,
-      todos: dayTodos,
-    });
-  }
-  
-  return calendarDates;
+    };
+  });
 }
 
-/**
- * Checks if two dates are the same day
- */
-function isSameDay(date1: Date, date2: Date): boolean {
-  return date1.getFullYear() === date2.getFullYear() &&
-    date1.getMonth() === date2.getMonth() &&
-    date1.getDate() === date2.getDate();
-}
+// Removed duplicate isSameDay function - using consolidated dateUtils.isSameDay
 
 /**
  * Gets completion statistics for a list of todos
@@ -115,35 +62,34 @@ export function getTodoCompletionStats(todos: TodoItem[]): { total: number; comp
 }
 
 /**
- * Checks if there are any incomplete todos in the list
+ * Checks if there are any incomplete todos
  */
 export function hasIncompleteTodos(todos: TodoItem[]): boolean {
   return todos.some(todo => !todo.completed);
 }
 
 /**
- * Converts hex color to rgba with specified opacity
+ * Gets the appropriate color for a todo item based on completion status
  */
-export function getCategoryColorWithOpacity(hexColor: string, opacity: number): string {
+export function getCategoryColorWithOpacity(color: string, opacity: number): string {
   // Remove # if present
-  const hex = hexColor.replace('#', '');
+  const hex = color.replace('#', '');
   
-  // Parse hex color
-  const r = parseInt(hex.substring(0, 2), 16);
-  const g = parseInt(hex.substring(2, 4), 16);
-  const b = parseInt(hex.substring(4, 6), 16);
+  // Parse hex color to RGB
+  const r = parseInt(hex.slice(0, 2), 16);
+  const g = parseInt(hex.slice(2, 4), 16);
+  const b = parseInt(hex.slice(4, 6), 16);
   
   return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 }
 
 /**
- * Gets the primary category color for a day's todos
- * Prioritizes incomplete todos and returns the first one's color
+ * Gets the primary category color for a list of todos
  */
 export function getPrimaryCategoryColor(todos: TodoItem[]): string {
-  if (todos.length === 0) return '#3b82f6'; // Default blue
+  if (todos.length === 0) return '#3b82f6';
   
-  // Find first incomplete todo
+  // Find the first incomplete todo
   const incompleteTodo = todos.find(todo => !todo.completed);
   if (incompleteTodo) {
     return incompleteTodo.category.color;
@@ -176,64 +122,66 @@ export function shouldShowMixedCategoryIndicator(todos: TodoItem[]): boolean {
 
 /**
  * Creates calendar dates for the week view (7 days only)
+ * Optimized with Map lookup for better performance
  */
 export function createWeekCalendarDates(
   currentDate: Date,
   selectedDate: Date | undefined,
   todos: TodoItem[]
 ): CalendarDate[] {
-  const today = new Date();
+  // Pre-group todos by date key for O(1) lookup
+  const todosByDate = new Map<string, TodoItem[]>();
+  todos.forEach(todo => {
+    const dateKey = `${todo.date.getFullYear()}-${todo.date.getMonth()}-${todo.date.getDate()}`;
+    if (!todosByDate.has(dateKey)) {
+      todosByDate.set(dateKey, []);
+    }
+    todosByDate.get(dateKey)!.push(todo);
+  });
   
-  // Get the start of the week (Sunday)
-  const startOfWeek = new Date(currentDate);
-  const dayOfWeek = startOfWeek.getDay(); // 0 = Sunday, 1 = Monday, etc.
-  startOfWeek.setDate(startOfWeek.getDate() - dayOfWeek);
+  // Use consolidated dateUtils for week date generation
+  const weekDates = calendarUtils.getWeekDates(currentDate);
   
-  const calendarDates: CalendarDate[] = [];
-  
-  // Generate 7 days starting from Sunday
-  for (let i = 0; i < 7; i++) {
-    const date = new Date(startOfWeek);
-    date.setDate(startOfWeek.getDate() + i);
+  return weekDates.map(date => {
+    const dateKey = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+    const dayTodos = todosByDate.get(dateKey) || [];
     
-    const dayTodos = todos.filter(todo => 
-      todo.date.getFullYear() === date.getFullYear() &&
-      todo.date.getMonth() === date.getMonth() &&
-      todo.date.getDate() === date.getDate()
-    );
-    
-    calendarDates.push({
+    return {
       date,
-      isToday: isSameDay(date, today),
-      isSelected: selectedDate ? isSameDay(date, selectedDate) : false,
-      isCurrentMonth: date.getMonth() === currentDate.getMonth(),
+      isToday: dateUtils.isToday(date),
+      isSelected: selectedDate ? dateUtils.isSameDay(date, selectedDate) : false,
+      isCurrentMonth: calendarUtils.isCurrentMonth(date, currentDate),
       todos: dayTodos,
-    });
-  }
-  
-  return calendarDates;
+    };
+  });
 }
 
 /**
  * Creates calendar data for the day view (single day only)
+ * Optimized with Map lookup for better performance
  */
 export function createDayCalendarDate(
   currentDate: Date,
   selectedDate: Date | undefined,
   todos: TodoItem[]
 ): CalendarDate {
-  const today = new Date();
+  // Pre-group todos by date key for O(1) lookup
+  const todosByDate = new Map<string, TodoItem[]>();
+  todos.forEach(todo => {
+    const dateKey = `${todo.date.getFullYear()}-${todo.date.getMonth()}-${todo.date.getDate()}`;
+    if (!todosByDate.has(dateKey)) {
+      todosByDate.set(dateKey, []);
+    }
+    todosByDate.get(dateKey)!.push(todo);
+  });
   
-  const dayTodos = todos.filter(todo => 
-    todo.date.getFullYear() === currentDate.getFullYear() &&
-    todo.date.getMonth() === currentDate.getMonth() &&
-    todo.date.getDate() === currentDate.getDate()
-  );
+  const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth()}-${currentDate.getDate()}`;
+  const dayTodos = todosByDate.get(dateKey) || [];
   
   return {
     date: currentDate,
-    isToday: isSameDay(currentDate, today),
-    isSelected: selectedDate ? isSameDay(currentDate, selectedDate) : false,
+    isToday: dateUtils.isToday(currentDate),
+    isSelected: selectedDate ? dateUtils.isSameDay(currentDate, selectedDate) : false,
     isCurrentMonth: true,
     todos: dayTodos,
   };
@@ -269,39 +217,50 @@ export function getMixedCategoryIndicatorStyle(): React.CSSProperties {
 }
 
 /**
- * Gets CSS classes for calendar cell based on its state
+ * Extracts unique dates from a list of todos
  */
-export function getCalendarCellClasses(
-  isSelected: boolean,
-  isToday: boolean,
-  isCurrentMonth: boolean
-): string {
-  if (isSelected) {
-    return 'bg-blue-100 hover:bg-blue-200 ring-2 ring-blue-500 ring-inset';
-  }
+export function getUniqueDatesFromTodos(todos: TodoItem[]): Date[] {
+  const dateSet = new Set<string>();
+  const dates: Date[] = [];
   
-  if (isToday) {
-    return 'bg-white hover:bg-gray-50';
-  }
+  todos.forEach(todo => {
+    const dateKey = `${todo.date.getFullYear()}-${todo.date.getMonth()}-${todo.date.getDate()}`;
+    if (!dateSet.has(dateKey)) {
+      dateSet.add(dateKey);
+      dates.push(new Date(todo.date));
+    }
+  });
   
-  if (isCurrentMonth) {
-    return 'bg-white hover:bg-gray-50';
-  }
-  
-  return 'bg-gray-50 hover:bg-gray-100';
+  return dates.sort((a, b) => a.getTime() - b.getTime());
 }
 
 /**
- * Gets CSS classes for date number display based on its state
+ * Groups todos by their date
  */
-export function getDateNumberClasses(isToday: boolean, isCurrentMonth: boolean): string {
-  if (isToday) {
-    return 'w-7 h-7 bg-blue-500 text-white rounded-full font-semibold leading-none shadow-md ring-2 ring-blue-200';
-  }
+export function groupTodosByDate(todos: TodoItem[]): Map<string, TodoItem[]> {
+  const grouped = new Map<string, TodoItem[]>();
   
-  if (isCurrentMonth) {
-    return 'text-gray-900';
-  }
+  todos.forEach(todo => {
+    const dateKey = `${todo.date.getFullYear()}-${todo.date.getMonth()}-${todo.date.getDate()}`;
+    if (!grouped.has(dateKey)) {
+      grouped.set(dateKey, []);
+    }
+    grouped.get(dateKey)!.push(todo);
+  });
   
-  return 'text-gray-400';
+  return grouped;
+}
+
+/**
+ * Checks if a date has any todos
+ */
+export function hasTodosOnDate(date: Date, todos: TodoItem[]): boolean {
+  return todos.some(todo => dateUtils.isSameDay(todo.date, date));
+}
+
+/**
+ * Gets todos for a specific date
+ */
+export function getTodosForDate(date: Date, todos: TodoItem[]): TodoItem[] {
+  return todos.filter(todo => dateUtils.isSameDay(todo.date, date));
 }

@@ -54,8 +54,7 @@ export function getTempUserId(): string {
     
     // 새로운 임시 사용자 생성
     return createTempUser();
-  } catch (error) {
-    console.error('임시 사용자 ID 조회 오류:', error);
+  } catch {
     return createTempUser();
   }
 }
@@ -73,8 +72,7 @@ export function createTempUser(): string {
     localStorage.setItem(TEMP_USER_LAST_ACCESS_KEY, now);
     
     return newId;
-  } catch (error) {
-    console.error('임시 사용자 생성 오류:', error);
+  } catch {
     // localStorage 접근 실패 시 세션 기반 ID 반환
     return generateTempUserId();
   }
@@ -108,8 +106,7 @@ export function getTempUserInfo(): TempUserInfo | null {
       daysRemaining,
       isExpired,
     };
-  } catch (error) {
-    console.error('임시 사용자 정보 조회 오류:', error);
+  } catch {
     return null;
   }
 }
@@ -122,8 +119,8 @@ export function clearTempUser(): void {
     localStorage.removeItem(TEMP_USER_KEY);
     localStorage.removeItem(TEMP_USER_CREATED_AT_KEY);
     localStorage.removeItem(TEMP_USER_LAST_ACCESS_KEY);
-  } catch (error) {
-    console.error('임시 사용자 데이터 정리 오류:', error);
+  } catch {
+    // Silent fail
   }
 }
 
@@ -156,15 +153,13 @@ export function cleanupExpiredTempData(): void {
       keysToRemove.forEach(key => {
         try {
           localStorage.removeItem(key);
-        } catch (error) {
-          console.warn(`로컬 스토리지 키 ${key} 정리 실패:`, error);
+        } catch {
+          // Silent fail
         }
       });
-      
-      console.log('만료된 임시 사용자 데이터가 정리되었습니다.');
     }
-  } catch (error) {
-    console.error('만료된 임시 데이터 정리 오류:', error);
+  } catch {
+    // Silent fail
   }
 }
 

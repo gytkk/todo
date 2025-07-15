@@ -119,27 +119,29 @@ export const useTodos = (categories: TodoCategory[] = DEFAULT_CATEGORIES) => {
       }
 
       if (success) {
-        setTodos(prevTodos =>
-          prevTodos.map(todo =>
-            todo.id === id ? { ...todo, completed: !todo.completed } : todo
-          )
-        );
-        
-        // Update stats
-        const todo = todos.find(t => t.id === id);
-        if (todo) {
-          setStats(prevStats => ({
-            ...prevStats,
-            completed: todo.completed ? prevStats.completed - 1 : prevStats.completed + 1,
-            incomplete: todo.completed ? prevStats.incomplete + 1 : prevStats.incomplete - 1,
-            completionRate: Math.round(((todo.completed ? prevStats.completed - 1 : prevStats.completed + 1) / prevStats.total) * 100),
-          }));
-        }
+        setTodos(prevTodos => {
+          return prevTodos.map(todo => {
+            if (todo.id === id) {
+              const updatedTodo = { ...todo, completed: !todo.completed };
+              
+              // Update stats using the todo from the previous state
+              setStats(prevStats => ({
+                ...prevStats,
+                completed: todo.completed ? prevStats.completed - 1 : prevStats.completed + 1,
+                incomplete: todo.completed ? prevStats.incomplete + 1 : prevStats.incomplete - 1,
+                completionRate: Math.round(((todo.completed ? prevStats.completed - 1 : prevStats.completed + 1) / prevStats.total) * 100),
+              }));
+              
+              return updatedTodo;
+            }
+            return todo;
+          });
+        });
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : '할일 완료 상태 변경 중 오류가 발생했습니다');
     }
-  }, [isAuthenticated, todos]);
+  }, [isAuthenticated]);
 
   const deleteTodo = useCallback(async (id: string) => {
     try {
@@ -156,24 +158,27 @@ export const useTodos = (categories: TodoCategory[] = DEFAULT_CATEGORIES) => {
       }
 
       if (success) {
-        const todoToDelete = todos.find(t => t.id === id);
-        setTodos(prevTodos => prevTodos.filter(todo => todo.id !== id));
-        
-        // Update stats
-        if (todoToDelete) {
-          setStats(prevStats => ({
-            ...prevStats,
-            total: prevStats.total - 1,
-            completed: todoToDelete.completed ? prevStats.completed - 1 : prevStats.completed,
-            incomplete: todoToDelete.completed ? prevStats.incomplete : prevStats.incomplete - 1,
-            completionRate: prevStats.total > 1 ? Math.round((prevStats.completed / (prevStats.total - 1)) * 100) : 0,
-          }));
-        }
+        setTodos(prevTodos => {
+          const todoToDelete = prevTodos.find(t => t.id === id);
+          
+          // Update stats using the todo from the previous state
+          if (todoToDelete) {
+            setStats(prevStats => ({
+              ...prevStats,
+              total: prevStats.total - 1,
+              completed: todoToDelete.completed ? prevStats.completed - 1 : prevStats.completed,
+              incomplete: todoToDelete.completed ? prevStats.incomplete : prevStats.incomplete - 1,
+              completionRate: prevStats.total > 1 ? Math.round((prevStats.completed / (prevStats.total - 1)) * 100) : 0,
+            }));
+          }
+          
+          return prevTodos.filter(todo => todo.id !== id);
+        });
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : '할일 삭제 중 오류가 발생했습니다');
     }
-  }, [isAuthenticated, todos]);
+  }, [isAuthenticated]);
 
   const clearAllTodos = useCallback(async () => {
     try {

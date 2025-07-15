@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, ReactNode, useEffect } from 'react';
+import React, { createContext, ReactNode, useEffect, useMemo } from 'react';
 import { CategoryProvider } from './CategoryContext';
 import { TodoProvider } from './TodoContext';
 import { CalendarProvider } from './CalendarContext';
@@ -29,9 +29,9 @@ function AppContextProvider({ children }: AppProviderProps) {
     initializeTempUser();
   }, []);
 
-  const contextValue: AppContextType = {
+  const contextValue: AppContextType = useMemo(() => ({
     initialized: true
-  };
+  }), []);
 
   return (
     <AppContext.Provider value={contextValue}>

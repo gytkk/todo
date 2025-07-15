@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode, useMemo } from 'react';
 import { AppSettings } from '@calendar-todo/shared-types';
 import { useSettings } from '@/hooks/useSettings';
 
@@ -21,9 +21,9 @@ interface SettingsProviderProps {
 export function SettingsProvider({ children }: SettingsProviderProps) {
   const settingsHook = useSettings();
 
-  const contextValue: SettingsContextType = {
+  const contextValue: SettingsContextType = useMemo(() => ({
     ...settingsHook,
-  };
+  }), [settingsHook]);
 
   return (
     <SettingsContext.Provider value={contextValue}>

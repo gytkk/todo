@@ -2,7 +2,7 @@ import React from 'react';
 import { CalendarGridProps } from './types/calendar';
 import { CalendarCell } from './CalendarCell';
 import { createCalendarDates, createWeekCalendarDates, getCategoryColorWithOpacity, getPrimaryCategoryColor } from './utils/calendarUtils';
-import { getWeekdayNames } from './utils/dateUtils';
+import { calendarUtils } from '@/utils/dateUtils';
 import { DailyView } from '../daily/DailyView';
 
 export const CalendarGrid: React.FC<CalendarGridProps> = ({
@@ -17,7 +17,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   const calendarDates = view === 'week'
     ? createWeekCalendarDates(currentDate, selectedDate, todos)
     : createCalendarDates(currentDate, selectedDate, todos);
-  const weekdayNames = getWeekdayNames();
+  const weekdayNames = calendarUtils.getWeekdayNames();
 
   if (view === 'month') {
     return (

@@ -1,7 +1,7 @@
 import React from 'react';
 import { CalendarHeaderProps } from './types/calendar';
 import { CalendarCommonHeader } from '../shared/CalendarCommonHeader';
-import { navigateMonth, navigateWeek, navigateDay, getMonthYear, getWeekRange, getDayName } from './utils/dateUtils';
+import { calendarUtils } from '@/utils/dateUtils';
 import { isSameDay } from 'date-fns';
 
 export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
@@ -15,15 +15,15 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
     let newDate: Date;
     switch (view) {
       case 'month':
-        newDate = navigateMonth(currentDate, 'prev');
+        newDate = calendarUtils.navigateMonth(currentDate, 'prev');
         onNavigate(newDate);
         break;
       case 'week':
-        newDate = navigateWeek(currentDate, 'prev');
+        newDate = calendarUtils.navigateWeek(currentDate, 'prev');
         onNavigate(newDate);
         break;
       case 'day':
-        newDate = navigateDay(currentDate, 'prev');
+        newDate = calendarUtils.navigateDay(currentDate, 'prev');
         onDateSelect(newDate); // 일간 보기에서는 onDateSelect만 사용
         break;
     }
@@ -33,15 +33,15 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
     let newDate: Date;
     switch (view) {
       case 'month':
-        newDate = navigateMonth(currentDate, 'next');
+        newDate = calendarUtils.navigateMonth(currentDate, 'next');
         onNavigate(newDate);
         break;
       case 'week':
-        newDate = navigateWeek(currentDate, 'next');
+        newDate = calendarUtils.navigateWeek(currentDate, 'next');
         onNavigate(newDate);
         break;
       case 'day':
-        newDate = navigateDay(currentDate, 'next');
+        newDate = calendarUtils.navigateDay(currentDate, 'next');
         onDateSelect(newDate); // 일간 보기에서는 onDateSelect만 사용
         break;
     }
@@ -56,11 +56,11 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
   const getTitle = () => {
     switch (view) {
       case 'month':
-        return getMonthYear(currentDate);
+        return calendarUtils.getMonthYear(currentDate);
       case 'week':
-        return getWeekRange(currentDate);
+        return calendarUtils.getWeekRange(currentDate);
       case 'day':
-        return getDayName(currentDate);
+        return calendarUtils.getDayName(currentDate);
     }
   };
 

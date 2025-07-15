@@ -17,7 +17,6 @@ export const withErrorHandling = <T extends (...args: unknown[]) => unknown>(
     try {
       return fn(...args);
     } catch (error) {
-      console.error('Error in function:', error);
       if (fallback) return fallback();
       throw error;
     }
@@ -31,7 +30,6 @@ export const handleAsyncError = async <T>(
   try {
     return await asyncFn();
   } catch (error) {
-    console.error('Async error:', error);
     if (fallback) return fallback();
     throw error;
   }
@@ -41,8 +39,7 @@ export const safeLocalStorageGet = (key: string, fallback: unknown = null) => {
   try {
     const item = localStorage.getItem(key);
     return item ? JSON.parse(item) : fallback;
-  } catch (error) {
-    console.error(`Error reading localStorage key "${key}":`, error);
+  } catch {
     return fallback;
   }
 };
@@ -51,8 +48,7 @@ export const safeLocalStorageSet = (key: string, value: unknown): boolean => {
   try {
     localStorage.setItem(key, JSON.stringify(value));
     return true;
-  } catch (error) {
-    console.error(`Error setting localStorage key "${key}":`, error);
+  } catch {
     return false;
   }
 };

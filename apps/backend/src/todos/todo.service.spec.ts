@@ -53,7 +53,7 @@ describe("TodoService", () => {
     delete: jest.fn(),
     deleteByUserId: jest.fn(),
     toggle: jest.fn(),
-    updateCategoryForUser: jest.fn(),
+    updateCategoryForUser: jest.fn(),\n    getStatsForUser: jest.fn(),
   };
 
   const mockUserSettingsService = {

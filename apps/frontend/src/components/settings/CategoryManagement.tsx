@@ -192,7 +192,6 @@ export const CategoryManagement: React.FC = () => {
           detail: { type: 'added', category: result } 
         }));
         
-        console.log('새 카테고리가 추가되어 캘린더에 반영됩니다:', result.name);
       }
     }
   };
@@ -214,7 +213,6 @@ export const CategoryManagement: React.FC = () => {
         detail: { type: 'deleted', categoryId } 
       }));
       
-      console.log('카테고리가 삭제되어 캘린더에서 제거됩니다:', categoryId);
     }
   };
 
@@ -249,7 +247,6 @@ export const CategoryManagement: React.FC = () => {
           detail: { type: 'updated', categoryId: editingCategory, name: editName.trim() } 
         }));
         
-        console.log('카테고리가 수정되어 캘린더에 반영됩니다:', editingCategory);
       }
     }
   };
@@ -281,7 +278,6 @@ export const CategoryManagement: React.FC = () => {
             detail: { type: 'reordered', categoryIds } 
           }));
           
-          console.log('카테고리 순서가 변경되었습니다:', categoryIds);
         } catch (error) {
           console.error('카테고리 순서 변경 실패:', error);
         }
