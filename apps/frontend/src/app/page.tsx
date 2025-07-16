@@ -20,6 +20,7 @@ function HomeContent() {
     isSidebarOpen,
     currentDate,
     handleDateSelect,
+    handleDateChangeWithoutSidebar,
     closeSidebar,
     handleNavigate,
   } = useCalendar(todos);
@@ -78,6 +79,7 @@ function HomeContent() {
                 selectedDate={selectedDate}
                 todos={getFilteredTodos(todos)} // 카테고리 필터가 적용된 todos 전달
                 onDateSelect={handleDateSelect} // 인증 여부와 관계없이 날짜 선택 허용
+                onDateChangeWithoutSidebar={handleDateChangeWithoutSidebar} // DailyView용 핸들러
                 onNavigate={handleNavigate} // 달력 네비게이션은 허용
                 onCalendarClick={isAuthenticated ? handleCalendarClick : () => {}} // 미인증 시 비활성화
                 allTodos={todos} // 필터링 전 전체 할일 목록

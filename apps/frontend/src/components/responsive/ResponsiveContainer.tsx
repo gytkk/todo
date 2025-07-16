@@ -19,9 +19,9 @@ export const ResponsiveContainer = ({
   // Flexbox layout for desktop/wide screens when sidebar is open
   const getLayoutClasses = () => {
     if (isDesktopOrWider && sidebarOpen) {
-      return 'flex h-full'; // Flexbox 사용
+      return 'flex h-full transition-all duration-300 ease-in-out'; // Flexbox 사용
     }
-    return 'h-full';
+    return 'h-full transition-all duration-300 ease-in-out';
   };
 
   return (

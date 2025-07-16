@@ -10,6 +10,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
   onNavigate,
   onViewChange,
   onDateSelect,
+  onDateChangeWithoutSidebar,
 }) => {
   const handlePrevious = () => {
     let newDate: Date;
@@ -24,7 +25,10 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
         break;
       case 'day':
         newDate = calendarUtils.navigateDay(currentDate, 'prev');
-        onDateSelect(newDate); // 일간 보기에서는 onDateSelect만 사용
+        onNavigate(newDate); // 일간 보기에서는 네비게이션만 (사이드바 열지 않음)
+        if (onDateChangeWithoutSidebar) {
+          onDateChangeWithoutSidebar(newDate);
+        }
         break;
     }
   };
@@ -42,7 +46,10 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
         break;
       case 'day':
         newDate = calendarUtils.navigateDay(currentDate, 'next');
-        onDateSelect(newDate); // 일간 보기에서는 onDateSelect만 사용
+        onNavigate(newDate); // 일간 보기에서는 네비게이션만 (사이드바 열지 않음)
+        if (onDateChangeWithoutSidebar) {
+          onDateChangeWithoutSidebar(newDate);
+        }
         break;
     }
   };
@@ -50,7 +57,16 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
   const handleToday = () => {
     const today = new Date();
     onNavigate(today);
-    onDateSelect(today); // 오늘 날짜 선택 및 사이드바 열기
+    
+    // 일간 보기가 아닐 때만 사이드바 열기
+    if (view !== 'day') {
+      onDateSelect(today); // 오늘 날짜 선택 및 사이드바 열기
+    } else {
+      // 일간 보기에서는 사이드바를 열지 않고 날짜만 변경
+      if (onDateChangeWithoutSidebar) {
+        onDateChangeWithoutSidebar(today);
+      }
+    }
   };
 
   const getTitle = () => {

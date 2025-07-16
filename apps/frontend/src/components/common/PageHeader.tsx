@@ -22,11 +22,6 @@ export function PageHeader({
   return (
     <div 
       className="border-b border-gray-100 bg-white shadow-sm" 
-      onClick={() => {
-        if (onCloseTodoSidebar) {
-          onCloseTodoSidebar();
-        }
-      }}
     >
       <div className="flex h-16 items-center justify-between px-4">
         <div className="flex items-center space-x-4">
@@ -43,7 +38,14 @@ export function PageHeader({
               </Link>
             </Button>
           )}
-          <div className="flex items-center space-x-2">
+          <div 
+            className="flex items-center space-x-2 cursor-pointer"
+            onClick={() => {
+              if (onCloseTodoSidebar) {
+                onCloseTodoSidebar();
+              }
+            }}
+          >
             <div className="font-bold text-gray-800 text-lg">TODO Calendar</div>
             {title && (
               <>

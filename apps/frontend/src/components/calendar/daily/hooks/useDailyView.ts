@@ -27,13 +27,19 @@ export const useDailyView = (
   const validInitialDate = initialDate || new Date();
   const [selectedDate, setSelectedDate] = useState(validInitialDate);
 
-  // initialDate가 변경될 때 selectedDate 업데이트
+  // initialDate가 변경될 때 selectedDate 업데이트 (날짜값 비교로 무한 루프 방지)
   useEffect(() => {
     const validDate = initialDate || new Date();
+    console.log('useDailyView: initialDate 변경 감지:', {
+      initialDate: initialDate?.toISOString().split('T')[0],
+      validDate: validDate.toISOString().split('T')[0],
+      currentSelectedDate: selectedDate.toISOString().split('T')[0],
+      shouldUpdate: validDate.getTime() !== selectedDate.getTime()
+    });
     if (validDate.getTime() !== selectedDate.getTime()) {
       setSelectedDate(validDate);
     }
-  }, [initialDate, selectedDate]);
+  }, [initialDate?.getTime()]);
 
   // 더 많은 날짜 데이터 생성 (선택된 날짜 기준으로 앞뒤 90일씩)
   const dailyData: DailyViewData = useMemo(() => {
@@ -67,15 +73,11 @@ export const useDailyView = (
       });
     }
 
-    // 실제 선택된 날짜의 인덱스 찾기
-    const actualSelectedDayIndex = days.findIndex(day => 
-      isSameDay(day.date, selectedDate)
-    );
-
+    // 선택된 날짜는 항상 가운데(인덱스 30)에 위치
     return {
       selectedDate,
       days,
-      selectedDayIndex: actualSelectedDayIndex >= 0 ? actualSelectedDayIndex : selectedDayIndex
+      selectedDayIndex: selectedDayIndex // 항상 30으로 고정
     };
   }, [selectedDate, todos]);
 

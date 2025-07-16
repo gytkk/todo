@@ -1,23 +1,27 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { CalendarGridProps } from './types/calendar';
 import { CalendarCell } from './CalendarCell';
 import { createCalendarDates, createWeekCalendarDates, getCategoryColorWithOpacity, getPrimaryCategoryColor } from './utils/calendarUtils';
 import { calendarUtils } from '@/utils/dateUtils';
 import { DailyView } from '../daily/DailyView';
 
-export const CalendarGrid: React.FC<CalendarGridProps> = ({
+const CalendarGridComponent: React.FC<CalendarGridProps> = ({
   currentDate,
   selectedDate,
   todos,
   onDateSelect,
+  onDateChangeWithoutSidebar,
   view,
   allTodos = [],
   hasActiveFilters = false,
 }) => {
-  const calendarDates = view === 'week'
-    ? createWeekCalendarDates(currentDate, selectedDate, todos)
-    : createCalendarDates(currentDate, selectedDate, todos);
-  const weekdayNames = calendarUtils.getWeekdayNames();
+  const calendarDates = useMemo(() => {
+    return view === 'week'
+      ? createWeekCalendarDates(currentDate, selectedDate, todos)
+      : createCalendarDates(currentDate, selectedDate, todos);
+  }, [view, currentDate, selectedDate, todos]);
+  
+  const weekdayNames = useMemo(() => calendarUtils.getWeekdayNames(), []);
 
   if (view === 'month') {
     return (
@@ -171,11 +175,15 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   }
 
   if (view === 'day') {
+    // 매번 새로운 오늘 날짜 생성 (useMemo 제거)
+    const today = new Date();
+    console.log('CalendarGrid: 일간 보기로 오늘 날짜 전달:', today.toISOString().split('T')[0]);
+    
     return (
       <div className="flex-1 bg-white relative overflow-hidden">
         <DailyView
-          selectedDate={selectedDate || new Date()}
-          onDateChange={onDateSelect}
+          selectedDate={today} // 항상 오늘 날짜로 시작
+          onDateChange={onDateChangeWithoutSidebar || onDateSelect}
         />
       </div>
     );
@@ -183,3 +191,5 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
 
   return null;
 };
+
+export const CalendarGrid = React.memo(CalendarGridComponent);

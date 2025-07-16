@@ -64,10 +64,10 @@ export const ResponsiveTodoInterface = ({
   if (isDesktopOrWider && isOpen) {
     return (
       <>
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 transition-all duration-300 ease-in-out">
           {calendarContent}
         </div>
-        <div className="w-96 flex-shrink-0">
+        <div className="w-96 flex-shrink-0 transition-all duration-300 ease-in-out">
           {renderTodoInterface()}
         </div>
       </>
@@ -77,7 +77,9 @@ export const ResponsiveTodoInterface = ({
   // 다른 경우는 기존 방식 유지
   return (
     <>
-      {calendarContent}
+      <div className="transition-all duration-300 ease-in-out">
+        {calendarContent}
+      </div>
       {renderTodoInterface()}
     </>
   );

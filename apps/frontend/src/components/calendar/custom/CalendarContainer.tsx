@@ -8,6 +8,7 @@ export const CalendarContainer: React.FC<CalendarProps> = ({
   selectedDate,
   todos,
   onDateSelect,
+  onDateChangeWithoutSidebar,
   onNavigate,
   view: initialView = 'day',
   onViewChange,
@@ -37,6 +38,7 @@ export const CalendarContainer: React.FC<CalendarProps> = ({
         onNavigate={handleNavigate}
         onViewChange={handleViewChange}
         onDateSelect={handleDateSelect}
+        onDateChangeWithoutSidebar={onDateChangeWithoutSidebar}
       />
 
       <CalendarGrid
@@ -44,6 +46,7 @@ export const CalendarContainer: React.FC<CalendarProps> = ({
         selectedDate={selectedDate}
         todos={todos}
         onDateSelect={handleDateSelect}
+        onDateChangeWithoutSidebar={onDateChangeWithoutSidebar}
         view={view}
         allTodos={allTodos}
         hasActiveFilters={hasActiveFilters}

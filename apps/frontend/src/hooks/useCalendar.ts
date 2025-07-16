@@ -1,10 +1,11 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { CalendarEvent, TodoItem } from '@calendar-todo/shared-types';
 
 export const useCalendar = (todos: TodoItem[]) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  const closingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const calendarEvents: CalendarEvent[] = useMemo(() => {
     return todos.map((todo) => {
@@ -29,7 +30,16 @@ export const useCalendar = (todos: TodoItem[]) => {
   }, []);
 
   const closeSidebar = useCallback(() => {
-    setIsSidebarOpen(false);
+    // 기존 타이머가 있다면 취소
+    if (closingTimeoutRef.current) {
+      clearTimeout(closingTimeoutRef.current);
+    }
+    
+    // 약간의 지연을 주어 DailyView가 적응할 수 있도록 함
+    closingTimeoutRef.current = setTimeout(() => {
+      setIsSidebarOpen(false);
+      closingTimeoutRef.current = null;
+    }, 100);
   }, []);
 
   const openSidebar = useCallback(() => {
@@ -42,6 +52,12 @@ export const useCalendar = (todos: TodoItem[]) => {
     setSelectedDate(date);
   }, []);
 
+  const handleDateChangeWithoutSidebar = useCallback((date: Date) => {
+    setSelectedDate(date);
+    setCurrentDate(date); // 선택한 날짜로 currentDate도 업데이트
+    // 사이드바는 열지 않음
+  }, []);
+
   const handleNavigate = useCallback((date: Date) => {
     setCurrentDate(date);
   }, []);
@@ -52,6 +68,7 @@ export const useCalendar = (todos: TodoItem[]) => {
     calendarEvents,
     currentDate,
     handleDateSelect,
+    handleDateChangeWithoutSidebar,
     closeSidebar,
     openSidebar,
     setSelectedDate: handleSetSelectedDate,

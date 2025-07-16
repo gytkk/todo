@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { DaySection } from './DaySection';
 import { useDailyView } from './hooks/useDailyView';
 import { useTodoContext, useCategoryContext } from '@/contexts/AppContext';
@@ -10,7 +10,7 @@ interface DailyViewProps {
   onDateChange?: (date: Date) => void;
 }
 
-export const DailyView: React.FC<DailyViewProps> = ({
+const DailyViewComponent: React.FC<DailyViewProps> = ({
   selectedDate: initialDate,
   onDateChange,
 }) => {
@@ -39,6 +39,12 @@ export const DailyView: React.FC<DailyViewProps> = ({
 
   // 컴포넌트가 처음 마운트되었는지 추적하는 ref
   const isInitialMount = useRef(true);
+  
+  // 컴포넌트가 마운트될 때마다 초기화
+  useEffect(() => {
+    isInitialMount.current = true;
+    console.log('DailyView 마운트: isInitialMount을 true로 설정');
+  }, []);
   
   // 스크롤 애니메이션 제어를 위한 상태 (초기에는 auto, 이후 smooth)
   const [scrollBehavior, setScrollBehavior] = useState<'auto' | 'smooth'>('auto');
@@ -130,7 +136,6 @@ export const DailyView: React.FC<DailyViewProps> = ({
     const container = scrollContainerRef.current;
     if (!container) return;
 
-    let timeoutId: NodeJS.Timeout | null = null;
     const currentDebounceTimer = debounceTimerRef.current;
 
     const observer = new IntersectionObserver(
@@ -162,19 +167,15 @@ export const DailyView: React.FC<DailyViewProps> = ({
             clearTimeout(debounceTimerRef.current);
           }
           
-          // 이전 타이머 취소
-          if (timeoutId) {
-            clearTimeout(timeoutId);
-          }
           
           // 선택된 날짜도 업데이트 (프로그래매틱 스크롤 중이 아닐 때만)
-          timeoutId = setTimeout(() => {
+          debounceTimerRef.current = setTimeout(() => {
             // 프로그래매틱 스크롤이 완료된 후에만 날짜 변경
             if (initialScrollCompleted.current) {
               goToDate(mostVisibleDate!);
             }
-            timeoutId = null;
-          }, 200); // 스크롤 애니메이션과 조화
+            debounceTimerRef.current = null;
+          }, 300); // 디바운스 시간 증가로 안정성 향상
         }
       },
       {
@@ -190,9 +191,6 @@ export const DailyView: React.FC<DailyViewProps> = ({
     });
 
     return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
       if (currentDebounceTimer) {
         clearTimeout(currentDebounceTimer);
       }
@@ -200,60 +198,24 @@ export const DailyView: React.FC<DailyViewProps> = ({
     };
   }, [days, goToDate]);
 
-  // 선택된 날짜로 스크롤하기 (모든 날짜 변경 시)
+  // Observer 재활성화 관리
   useEffect(() => {
-    // 이전 Observer 재활성화 타이머 정리
-    if (observerActivationTimerRef.current) {
-      clearTimeout(observerActivationTimerRef.current);
-    }
-    
     // 날짜가 변경될 때마다 Observer 비활성화
     initialScrollCompleted.current = false;
     
-    // 약간의 지연을 주어 렌더링이 완료된 후 스크롤
-    const scrollToSelectedDate = () => {
-      if (selectedDayRef.current && scrollContainerRef.current) {
-        const container = scrollContainerRef.current;
-        const selectedElement = selectedDayRef.current;
-
-        const selectedTop = selectedElement.offsetTop;
-
-        // 선택된 요소를 화면 상단에 위치시키기
-        const scrollTop = Math.max(0, selectedTop - 20); // 20px 여백만 추가
-
-        // 초기 마운트 여부를 미리 확인
-        const isInitial = isInitialMount.current;
-        
-        // 초기 로딩 시에는 애니메이션 없이, 이후에는 부드러운 애니메이션
-        container.scrollTo({
-          top: scrollTop,
-          behavior: isInitial ? 'auto' : 'smooth'
-        });
-        
-        // 초기 마운트 플래그 해제 및 애니메이션 활성화
-        if (isInitial) {
-          isInitialMount.current = false;
-          // 초기 스크롤 완료 후 부드러운 애니메이션 활성화
-          setTimeout(() => {
-            setScrollBehavior('smooth');
-          }, 100);
-        }
-        
-        // 스크롤 완료 후 Observer 활성화 (초기 로딩 시 빠르게, 이후 애니메이션 시간 고려)
-        observerActivationTimerRef.current = setTimeout(() => {
-          initialScrollCompleted.current = true;
-          observerActivationTimerRef.current = null;
-        }, isInitial ? 50 : 300); // 초기 로딩은 빠르게, 애니메이션 시에는 완료 대기
-      }
-    };
-
-    // DOM이 업데이트된 후 즉시 스크롤 실행 (requestAnimationFrame 사용)
-    const frameId = requestAnimationFrame(scrollToSelectedDate);
+    // Observer 활성화 타이머 설정
+    const activationDelay = isInitialMount.current ? 200 : 500;
+    observerActivationTimerRef.current = setTimeout(() => {
+      initialScrollCompleted.current = true;
+      observerActivationTimerRef.current = null;
+    }, activationDelay);
 
     return () => {
-      cancelAnimationFrame(frameId);
+      if (observerActivationTimerRef.current) {
+        clearTimeout(observerActivationTimerRef.current);
+      }
     };
-  }, [selectedDate]);
+  }, [selectedDate, selectedDayIndex]);
 
   // dayRefs 설정 콜백
   const setDayRef = useCallback((date: Date, element: HTMLDivElement | null) => {
@@ -265,6 +227,78 @@ export const DailyView: React.FC<DailyViewProps> = ({
     }
   }, []);
 
+  // 선택된 날짜 ref 설정 시 스크롤 트리거
+  const setSelectedDayRef = useCallback((element: HTMLDivElement | null, isSelectedDay: boolean) => {
+    console.log('DailyView setSelectedDayRef 호출:', {
+      isSelectedDay,
+      hasElement: !!element,
+      isInitialMount: isInitialMount.current,
+      selectedDate: selectedDate.toISOString().split('T')[0],
+      selectedDayIndex
+    });
+    
+    if (isSelectedDay && element) {
+      selectedDayRef.current = element;
+      
+      // 초기 마운트 시에만 스크롤
+      if (isInitialMount.current && scrollContainerRef.current) {
+        console.log('DailyView 초기 스크롤 시작...');
+        
+        // 즉시 스크롤 실행
+        const container = scrollContainerRef.current;
+        const selectedElement = element;
+        
+        if (container && selectedElement) {
+          const selectedTop = selectedElement.offsetTop;
+          const scrollTop = Math.max(0, selectedTop - 20);
+          
+          console.log('DailyView 초기 스크롤 실행:', {
+            selectedDate: selectedDate.toISOString().split('T')[0],
+            selectedDayIndex,
+            selectedTop,
+            scrollTop,
+            containerHeight: container.clientHeight,
+            containerScrollHeight: container.scrollHeight
+          });
+          
+          // 직접 scrollTop 속성 사용
+          container.scrollTop = scrollTop;
+          
+          // 스크롤 후 확인
+          setTimeout(() => {
+            console.log('DailyView 스크롤 후 확인:', {
+              actualScrollTop: container.scrollTop,
+              targetScrollTop: scrollTop,
+              success: Math.abs(container.scrollTop - scrollTop) < 50
+            });
+          }, 100);
+          
+          // 초기 마운트 플래그 해제 및 애니메이션 활성화
+          isInitialMount.current = false;
+          setTimeout(() => {
+            setScrollBehavior('smooth');
+          }, 200);
+        }
+      } else if (!isInitialMount.current && scrollContainerRef.current) {
+        // 초기 마운트가 아닌 경우 (날짜 변경 시)
+        requestAnimationFrame(() => {
+          const container = scrollContainerRef.current;
+          const selectedElement = selectedDayRef.current;
+          
+          if (container && selectedElement) {
+            const selectedTop = selectedElement.offsetTop;
+            const scrollTop = Math.max(0, selectedTop - 20);
+            
+            container.scrollTo({
+              top: scrollTop,
+              behavior: 'smooth'
+            });
+          }
+        });
+      }
+    }
+  }, [selectedDate, selectedDayIndex]);
+
   return (
     <div className="h-full flex flex-col bg-gray-50">
       {/* 메인 콘텐츠: 세로 스크롤 */}
@@ -275,9 +309,7 @@ export const DailyView: React.FC<DailyViewProps> = ({
           scrollBehavior: scrollBehavior,
           minHeight: '0',
           maxHeight: '100%',
-          WebkitOverflowScrolling: 'touch',
-          overscrollBehavior: 'contain',
-          touchAction: 'pan-y'
+          WebkitOverflowScrolling: 'touch'
         }}
       >
         <div className="max-w-4xl mx-auto p-6 space-y-8">
@@ -291,9 +323,7 @@ export const DailyView: React.FC<DailyViewProps> = ({
                 key={dateKey}
                 data-date={dateKey}
                 ref={(element) => {
-                  if (isSelectedDay) {
-                    selectedDayRef.current = element;
-                  }
+                  setSelectedDayRef(element, isSelectedDay);
                   setDayRef(dayData.date, element);
                 }}
                 className={`min-h-[400px] pl-4 ${isSelectedDay
@@ -318,3 +348,5 @@ export const DailyView: React.FC<DailyViewProps> = ({
     </div>
   );
 };
+
+export const DailyView = React.memo(DailyViewComponent);

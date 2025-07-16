@@ -13,6 +13,7 @@ interface CalendarViewProps {
   selectedDate?: Date;
   todos: TodoItem[];
   onDateSelect: (date: Date) => void;
+  onDateChangeWithoutSidebar?: (date: Date) => void;
   onNavigate: (date: Date) => void;
   onCalendarClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
   defaultView?: CalendarViewType;
@@ -25,6 +26,7 @@ function CalendarViewComponent({
   selectedDate,
   todos,
   onDateSelect,
+  onDateChangeWithoutSidebar,
   onNavigate,
   onCalendarClick,
   defaultView = 'day',
@@ -56,6 +58,7 @@ function CalendarViewComponent({
               selectedDate={selectedDate}
               todos={todos}
               onDateSelect={handleDateSelect}
+              onDateChangeWithoutSidebar={onDateChangeWithoutSidebar}
               onNavigate={handleNavigate}
               view={currentView}
               onViewChange={handleViewChange}

@@ -15,6 +15,7 @@ export interface CalendarProps {
   selectedDate?: Date;
   todos: TodoItem[];
   onDateSelect: (date: Date) => void;
+  onDateChangeWithoutSidebar?: (date: Date) => void;
   onNavigate: (date: Date) => void;
   view?: CalendarView;
   onViewChange?: (view: CalendarView) => void;
@@ -28,6 +29,7 @@ export interface CalendarHeaderProps {
   onNavigate: (date: Date) => void;
   onViewChange: (view: CalendarView) => void;
   onDateSelect: (date: Date) => void;
+  onDateChangeWithoutSidebar?: (date: Date) => void;
 }
 
 export interface CalendarGridProps {
@@ -35,6 +37,7 @@ export interface CalendarGridProps {
   selectedDate?: Date;
   todos: TodoItem[];
   onDateSelect: (date: Date) => void;
+  onDateChangeWithoutSidebar?: (date: Date) => void;
   view: CalendarView;
   allTodos?: TodoItem[]; // 필터링 전 전체 할일 목록
   hasActiveFilters?: boolean; // 필터가 활성화되어 있는지 여부

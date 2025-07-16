@@ -51,7 +51,10 @@ function TodoSidebarComponent({ isOpen, selectedDate, onClose }: TodoSidebarProp
       if (event.key === 'Escape' && isOpen) {
         event.preventDefault();
         event.stopPropagation();
-        onClose();
+        // 약간의 지연을 주어 다른 컴포넌트가 적응할 수 있도록 함
+        setTimeout(() => {
+          onClose();
+        }, 50);
       }
     };
 
