@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { addDays, subDays, isSameDay, format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { TodoItem } from '@calendar-todo/shared-types';
@@ -20,26 +20,32 @@ export interface DailyViewData {
 }
 
 export const useDailyView = (
-  initialDate: Date = new Date(),
+  initialDate: Date | undefined = undefined,
   todos: TodoItem[]
 ) => {
   // initialDate가 undefined일 수 있으므로 항상 유효한 날짜를 보장
   const validInitialDate = initialDate || new Date();
   const [selectedDate, setSelectedDate] = useState(validInitialDate);
 
-  // initialDate가 변경될 때 selectedDate 업데이트 (날짜값 비교로 무한 루프 방지)
+  // initialDate가 변경될 때 selectedDate 업데이트 (ref를 사용하여 무한 루프 방지)
+  const lastInitialDateRef = useRef<Date | undefined>(initialDate);
+  
+  // Use useMemo to memoize the initial date timestamp to prevent unnecessary re-renders
+  const initialDateTimestamp = useMemo(() => initialDate?.getTime(), [initialDate?.getTime()]);
+  
   useEffect(() => {
-    const validDate = initialDate || new Date();
-    console.log('useDailyView: initialDate 변경 감지:', {
-      initialDate: initialDate?.toISOString().split('T')[0],
-      validDate: validDate.toISOString().split('T')[0],
-      currentSelectedDate: selectedDate.toISOString().split('T')[0],
-      shouldUpdate: validDate.getTime() !== selectedDate.getTime()
-    });
-    if (validDate.getTime() !== selectedDate.getTime()) {
-      setSelectedDate(validDate);
+    if (!initialDate) return;
+    
+    // 실제로 initialDate가 변경되었을 때만 업데이트
+    if (lastInitialDateRef.current?.getTime() !== initialDate.getTime()) {
+      console.log('useDailyView: initialDate 변경 감지:', {
+        initialDate: initialDate.toISOString().split('T')[0],
+        currentSelectedDate: selectedDate.toISOString().split('T')[0]
+      });
+      setSelectedDate(initialDate);
+      lastInitialDateRef.current = initialDate;
     }
-  }, [initialDate?.getTime()]);
+  }, [initialDateTimestamp]); // Use memoized timestamp to prevent infinite loop
 
   // 더 많은 날짜 데이터 생성 (선택된 날짜 기준으로 앞뒤 90일씩)
   const dailyData: DailyViewData = useMemo(() => {

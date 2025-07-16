@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { DaySection } from './DaySection';
 import { useDailyView } from './hooks/useDailyView';
 import { useTodoContext, useCategoryContext } from '@/contexts/AppContext';
@@ -58,11 +58,17 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
     isToday
   } = useDailyView(initialDate, todos);
 
-  // 날짜 변경 시 부모 컴포넌트에 알림
+  // 날짜 변경 시 부모 컴포넌트에 알림 (초기 마운트 시에는 호출하지 않음)
+  const lastSelectedDateRef = useRef<Date | undefined>(undefined);
+  
   useEffect(() => {
-    if (onDateChange) {
-      onDateChange(selectedDate);
+    if (onDateChange && lastSelectedDateRef.current) {
+      // 실제로 날짜가 변경되었을 때만 호출
+      if (lastSelectedDateRef.current.getTime() !== selectedDate.getTime()) {
+        onDateChange(selectedDate);
+      }
     }
+    lastSelectedDateRef.current = selectedDate;
   }, [selectedDate, onDateChange]);
 
 
