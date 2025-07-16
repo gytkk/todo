@@ -175,14 +175,17 @@ const CalendarGridComponent: React.FC<CalendarGridProps> = ({
   }
 
   if (view === 'day') {
-    // 매번 새로운 오늘 날짜 생성 (useMemo 제거)
-    const today = new Date();
-    console.log('CalendarGrid: 일간 보기로 오늘 날짜 전달:', today.toISOString().split('T')[0]);
+    // useMemo를 사용하여 날짜 객체를 메모이제이션 (무한 루프 방지)
+    const today = useMemo(() => {
+      const now = new Date();
+      console.log('CalendarGrid: 일간 보기로 오늘 날짜 전달:', now.toISOString().split('T')[0]);
+      return now;
+    }, []); // 빈 의존성 배열로 한 번만 생성
     
     return (
       <div className="flex-1 bg-white relative overflow-hidden">
         <DailyView
-          selectedDate={today} // 항상 오늘 날짜로 시작
+          selectedDate={today} // 메모이제이션된 오늘 날짜
           onDateChange={onDateChangeWithoutSidebar || onDateSelect}
         />
       </div>

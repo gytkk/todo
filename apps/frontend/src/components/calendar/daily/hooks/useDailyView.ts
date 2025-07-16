@@ -27,25 +27,20 @@ export const useDailyView = (
   const validInitialDate = initialDate || new Date();
   const [selectedDate, setSelectedDate] = useState(validInitialDate);
 
-  // initialDate가 변경될 때 selectedDate 업데이트 (ref를 사용하여 무한 루프 방지)
-  const lastInitialDateRef = useRef<Date | undefined>(initialDate);
-  
-  // Use useMemo to memoize the initial date timestamp to prevent unnecessary re-renders
-  const initialDateTimestamp = useMemo(() => initialDate?.getTime(), [initialDate?.getTime()]);
-  
+  // initialDate가 변경될 때 selectedDate 업데이트 (더 안전한 방법)
   useEffect(() => {
     if (!initialDate) return;
     
-    // 실제로 initialDate가 변경되었을 때만 업데이트
-    if (lastInitialDateRef.current?.getTime() !== initialDate.getTime()) {
+    // 현재 selectedDate와 비교하여 실제로 다른 날짜일 때만 업데이트
+    if (selectedDate.getTime() !== initialDate.getTime()) {
       console.log('useDailyView: initialDate 변경 감지:', {
         initialDate: initialDate.toISOString().split('T')[0],
         currentSelectedDate: selectedDate.toISOString().split('T')[0]
       });
       setSelectedDate(initialDate);
-      lastInitialDateRef.current = initialDate;
     }
-  }, [initialDateTimestamp]); // Use memoized timestamp to prevent infinite loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialDate]); // selectedDate를 의존성에서 제외하여 무한 루프 방지
 
   // 더 많은 날짜 데이터 생성 (선택된 날짜 기준으로 앞뒤 90일씩)
   const dailyData: DailyViewData = useMemo(() => {
