@@ -53,7 +53,8 @@ describe("TodoService", () => {
     delete: jest.fn(),
     deleteByUserId: jest.fn(),
     toggle: jest.fn(),
-    updateCategoryForUser: jest.fn(),\n    getStatsForUser: jest.fn(),
+    updateCategoryForUser: jest.fn(),
+    getStatsForUser: jest.fn(),
   };
 
   const mockUserSettingsService = {
@@ -385,23 +386,23 @@ describe("TodoService", () => {
         updatedAt: subDays(new Date(), 10), // 오래된 완료
       });
 
-      const incompleteTodo = new TodoEntity({
-        ...mockTodoEntity,
-        id: "todo-4",
-        completed: false,
+      const completedTodos = [completedTodo, oldCompletedTodo];
+      
+      // Mock getStatsForUser to return basic stats
+      mockRepository.getStatsForUser.mockResolvedValue({
+        total: 4,
+        completed: 2,
+        incomplete: 2,
+        byPriority: { high: 1, medium: 2, low: 1 },
       });
-
-      const allTodos = [
-        mockTodoEntity,
-        completedTodo,
-        oldCompletedTodo,
-        incompleteTodo,
-      ];
-      mockRepository.findByUserId.mockResolvedValue(allTodos);
+      
+      // Mock findByUserIdAndCompleted to return completed todos
+      mockRepository.findByUserIdAndCompleted.mockResolvedValue(completedTodos);
 
       const result = await service.getStats("user-1");
 
-      expect(mockRepository.findByUserId).toHaveBeenCalledWith("user-1");
+      expect(mockRepository.getStatsForUser).toHaveBeenCalledWith("user-1");
+      expect(mockRepository.findByUserIdAndCompleted).toHaveBeenCalledWith("user-1", true);
       expect(result).toEqual({
         total: 4,
         completed: 2,
@@ -412,7 +413,16 @@ describe("TodoService", () => {
     });
 
     it("할일이 없을 때 기본 통계를 반환해야 함", async () => {
-      mockRepository.findByUserId.mockResolvedValue([]);
+      // Mock getStatsForUser to return empty stats
+      mockRepository.getStatsForUser.mockResolvedValue({
+        total: 0,
+        completed: 0,
+        incomplete: 0,
+        byPriority: { high: 0, medium: 0, low: 0 },
+      });
+      
+      // Mock findByUserIdAndCompleted to return empty array
+      mockRepository.findByUserIdAndCompleted.mockResolvedValue([]);
 
       const result = await service.getStats("user-1");
 
