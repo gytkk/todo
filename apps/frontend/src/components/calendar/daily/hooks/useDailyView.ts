@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { addDays, subDays, isSameDay, format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { TodoItem } from '@calendar-todo/shared-types';
@@ -24,20 +24,24 @@ export const useDailyView = (
   todos: TodoItem[]
 ) => {
   // initialDate가 undefined일 수 있으므로 항상 유효한 날짜를 보장
-  const validInitialDate = initialDate || new Date();
-  const [selectedDate, setSelectedDate] = useState(validInitialDate);
+  // 오늘 날짜를 확실히 설정
+  const [selectedDate, setSelectedDate] = useState(() => {
+    // 초기값을 함수로 설정하여 컴포넌트 마운트 시점의 현재 날짜를 확실히 가져옴
+    return initialDate || new Date();
+  });
 
   // initialDate가 변경될 때 selectedDate 업데이트 (더 안전한 방법)
   useEffect(() => {
-    if (!initialDate) return;
-    
-    // 현재 selectedDate와 비교하여 실제로 다른 날짜일 때만 업데이트
-    if (selectedDate.getTime() !== initialDate.getTime()) {
-      console.log('useDailyView: initialDate 변경 감지:', {
-        initialDate: initialDate.toISOString().split('T')[0],
-        currentSelectedDate: selectedDate.toISOString().split('T')[0]
-      });
-      setSelectedDate(initialDate);
+    // initialDate가 undefined가 아닌 경우에만 업데이트
+    if (initialDate) {
+      // 현재 selectedDate와 비교하여 실제로 다른 날짜일 때만 업데이트
+      if (selectedDate.getTime() !== initialDate.getTime()) {
+        console.log('useDailyView: initialDate 변경 감지:', {
+          initialDate: initialDate.toISOString().split('T')[0],
+          currentSelectedDate: selectedDate.toISOString().split('T')[0]
+        });
+        setSelectedDate(initialDate);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialDate]); // selectedDate를 의존성에서 제외하여 무한 루프 방지

@@ -183,7 +183,7 @@ const CalendarGridComponent: React.FC<CalendarGridProps> = ({
     }, []); // 빈 의존성 배열로 한 번만 생성
     
     return (
-      <div className="flex-1 bg-white relative overflow-hidden">
+      <div className="bg-white relative" style={{ height: 'calc(100% - 60px)' }}>
         <DailyView
           selectedDate={today} // 메모이제이션된 오늘 날짜
           onDateChange={onDateChangeWithoutSidebar || onDateSelect}

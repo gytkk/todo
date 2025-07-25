@@ -2,9 +2,9 @@ import { useState, useCallback, useMemo, useRef } from 'react';
 import { CalendarEvent, TodoItem } from '@calendar-todo/shared-types';
 
 export const useCalendar = (todos: TodoItem[]) => {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(() => new Date());
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  const [currentDate, setCurrentDate] = useState<Date>(() => new Date());
   const closingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const calendarEvents: CalendarEvent[] = useMemo(() => {

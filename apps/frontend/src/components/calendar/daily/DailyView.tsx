@@ -45,7 +45,7 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
     isInitialMount.current = true;
     console.log('DailyView 마운트: isInitialMount을 true로 설정');
   }, []);
-  
+
   // 스크롤 애니메이션 제어를 위한 상태 (초기에는 auto, 이후 smooth)
   const [scrollBehavior, setScrollBehavior] = useState<'auto' | 'smooth'>('auto');
 
@@ -57,6 +57,61 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
     goToDate,
     isToday
   } = useDailyView(initialDate, todos);
+
+  const { days, selectedDayIndex } = dailyData;
+
+  // 초기 스크롤을 위한 간단하고 확실한 방법
+  useEffect(() => {
+    if (isInitialMount.current && days.length === 61) { // 모든 날짜가 로드되었을 때
+      const scrollToToday = () => {
+        const container = scrollContainerRef.current;
+        if (!container) return;
+        
+        // 오늘 날짜 요소 찾기 (인덱스 30 = 오늘)
+        const todayDateKey = selectedDate.toISOString();
+        const todayElement = container.querySelector(`[data-date="${todayDateKey}"]`) as HTMLElement;
+        
+        if (todayElement) {
+          // 헤더가 보이도록 스크롤 위치 조정
+          const containerHeight = container.clientHeight;
+          const selectedTop = todayElement.offsetTop;
+          // 헤더를 보이게 하기 위해 더 적은 오프셋 사용 (헤더 높이 + 여백 고려)
+          const scrollTop = Math.max(0, selectedTop - 120); // 헤더(60px) + 여백(60px)
+          
+          console.log('=== DailyView 초기 스크롤 실행 ===');
+          console.log('오늘 날짜:', selectedDate.toISOString().split('T')[0]);
+          console.log('선택된 요소 위치(selectedTop):', selectedTop);
+          console.log('계산된 스크롤 위치(scrollTop):', scrollTop);
+          console.log('컨테이너 높이(clientHeight):', containerHeight);
+          console.log('스크롤 높이(scrollHeight):', container.scrollHeight);
+          console.log('스크롤 가능 여부:', container.scrollHeight > containerHeight);
+          console.log('스크롤 전 위치:', container.scrollTop);
+          
+          container.scrollTop = scrollTop;
+          
+          console.log('스크롤 후 위치:', container.scrollTop);
+          console.log('스크롤 성공 여부:', container.scrollTop === scrollTop);
+          console.log('==============================');
+          
+          isInitialMount.current = false;
+          setScrollBehavior('smooth');
+          
+          // 키보드 이벤트를 받을 수 있도록 포커스 주기
+          container.focus();
+        } else {
+          console.log('DailyView: 오늘 날짜 요소를 찾을 수 없음!', {
+            selectedDate: selectedDate.toISOString().split('T')[0],
+            daysLength: days.length,
+            selectedDayIndex: selectedDayIndex
+          });
+        }
+      };
+
+      // 충분한 지연 후 스크롤 실행
+      const timer = setTimeout(scrollToToday, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedDate, days.length]);
 
   // 날짜 변경 시 부모 컴포넌트에 알림 (초기 마운트 시에는 호출하지 않음)
   const lastSelectedDateRef = useRef<Date | undefined>(undefined);
@@ -92,7 +147,8 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
       // 입력 필드에 포커스가 있을 때는 단축키 비활성화
       if (
         event.target instanceof HTMLInputElement ||
-        event.target instanceof HTMLTextAreaElement
+        event.target instanceof HTMLTextAreaElement ||
+        (event.target as HTMLElement)?.isContentEditable
       ) {
         return;
       }
@@ -104,24 +160,93 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
         case 'ArrowLeft':
         case 'ArrowUp':
           event.preventDefault();
-          container.scrollBy({ top: -200, behavior: scrollBehavior });
+          event.stopPropagation();
+          
+          console.log('키보드 스크롤: 위로 시도', {
+            currentScrollTop: container.scrollTop,
+            scrollHeight: container.scrollHeight,
+            clientHeight: container.clientHeight,
+            scrollBehavior: scrollBehavior
+          });
+          
+          // 여러 방법으로 스크롤 시도
+          const beforeScrollTop = container.scrollTop;
+          
+          // 방법 1: scrollBy 시도
+          container.scrollBy({ top: -200, behavior: 'auto' });
+          
+          // 방법 2: scrollBy가 안되면 직접 scrollTop 조작
+          setTimeout(() => {
+            if (container.scrollTop === beforeScrollTop) {
+              console.log('scrollBy 실패, scrollTop 직접 조작 시도');
+              container.scrollTop = Math.max(0, beforeScrollTop - 200);
+            }
+            
+            console.log('스크롤 결과:', {
+              before: beforeScrollTop,
+              after: container.scrollTop,
+              changed: beforeScrollTop !== container.scrollTop
+            });
+          }, 10);
+          
           break;
         case 'ArrowRight':
         case 'ArrowDown':
           event.preventDefault();
-          container.scrollBy({ top: 200, behavior: scrollBehavior });
+          event.stopPropagation();
+          
+          console.log('키보드 스크롤: 아래로 시도', {
+            currentScrollTop: container.scrollTop,
+            scrollHeight: container.scrollHeight,
+            clientHeight: container.clientHeight,
+            scrollBehavior: scrollBehavior
+          });
+          
+          // 여러 방법으로 스크롤 시도
+          const beforeScrollDown = container.scrollTop;
+          const maxScroll = container.scrollHeight - container.clientHeight;
+          
+          // 방법 1: scrollBy 시도
+          container.scrollBy({ top: 200, behavior: 'auto' });
+          
+          // 방법 2: scrollBy가 안되면 직접 scrollTop 조작
+          setTimeout(() => {
+            if (container.scrollTop === beforeScrollDown) {
+              console.log('scrollBy 실패, scrollTop 직접 조작 시도');
+              container.scrollTop = Math.min(maxScroll, beforeScrollDown + 200);
+            }
+            
+            console.log('스크롤 결과:', {
+              before: beforeScrollDown,
+              after: container.scrollTop,
+              changed: beforeScrollDown !== container.scrollTop,
+              maxScroll: maxScroll
+            });
+          }, 10);
+          
           break;
         case 't':
         case 'T':
           event.preventDefault();
+          event.stopPropagation();
           goToToday();
+          console.log('키보드: 오늘로 이동');
           break;
       }
     };
 
+    // document와 스크롤 컨테이너 모두에 이벤트 리스너 추가
     document.addEventListener('keydown', handleKeyDown);
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('keydown', handleKeyDown);
+    }
+
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
+      if (container) {
+        container.removeEventListener('keydown', handleKeyDown);
+      }
     };
   }, [goToToday, scrollBehavior]);
 
@@ -131,8 +256,6 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
   const handleAddTodo = (date: Date) => (title: string, categoryId: string) => {
     addTodo(title, date, categoryId);
   };
-
-  const { days, selectedDayIndex } = dailyData;
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const selectedDayRef = useRef<HTMLDivElement>(null);
   const dayRefs = useRef<Map<string, HTMLDivElement>>(new Map());
@@ -233,89 +356,42 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
     }
   }, []);
 
-  // 선택된 날짜 ref 설정 시 스크롤 트리거
+  // 선택된 날짜 ref 설정 (날짜 변경 시 스크롤)
   const setSelectedDayRef = useCallback((element: HTMLDivElement | null, isSelectedDay: boolean) => {
-    console.log('DailyView setSelectedDayRef 호출:', {
-      isSelectedDay,
-      hasElement: !!element,
-      isInitialMount: isInitialMount.current,
-      selectedDate: selectedDate.toISOString().split('T')[0],
-      selectedDayIndex
-    });
-    
     if (isSelectedDay && element) {
       selectedDayRef.current = element;
       
-      // 초기 마운트 시에만 스크롤
-      if (isInitialMount.current && scrollContainerRef.current) {
-        console.log('DailyView 초기 스크롤 시작...');
-        
-        // 즉시 스크롤 실행
+      // 초기 마운트가 아닌 경우에만 스크롤 (날짜 변경 시)
+      if (!isInitialMount.current && scrollContainerRef.current) {
         const container = scrollContainerRef.current;
-        const selectedElement = element;
+        const selectedTop = element.offsetTop;
+        const scrollTop = Math.max(0, selectedTop - 120); // 헤더(60px) + 여백(60px)
         
-        if (container && selectedElement) {
-          const selectedTop = selectedElement.offsetTop;
-          const scrollTop = Math.max(0, selectedTop - 20);
-          
-          console.log('DailyView 초기 스크롤 실행:', {
-            selectedDate: selectedDate.toISOString().split('T')[0],
-            selectedDayIndex,
-            selectedTop,
-            scrollTop,
-            containerHeight: container.clientHeight,
-            containerScrollHeight: container.scrollHeight
-          });
-          
-          // 직접 scrollTop 속성 사용
-          container.scrollTop = scrollTop;
-          
-          // 스크롤 후 확인
-          setTimeout(() => {
-            console.log('DailyView 스크롤 후 확인:', {
-              actualScrollTop: container.scrollTop,
-              targetScrollTop: scrollTop,
-              success: Math.abs(container.scrollTop - scrollTop) < 50
-            });
-          }, 100);
-          
-          // 초기 마운트 플래그 해제 및 애니메이션 활성화
-          isInitialMount.current = false;
-          setTimeout(() => {
-            setScrollBehavior('smooth');
-          }, 200);
-        }
-      } else if (!isInitialMount.current && scrollContainerRef.current) {
-        // 초기 마운트가 아닌 경우 (날짜 변경 시)
-        requestAnimationFrame(() => {
-          const container = scrollContainerRef.current;
-          const selectedElement = selectedDayRef.current;
-          
-          if (container && selectedElement) {
-            const selectedTop = selectedElement.offsetTop;
-            const scrollTop = Math.max(0, selectedTop - 20);
-            
-            container.scrollTo({
-              top: scrollTop,
-              behavior: 'smooth'
-            });
-          }
+        container.scrollTo({
+          top: scrollTop,
+          behavior: 'smooth'
         });
       }
     }
-  }, [selectedDate, selectedDayIndex]);
+  }, [selectedDate]);
 
   return (
-    <div className="h-full flex flex-col bg-gray-50">
+    <div className="w-full h-full bg-gray-50">
       {/* 메인 콘텐츠: 세로 스크롤 */}
       <div
         ref={scrollContainerRef}
-        className="flex-1 overflow-y-auto overflow-x-hidden"
+        className="w-full overflow-y-scroll overflow-x-hidden focus:outline-none"
         style={{
           scrollBehavior: scrollBehavior,
-          minHeight: '0',
-          maxHeight: '100%',
+          height: '80vh', // 뷰포트 높이의 80%로 강제 제한
+          maxHeight: '80vh',
           WebkitOverflowScrolling: 'touch'
+        }}
+        tabIndex={0}
+        onFocus={() => console.log('스크롤 컨테이너 포커스 받음')}
+        onClick={() => {
+          // 클릭 시 포커스 주기
+          scrollContainerRef.current?.focus();
         }}
       >
         <div className="max-w-4xl mx-auto p-6 space-y-8">

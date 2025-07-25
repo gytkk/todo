@@ -106,7 +106,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <ErrorBoundary>
-      <div className="h-screen bg-white relative overflow-hidden">
+      <div className="h-screen bg-white relative">
         <Sidebar
           currentPage={getCurrentPage()}
           onSidebarStateChange={(expanded, visible) => {
