@@ -33,7 +33,7 @@ export function CategoryProvider({ children }: CategoryProviderProps) {
   // 강제 새로고침 함수
   const refreshCategories = useCallback(async () => {
     await categoryHook.loadCategories();
-  }, [categoryHook.loadCategories]);
+  }, [categoryHook]);
 
   const contextValue: CategoryContextType = useMemo(() => ({
     ...categoryHook,

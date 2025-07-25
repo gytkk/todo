@@ -39,11 +39,19 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
 
   // 컴포넌트가 처음 마운트되었는지 추적하는 ref
   const isInitialMount = useRef(true);
+
+  // 사용자가 현재 스크롤 중인지 추적하는 ref
+  const isUserScrolling = useRef(false);
+  
+  // 스크롤 완료를 감지하는 타이머 ref
+  const scrollEndTimerRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // 프로그래매틱 스크롤 실행 중인지 추적하는 ref
+  const isProgrammaticScrolling = useRef(false);
   
   // 컴포넌트가 마운트될 때마다 초기화
   useEffect(() => {
     isInitialMount.current = true;
-    console.log('DailyView 마운트: isInitialMount을 true로 설정');
   }, []);
 
   // 스크롤 애니메이션 제어를 위한 상태 (초기에는 auto, 이후 smooth)
@@ -73,37 +81,29 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
         
         if (todayElement) {
           // 헤더가 보이도록 스크롤 위치 조정
-          const containerHeight = container.clientHeight;
           const selectedTop = todayElement.offsetTop;
           // 헤더를 보이게 하기 위해 더 적은 오프셋 사용 (헤더 높이 + 여백 고려)
           const scrollTop = Math.max(0, selectedTop - 120); // 헤더(60px) + 여백(60px)
           
-          console.log('=== DailyView 초기 스크롤 실행 ===');
-          console.log('오늘 날짜:', selectedDate.toISOString().split('T')[0]);
-          console.log('선택된 요소 위치(selectedTop):', selectedTop);
-          console.log('계산된 스크롤 위치(scrollTop):', scrollTop);
-          console.log('컨테이너 높이(clientHeight):', containerHeight);
-          console.log('스크롤 높이(scrollHeight):', container.scrollHeight);
-          console.log('스크롤 가능 여부:', container.scrollHeight > containerHeight);
-          console.log('스크롤 전 위치:', container.scrollTop);
-          
+          // 프로그래매틱 스크롤임을 표시
+          isProgrammaticScrolling.current = true;
           container.scrollTop = scrollTop;
           
-          console.log('스크롤 후 위치:', container.scrollTop);
-          console.log('스크롤 성공 여부:', container.scrollTop === scrollTop);
-          console.log('==============================');
+          // 스크롤 완료 후 플래그 해제
+          setTimeout(() => {
+            isProgrammaticScrolling.current = false;
+          }, 100);
           
           isInitialMount.current = false;
           setScrollBehavior('smooth');
           
+          // 초기 스크롤 완료 후 Intersection Observer 활성화
+          setTimeout(() => {
+            initialScrollCompleted.current = true;
+          }, 500);
+          
           // 키보드 이벤트를 받을 수 있도록 포커스 주기
           container.focus();
-        } else {
-          console.log('DailyView: 오늘 날짜 요소를 찾을 수 없음!', {
-            selectedDate: selectedDate.toISOString().split('T')[0],
-            daysLength: days.length,
-            selectedDayIndex: selectedDayIndex
-          });
         }
       };
 
@@ -129,9 +129,7 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
 
   // 카테고리 변경 이벤트 리스너
   useEffect(() => {
-    const handleCategoryChange = async (event: Event) => {
-      const customEvent = event as CustomEvent;
-      console.log('DailyView: 카테고리 변경 감지, 새로고침 중...', customEvent.detail);
+    const handleCategoryChange = async () => {
       await refreshCategories();
     };
 
@@ -162,12 +160,8 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
           event.preventDefault();
           event.stopPropagation();
           
-          console.log('키보드 스크롤: 위로 시도', {
-            currentScrollTop: container.scrollTop,
-            scrollHeight: container.scrollHeight,
-            clientHeight: container.clientHeight,
-            scrollBehavior: scrollBehavior
-          });
+          // 키보드 스크롤도 프로그래매틱 스크롤로 취급
+          isProgrammaticScrolling.current = true;
           
           // 여러 방법으로 스크롤 시도
           const beforeScrollTop = container.scrollTop;
@@ -178,15 +172,12 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
           // 방법 2: scrollBy가 안되면 직접 scrollTop 조작
           setTimeout(() => {
             if (container.scrollTop === beforeScrollTop) {
-              console.log('scrollBy 실패, scrollTop 직접 조작 시도');
               container.scrollTop = Math.max(0, beforeScrollTop - 200);
             }
-            
-            console.log('스크롤 결과:', {
-              before: beforeScrollTop,
-              after: container.scrollTop,
-              changed: beforeScrollTop !== container.scrollTop
-            });
+            // 키보드 스크롤 완료 후 플래그 해제
+            setTimeout(() => {
+              isProgrammaticScrolling.current = false;
+            }, 100);
           }, 10);
           
           break;
@@ -195,12 +186,8 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
           event.preventDefault();
           event.stopPropagation();
           
-          console.log('키보드 스크롤: 아래로 시도', {
-            currentScrollTop: container.scrollTop,
-            scrollHeight: container.scrollHeight,
-            clientHeight: container.clientHeight,
-            scrollBehavior: scrollBehavior
-          });
+          // 키보드 스크롤도 프로그래매틱 스크롤로 취급
+          isProgrammaticScrolling.current = true;
           
           // 여러 방법으로 스크롤 시도
           const beforeScrollDown = container.scrollTop;
@@ -212,16 +199,12 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
           // 방법 2: scrollBy가 안되면 직접 scrollTop 조작
           setTimeout(() => {
             if (container.scrollTop === beforeScrollDown) {
-              console.log('scrollBy 실패, scrollTop 직접 조작 시도');
               container.scrollTop = Math.min(maxScroll, beforeScrollDown + 200);
             }
-            
-            console.log('스크롤 결과:', {
-              before: beforeScrollDown,
-              after: container.scrollTop,
-              changed: beforeScrollDown !== container.scrollTop,
-              maxScroll: maxScroll
-            });
+            // 키보드 스크롤 완료 후 플래그 해제
+            setTimeout(() => {
+              isProgrammaticScrolling.current = false;
+            }, 100);
           }, 10);
           
           break;
@@ -230,7 +213,6 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
           event.preventDefault();
           event.stopPropagation();
           goToToday();
-          console.log('키보드: 오늘로 이동');
           break;
       }
     };
@@ -249,6 +231,43 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
       }
     };
   }, [goToToday, scrollBehavior]);
+
+  // 사용자 스크롤 감지 이벤트 리스너
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const handleUserScroll = () => {
+      // 프로그래매틱 스크롤인 경우 사용자 스크롤로 취급하지 않음
+      if (isProgrammaticScrolling.current) {
+        return;
+      }
+      
+      // 사용자가 스크롤 중임을 표시
+      isUserScrolling.current = true;
+      
+      // 기존 타이머가 있으면 취소
+      if (scrollEndTimerRef.current) {
+        clearTimeout(scrollEndTimerRef.current);
+      }
+      
+      // 스크롤이 끝난 후 500ms 후에 플래그 해제
+      scrollEndTimerRef.current = setTimeout(() => {
+        isUserScrolling.current = false;
+        scrollEndTimerRef.current = null;
+      }, 500);
+    };
+
+    // 스크롤 이벤트 리스너 추가 (passive로 성능 최적화)
+    container.addEventListener('scroll', handleUserScroll, { passive: true });
+
+    return () => {
+      container.removeEventListener('scroll', handleUserScroll);
+      if (scrollEndTimerRef.current) {
+        clearTimeout(scrollEndTimerRef.current);
+      }
+    };
+  }, []);
 
   // CSS Grid 레이아웃이 제대로 작동하면 자연스러운 스크롤이 가능해야 함
 
@@ -288,23 +307,25 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
           return;
         }
         
-        if (mostVisibleDate && maxRatio > 0.3) {
-          setVisibleDate(mostVisibleDate);
-          
-          // 디바운스 타이머 취소
-          if (debounceTimerRef.current) {
-            clearTimeout(debounceTimerRef.current);
-          }
-          
-          
-          // 선택된 날짜도 업데이트 (프로그래매틱 스크롤 중이 아닐 때만)
-          debounceTimerRef.current = setTimeout(() => {
-            // 프로그래매틱 스크롤이 완료된 후에만 날짜 변경
-            if (initialScrollCompleted.current) {
-              goToDate(mostVisibleDate!);
+        if (mostVisibleDate && maxRatio > 0.5) { // 임계값을 0.5로 높여서 더 확실할 때만 변경
+          // 현재 선택된 날짜와 다를 때만 변경
+          if (mostVisibleDate.toDateString() !== selectedDate.toDateString()) {
+            setVisibleDate(mostVisibleDate);
+            
+            // 디바운스 타이머 취소
+            if (debounceTimerRef.current) {
+              clearTimeout(debounceTimerRef.current);
             }
-            debounceTimerRef.current = null;
-          }, 300); // 디바운스 시간 증가로 안정성 향상
+            
+            // 선택된 날짜도 업데이트
+            debounceTimerRef.current = setTimeout(() => {
+              if (initialScrollCompleted.current) {
+                // 스크롤 기반 날짜 변경이므로 자동 스크롤 방지
+                goToDate(mostVisibleDate!);
+              }
+              debounceTimerRef.current = null;
+            }, 200); // 디바운스 시간 단축으로 반응성 향상
+          }
         }
       },
       {
@@ -344,7 +365,7 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
         clearTimeout(observerActivationTimerRef.current);
       }
     };
-  }, [selectedDate, selectedDayIndex]);
+  }, [selectedDayIndex]);
 
   // dayRefs 설정 콜백
   const setDayRef = useCallback((date: Date, element: HTMLDivElement | null) => {
@@ -361,19 +382,27 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
     if (isSelectedDay && element) {
       selectedDayRef.current = element;
       
-      // 초기 마운트가 아닌 경우에만 스크롤 (날짜 변경 시)
-      if (!isInitialMount.current && scrollContainerRef.current) {
+      // 초기 마운트가 아니고, 사용자가 스크롤 중이 아닌 경우에만 자동 스크롤
+      if (!isInitialMount.current && !isUserScrolling.current && scrollContainerRef.current) {
         const container = scrollContainerRef.current;
         const selectedTop = element.offsetTop;
         const scrollTop = Math.max(0, selectedTop - 120); // 헤더(60px) + 여백(60px)
+        
+        // 프로그래매틱 스크롤임을 표시
+        isProgrammaticScrolling.current = true;
         
         container.scrollTo({
           top: scrollTop,
           behavior: 'smooth'
         });
+        
+        // 스크롤 애니메이션 완료 후 플래그 해제 (smooth 애니메이션은 보통 300-500ms)
+        setTimeout(() => {
+          isProgrammaticScrolling.current = false;
+        }, 600);
       }
     }
-  }, [selectedDate]);
+  }, []);
 
   return (
     <div className="w-full h-full bg-gray-50">
@@ -388,7 +417,7 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
           WebkitOverflowScrolling: 'touch'
         }}
         tabIndex={0}
-        onFocus={() => console.log('스크롤 컨테이너 포커스 받음')}
+        onFocus={() => {}}
         onClick={() => {
           // 클릭 시 포커스 주기
           scrollContainerRef.current?.focus();
