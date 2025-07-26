@@ -17,10 +17,7 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
   disabled = false
 }) => {
   return (
-    <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-700">
-        카테고리
-      </label>
+    <div>
       <div className="flex gap-2 flex-wrap">
         {categories.map(category => {
           const isSelected = selectedCategoryId === category.id;
@@ -53,7 +50,6 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
           );
         })}
       </div>
-
     </div>
   );
 };

@@ -1,14 +1,12 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import { TodoItemCard } from './TodoItemCard';
 import { QuickAddTodo } from './QuickAddTodo';
 import { DayData } from './hooks/useDailyView';
 import { TodoCategory } from '@calendar-todo/shared-types';
 import { format, differenceInDays, isSameDay, startOfDay } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { ChevronDown, ChevronUp } from 'lucide-react';
-import { Button } from "@calendar-todo/ui";
 
 interface DaySectionProps {
   dayData: DayData;
@@ -30,15 +28,10 @@ export const DaySection: React.FC<DaySectionProps> = ({
   onEditTodo,
   isMainSection = false,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(isMainSection);
   const { date, todos, stats } = dayData;
 
-  // 보조 섹션에서 표시할 최대 할일 개수
-  const maxTodosInSideSection = 3;
-  const shouldShowExpandButton = !isMainSection && todos.length > maxTodosInSideSection;
-  const displayTodos = isMainSection || isExpanded
-    ? todos
-    : todos.slice(0, maxTodosInSideSection);
+  // 모든 할일을 표시 (통일)
+  const displayTodos = todos;
 
   const handleAddTodo = (title: string, categoryId: string) => {
     onAddTodo(title, categoryId);
@@ -83,7 +76,7 @@ export const DaySection: React.FC<DaySectionProps> = ({
   return (
     <div
       className={`transition-all duration-200 ${isMainSection
-        ? 'bg-blue-50/30 border-b border-blue-200 pb-6'
+        ? 'border-b border-gray-200 pb-6'
         : 'border-b border-gray-200 pb-4'
         }`}
     >
@@ -112,22 +105,20 @@ export const DaySection: React.FC<DaySectionProps> = ({
         </div>
 
         {/* 진행률 바 */}
-        {isMainSection && getProgressBar()}
+        {getProgressBar()}
       </div>
 
-      {/* 할일 추가 (메인 섹션만) */}
-      {isMainSection && (
-        <div className="mb-4">
-          <QuickAddTodo
-            onAddTodo={handleAddTodo}
-            categories={categories}
-            compact={false}
-          />
-        </div>
-      )}
+      {/* 할일 추가 */}
+      <div className="mb-4">
+        <QuickAddTodo
+          onAddTodo={handleAddTodo}
+          categories={categories}
+          compact={!isMainSection}
+        />
+      </div>
 
       {/* 할일 목록 */}
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         {displayTodos.map((todo) => (
           <TodoItemCard
             key={todo.id}
@@ -135,41 +126,10 @@ export const DaySection: React.FC<DaySectionProps> = ({
             onToggle={onToggleTodo}
             onDelete={onDeleteTodo}
             onEdit={onEditTodo}
-            compact={!isMainSection}
+            compact={false}
           />
         ))}
 
-        {/* 더보기/접기 버튼 */}
-        {shouldShowExpandButton && (
-          <Button
-            variant="ghost"
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="w-full mt-2 text-gray-500 hover:text-gray-700"
-          >
-            {isExpanded ? (
-              <>
-                <ChevronUp className="h-4 w-4 mr-1" />
-                접기
-              </>
-            ) : (
-              <>
-                <ChevronDown className="h-4 w-4 mr-1" />
-                {todos.length - maxTodosInSideSection}개 더보기
-              </>
-            )}
-          </Button>
-        )}
-
-        {/* 보조 섹션에서 할일 추가 */}
-        {!isMainSection && (
-          <div className="mt-3 pt-3 border-t border-gray-100">
-            <QuickAddTodo
-              onAddTodo={handleAddTodo}
-              categories={categories}
-              compact={true}
-            />
-          </div>
-        )}
       </div>
     </div>
   );
