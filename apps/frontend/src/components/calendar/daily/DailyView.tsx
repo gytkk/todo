@@ -56,6 +56,9 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
 
   // 스크롤 애니메이션 제어를 위한 상태 (초기에는 auto, 이후 smooth)
   const [scrollBehavior, setScrollBehavior] = useState<'auto' | 'smooth'>('auto');
+  
+  // 초기 로딩 완료 상태
+  const [isInitialLoadComplete, setIsInitialLoadComplete] = useState(false);
 
   // 이미 필터링된 todos를 받으므로 추가 필터링 불필요
   const {
@@ -68,48 +71,50 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
 
   const { days, selectedDayIndex } = dailyData;
 
-  // 초기 스크롤을 위한 간단하고 확실한 방법
+  // 초기 스크롤을 위한 최적화된 방법
   useEffect(() => {
     if (isInitialMount.current && days.length === 61) { // 모든 날짜가 로드되었을 때
       const scrollToToday = () => {
         const container = scrollContainerRef.current;
         if (!container) return;
         
-        // 오늘 날짜 요소 찾기 (인덱스 30 = 오늘)
-        const todayDateKey = selectedDate.toISOString();
-        const todayElement = container.querySelector(`[data-date="${todayDateKey}"]`) as HTMLElement;
+        // 선택된 날짜 요소 찾기 (인덱스 30 = 선택된 날짜)
+        const selectedDateKey = selectedDate.toISOString();
+        const selectedElement = container.querySelector(`[data-date="${selectedDateKey}"]`) as HTMLElement;
         
-        if (todayElement) {
-          // 헤더가 보이도록 스크롤 위치 조정
-          const selectedTop = todayElement.offsetTop;
-          // 헤더를 보이게 하기 위해 더 적은 오프셋 사용 (헤더 높이 + 여백 고려)
+        if (selectedElement) {
+          // 스크롤 위치 조정
+          const selectedTop = selectedElement.offsetTop;
           const scrollTop = Math.max(0, selectedTop - 20); // 최소 여백만 적용
           
           // 프로그래매틱 스크롤임을 표시
           isProgrammaticScrolling.current = true;
+          
+          // 즉시 스크롤 실행 (지연 없음)
           container.scrollTop = scrollTop;
           
           // 스크롤 완료 후 플래그 해제
           setTimeout(() => {
             isProgrammaticScrolling.current = false;
-          }, 100);
+          }, 50);
           
           isInitialMount.current = false;
           setScrollBehavior('smooth');
-          
-          // 초기 스크롤 완료 후 Intersection Observer 활성화 (비활성화됨)
-          // setTimeout(() => {
-          //   initialScrollCompleted.current = true;
-          // }, 500);
+          setIsInitialLoadComplete(true); // 초기 로딩 완료 표시
           
           // 키보드 이벤트를 받을 수 있도록 포커스 주기
           container.focus();
         }
       };
 
-      // 충분한 지연 후 스크롤 실행
-      const timer = setTimeout(scrollToToday, 200);
-      return () => clearTimeout(timer);
+      // 즉시 실행 또는 최소 지연
+      if (scrollContainerRef.current) {
+        scrollToToday();
+      } else {
+        // 컨테이너가 아직 없는 경우에만 최소 지연
+        const timer = setTimeout(scrollToToday, 50);
+        return () => clearTimeout(timer);
+      }
     }
   }, [selectedDate, days.length]);
 
@@ -448,12 +453,26 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
     }
   }, []);
 
+  // 초기 로딩 중이면 로딩 상태 표시
+  if (!isInitialLoadComplete && days.length < 61) {
+    return (
+      <div className="w-full h-full bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
+          <div className="text-gray-500 text-sm">로딩 중...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full h-full bg-gray-50">
       {/* 메인 콘텐츠: 세로 스크롤 */}
       <div
         ref={scrollContainerRef}
-        className="w-full overflow-y-scroll overflow-x-hidden focus:outline-none"
+        className={`w-full overflow-y-scroll overflow-x-hidden focus:outline-none transition-opacity duration-200 ${
+          isInitialLoadComplete ? 'opacity-100' : 'opacity-0'
+        }`}
         style={{
           scrollBehavior: scrollBehavior,
           height: '80vh', // 뷰포트 높이의 80%로 강제 제한

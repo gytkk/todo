@@ -23,24 +23,26 @@ export const useDailyView = (
   initialDate: Date | undefined = undefined,
   todos: TodoItem[]
 ) => {
-  // initialDate가 undefined일 수 있으므로 항상 유효한 날짜를 보장
-  // 오늘 날짜를 확실히 설정
+  // 안정적인 날짜 초기화 - hydration 불일치 방지
   const [selectedDate, setSelectedDate] = useState(() => {
-    // 초기값을 함수로 설정하여 컴포넌트 마운트 시점의 현재 날짜를 확실히 가져옴
-    return initialDate || new Date();
+    // initialDate가 있으면 사용, 없으면 현재 날짜
+    if (initialDate) {
+      return new Date(initialDate.getTime()); // 새 Date 객체로 복사
+    }
+    // 현재 시간을 고정하여 서버/클라이언트 일치 보장
+    const now = new Date();
+    now.setHours(12, 0, 0, 0); // 정오로 설정하여 시간대 문제 방지
+    return now;
   });
 
-  // initialDate가 변경될 때 selectedDate 업데이트 (더 안전한 방법)
+  // initialDate가 변경될 때만 selectedDate 업데이트
   useEffect(() => {
-    // initialDate가 undefined가 아닌 경우에만 업데이트
-    if (initialDate) {
-      // 현재 selectedDate와 비교하여 실제로 다른 날짜일 때만 업데이트
-      if (selectedDate.getTime() !== initialDate.getTime()) {
-        setSelectedDate(initialDate);
-      }
+    if (initialDate && initialDate.getTime() !== selectedDate.getTime()) {
+      const newDate = new Date(initialDate.getTime());
+      newDate.setHours(12, 0, 0, 0); // 시간 정규화
+      setSelectedDate(newDate);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialDate]); // selectedDate를 의존성에서 제외하여 무한 루프 방지
+  }, [initialDate?.getTime()]); // getTime()으로 변경 감지 최적화
 
   // 더 많은 날짜 데이터 생성 (선택된 날짜 기준으로 앞뒤 90일씩)
   const dailyData: DailyViewData = useMemo(() => {
