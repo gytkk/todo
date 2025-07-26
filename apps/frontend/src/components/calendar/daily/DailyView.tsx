@@ -83,7 +83,7 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
           // 헤더가 보이도록 스크롤 위치 조정
           const selectedTop = todayElement.offsetTop;
           // 헤더를 보이게 하기 위해 더 적은 오프셋 사용 (헤더 높이 + 여백 고려)
-          const scrollTop = Math.max(0, selectedTop - 120); // 헤더(60px) + 여백(60px)
+          const scrollTop = Math.max(0, selectedTop - 20); // 최소 여백만 적용
           
           // 프로그래매틱 스크롤임을 표시
           isProgrammaticScrolling.current = true;
@@ -123,7 +123,7 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
     
     if (targetElement) {
       const selectedTop = targetElement.offsetTop;
-      const scrollTop = Math.max(0, selectedTop - 120); // 헤더(60px) + 여백(60px)
+      const scrollTop = Math.max(0, selectedTop - 20); // 최소 여백만 적용
       
       // 프로그래매틱 스크롤임을 표시
       isProgrammaticScrolling.current = true;
@@ -430,7 +430,7 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
       if (!isInitialMount.current && !isUserScrolling.current && scrollContainerRef.current) {
         const container = scrollContainerRef.current;
         const selectedTop = element.offsetTop;
-        const scrollTop = Math.max(0, selectedTop - 120); // 헤더(60px) + 여백(60px)
+        const scrollTop = Math.max(0, selectedTop - 20); // 최소 여백만 적용
         
         // 프로그래매틱 스크롤임을 표시
         isProgrammaticScrolling.current = true;
