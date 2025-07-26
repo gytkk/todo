@@ -16,12 +16,9 @@ export const ResponsiveContainer = ({
 }: ResponsiveContainerProps) => {
   const { screenSize, isDesktopOrWider } = useResponsive();
 
-  // Flexbox layout for desktop/wide screens when sidebar is open
+  // 고정 레이아웃 사용 - flex로 인한 레이아웃 변화 방지
   const getLayoutClasses = () => {
-    if (isDesktopOrWider && sidebarOpen) {
-      return 'flex h-full transition-all duration-300 ease-in-out'; // Flexbox 사용
-    }
-    return 'h-full transition-all duration-300 ease-in-out';
+    return 'relative h-full';
   };
 
   return (

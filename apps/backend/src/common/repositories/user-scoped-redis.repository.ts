@@ -36,7 +36,7 @@ export abstract class UserScopedRedisRepository<
 
   async findByUserId(userId: string): Promise<T[]> {
     const userListKey = this.generateUserListKey(userId);
-    const ids = await this.redisService.zrevrange(userListKey, 0, -1);
+    const ids = await this.redisService.zrange(userListKey, 0, -1);
 
     if (ids.length === 0) {
       return [];
