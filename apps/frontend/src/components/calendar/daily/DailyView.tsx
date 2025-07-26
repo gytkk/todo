@@ -25,17 +25,17 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
     refreshCategories
   } = useCategoryContext();
 
-  // 스크롤 기반 날짜 선택을 위한 상태
-  const [, setVisibleDate] = useState<Date>(initialDate || new Date());
+  // 스크롤 기반 날짜 선택을 위한 상태 (비활성화됨)
+  // const [, setVisibleDate] = useState<Date>(initialDate || new Date());
   
-  // 디바운스를 위한 ref
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // 디바운스를 위한 ref (비활성화됨)
+  // const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Observer 재활성화 타이머를 추적하는 ref
-  const observerActivationTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // Observer 재활성화 타이머를 추적하는 ref (비활성화됨)
+  // const observerActivationTimerRef = useRef<NodeJS.Timeout | null>(null);
   
-  // 초기 스크롤 완료 여부를 추적하는 ref
-  const initialScrollCompleted = useRef(false);
+  // 초기 스크롤 완료 여부를 추적하는 ref (비활성화됨)
+  // const initialScrollCompleted = useRef(false);
 
   // 컴포넌트가 처음 마운트되었는지 추적하는 ref
   const isInitialMount = useRef(true);
@@ -62,7 +62,7 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
     dailyData,
     selectedDate,
     goToToday,
-    goToDate,
+    // goToDate, // 현재 DailyView 내부에서 직접 사용하지 않음
     isToday
   } = useDailyView(initialDate, todos);
 
@@ -97,10 +97,10 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
           isInitialMount.current = false;
           setScrollBehavior('smooth');
           
-          // 초기 스크롤 완료 후 Intersection Observer 활성화
-          setTimeout(() => {
-            initialScrollCompleted.current = true;
-          }, 500);
+          // 초기 스크롤 완료 후 Intersection Observer 활성화 (비활성화됨)
+          // setTimeout(() => {
+          //   initialScrollCompleted.current = true;
+          // }, 500);
           
           // 키보드 이벤트를 받을 수 있도록 포커스 주기
           container.focus();
@@ -112,6 +112,33 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
       return () => clearTimeout(timer);
     }
   }, [selectedDate, days.length]);
+
+  // 날짜가 변경될 때 스크롤 위치를 업데이트하는 함수
+  const scrollToSelectedDate = useCallback((targetDate: Date) => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    
+    const dateKey = targetDate.toISOString();
+    const targetElement = container.querySelector(`[data-date="${dateKey}"]`) as HTMLElement;
+    
+    if (targetElement) {
+      const selectedTop = targetElement.offsetTop;
+      const scrollTop = Math.max(0, selectedTop - 120); // 헤더(60px) + 여백(60px)
+      
+      // 프로그래매틱 스크롤임을 표시
+      isProgrammaticScrolling.current = true;
+      
+      container.scrollTo({
+        top: scrollTop,
+        behavior: 'smooth'
+      });
+      
+      // 스크롤 애니메이션 완료 후 플래그 해제
+      setTimeout(() => {
+        isProgrammaticScrolling.current = false;
+      }, 600);
+    }
+  }, []);
 
   // 날짜 변경 시 부모 컴포넌트에 알림 (초기 마운트 시에는 호출하지 않음)
   const lastSelectedDateRef = useRef<Date | undefined>(undefined);
@@ -125,6 +152,15 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
     }
     lastSelectedDateRef.current = selectedDate;
   }, [selectedDate, onDateChange]);
+
+  // 선택된 날짜가 변경될 때 스크롤 위치 업데이트 (네비게이션 버튼 클릭 시)
+  useEffect(() => {
+    // 초기 마운트가 완료된 후에는 항상 스크롤 업데이트
+    // 네비게이션 버튼 클릭 시에는 사용자 스크롤 상태와 관계없이 이동해야 함
+    if (!isInitialMount.current) {
+      scrollToSelectedDate(selectedDate);
+    }
+  }, [selectedDate, scrollToSelectedDate]);
 
 
   // 카테고리 변경 이벤트 리스너
@@ -279,7 +315,9 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
   const selectedDayRef = useRef<HTMLDivElement>(null);
   const dayRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
-  // Intersection Observer를 사용한 스크롤 기반 날짜 선택
+  // Intersection Observer를 사용한 스크롤 기반 날짜 선택 (비활성화됨)
+  // 스크롤로 인한 날짜 자동 변경을 방지하기 위해 주석 처리
+  /*
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
@@ -288,43 +326,45 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
 
     const observer = new IntersectionObserver(
       (entries) => {
-        // 가장 많이 보이는 날짜 찾기
-        let maxRatio = 0;
-        let mostVisibleDate: Date | null = null;
-
-        entries.forEach((entry) => {
-          if (entry.intersectionRatio > maxRatio) {
-            maxRatio = entry.intersectionRatio;
-            const dateKey = entry.target.getAttribute('data-date');
-            if (dateKey) {
-              mostVisibleDate = new Date(dateKey);
-            }
-          }
-        });
-
         // 초기 스크롤이 완료되지 않았으면 Observer 콜백을 무시
         if (!initialScrollCompleted.current) {
           return;
         }
-        
-        if (mostVisibleDate && maxRatio > 0.5) { // 임계값을 0.5로 높여서 더 확실할 때만 변경
-          // 현재 선택된 날짜와 다를 때만 변경
-          if (mostVisibleDate.toDateString() !== selectedDate.toDateString()) {
-            setVisibleDate(mostVisibleDate);
-            
-            // 디바운스 타이머 취소
-            if (debounceTimerRef.current) {
-              clearTimeout(debounceTimerRef.current);
-            }
-            
-            // 선택된 날짜도 업데이트
-            debounceTimerRef.current = setTimeout(() => {
-              if (initialScrollCompleted.current) {
-                // 스크롤 기반 날짜 변경이므로 자동 스크롤 방지
-                goToDate(mostVisibleDate!);
+
+        // 가장 많이 보이는 날짜 찾기
+        let maxRatio = 0;
+        let mostVisibleElement: Element | null = null;
+
+        entries.forEach((entry) => {
+          if (entry.intersectionRatio > maxRatio) {
+            maxRatio = entry.intersectionRatio;
+            mostVisibleElement = entry.target;
+          }
+        });
+
+        if (mostVisibleElement && maxRatio > 0.5) { // 임계값을 0.5로 높여서 더 확실할 때만 변경
+          const element = mostVisibleElement as HTMLElement; // HTMLElement로 타입 캐스팅
+          const dateKey = element.getAttribute('data-date');
+          if (dateKey) {
+            const mostVisibleDate = new Date(dateKey);
+            // 현재 선택된 날짜와 다를 때만 변경
+            if (mostVisibleDate.toDateString() !== selectedDate.toDateString()) {
+              setVisibleDate(mostVisibleDate);
+              
+              // 디바운스 타이머 취소
+              if (debounceTimerRef.current) {
+                clearTimeout(debounceTimerRef.current);
               }
-              debounceTimerRef.current = null;
-            }, 200); // 디바운스 시간 단축으로 반응성 향상
+              
+              // 선택된 날짜도 업데이트
+              debounceTimerRef.current = setTimeout(() => {
+                if (initialScrollCompleted.current) {
+                  // 스크롤 기반 날짜 변경이므로 자동 스크롤 방지
+                  goToDate(mostVisibleDate);
+                }
+                debounceTimerRef.current = null;
+              }, 200); // 디바운스 시간 단축으로 반응성 향상
+            }
           }
         }
       },
@@ -346,9 +386,12 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
       }
       observer.disconnect();
     };
-  }, [days, goToDate]);
+  }, [days, goToDate, selectedDate]);
+  */
 
-  // Observer 재활성화 관리
+  // Observer 재활성화 관리 (비활성화됨)
+  // Intersection Observer가 비활성화되어 있으므로 이 useEffect도 주석 처리
+  /*
   useEffect(() => {
     // 날짜가 변경될 때마다 Observer 비활성화
     initialScrollCompleted.current = false;
@@ -366,6 +409,7 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
       }
     };
   }, [selectedDayIndex]);
+  */
 
   // dayRefs 설정 콜백
   const setDayRef = useCallback((date: Date, element: HTMLDivElement | null) => {
@@ -418,9 +462,20 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
         }}
         tabIndex={0}
         onFocus={() => {}}
-        onClick={() => {
-          // 클릭 시 포커스 주기
-          scrollContainerRef.current?.focus();
+        onClick={(e) => {
+          // Input, textarea, button 등 포커스 가능한 요소를 클릭한 경우에는 스크롤 컨테이너에 포커스를 주지 않음
+          const target = e.target as HTMLElement;
+          const isInputElement = target.tagName === 'INPUT' || 
+                                target.tagName === 'TEXTAREA' || 
+                                target.tagName === 'BUTTON' ||
+                                target.tagName === 'SELECT' ||
+                                target.isContentEditable ||
+                                target.closest('input, textarea, button, select, [contenteditable]');
+          
+          if (!isInputElement) {
+            // 클릭 시 포커스 주기 (포커스 가능한 요소가 아닌 경우에만)
+            scrollContainerRef.current?.focus();
+          }
         }}
       >
         <div className="max-w-4xl mx-auto p-6 space-y-8">

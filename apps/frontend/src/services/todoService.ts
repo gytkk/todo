@@ -59,7 +59,10 @@ export class TodoService extends BaseApiClient {
         title: todo.title,
         category: {
           ...todo.category,
-          createdAt: this.convertDateToISO(todo.category.createdAt),
+          // category.createdAt이 존재하는 경우에만 변환, 없으면 현재 시간 사용
+          createdAt: todo.category?.createdAt 
+            ? this.convertDateToISO(todo.category.createdAt)
+            : this.convertDateToISO(new Date()),
         },
         date: this.convertDateToISO(todo.date),
       };

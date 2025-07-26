@@ -36,10 +36,6 @@ export const useDailyView = (
     if (initialDate) {
       // 현재 selectedDate와 비교하여 실제로 다른 날짜일 때만 업데이트
       if (selectedDate.getTime() !== initialDate.getTime()) {
-        console.log('useDailyView: initialDate 변경 감지:', {
-          initialDate: initialDate.toISOString().split('T')[0],
-          currentSelectedDate: selectedDate.toISOString().split('T')[0]
-        });
         setSelectedDate(initialDate);
       }
     }

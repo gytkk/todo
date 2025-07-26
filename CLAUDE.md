@@ -9,6 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Overall
 
 - **NEVER use `npm` commands directly** - always use `pnpm` or `turbo` for development tools
+- **AVOID `turbo build` during development** - use `turbo dev` for hot-reload and `turbo type-check`/`turbo lint` for validation
 - Always write unit tests first, then implement business logic
 - Check lint errors and code style after you write code
 
@@ -300,36 +301,35 @@ turbo dev --filter=frontend
 turbo dev --filter=backend
 ```
 
-#### Build Commands
+#### Development Validation Commands (Recommended)
 
 ```bash
-# Build all packages and apps
-turbo build
-
-# Build specific package/app
-turbo build --filter=frontend
-turbo build --filter=backend
-turbo build --filter=@calendar-todo/shared-types
-turbo build --filter=@calendar-todo/ui
-
-# Build with dependencies
-turbo build --filter=frontend...
-```
-
-#### Linting and Type Checking
-
-```bash
-# Run linting across all packages
-turbo lint
-
-# Run type checking (note: correct task name is 'type-check')
+# Run type checking across all packages
 turbo type-check
 
-# Lint specific package
-turbo lint --filter=frontend
+# Run linting across all packages  
+turbo lint
 
 # Type check specific package
 turbo type-check --filter=frontend
+turbo type-check --filter=backend
+
+# Lint specific package
+turbo lint --filter=frontend
+turbo lint --filter=backend
+```
+
+#### Build Commands (Avoid during development)
+
+```bash
+# Only build shared dependencies when needed
+turbo build --filter=@calendar-todo/shared-types
+turbo build --filter=@calendar-todo/ui
+
+# Full builds (use only for production/deployment)
+# turbo build  # Causes hot-reload issues during development
+# turbo build --filter=frontend  # Use dev server instead
+# turbo build --filter=backend   # Use dev server instead
 ```
 
 #### Testing Commands
@@ -366,29 +366,23 @@ Before committing changes, run the following commands in order:
 1. **Type Safety Check**
 
    ```bash
-   turbo build --filter=@calendar-todo/shared-types
-   ```
-
-2. **Build Validation**
-
-   ```bash
-   turbo build --filter=frontend
-   turbo build --filter=backend
-   ```
-
-3. **Code Quality**
-
-   ```bash
-   turbo lint
    turbo type-check
    ```
 
-4. **Functionality Testing**
+2. **Code Quality**
+
+   ```bash
+   turbo lint
+   ```
+
+3. **Functionality Testing**
 
    ```bash
    turbo test
-   turbo dev --filter=frontend  # Manual testing
+   turbo dev --filter=frontend  # Manual testing via development server
    ```
+
+**Note**: `turbo build` is avoided during development due to hot-reload issues. Use development servers for real-time testing.
 
 ### Common Issues and Solutions
 

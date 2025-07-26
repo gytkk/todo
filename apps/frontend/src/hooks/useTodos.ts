@@ -67,7 +67,7 @@ export const useTodos = (categories: TodoCategory[] = DEFAULT_CATEGORIES) => {
 
     const category = categories.find(cat => cat.id === categoryId) || 
                    categories.find(cat => cat.id === 'personal') || 
-                   DEFAULT_CATEGORIES[2];
+                   DEFAULT_CATEGORIES[0]; // 올바른 인덱스 사용 (기본값: 개인 카테고리)
 
     const newTodo: Omit<TodoItem, 'id'> = {
       title: title.trim(),

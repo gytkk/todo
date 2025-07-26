@@ -22,6 +22,12 @@ const CalendarGridComponent: React.FC<CalendarGridProps> = ({
   }, [view, currentDate, selectedDate, todos]);
   
   const weekdayNames = useMemo(() => calendarUtils.getWeekdayNames(), []);
+  
+  // useMemo를 사용하여 날짜 객체를 메모이제이션 (무한 루프 방지) - 현재 사용하지 않음
+  // const today = useMemo(() => {
+  //   const now = new Date();
+  //   return now;
+  // }, []); // 빈 의존성 배열로 한 번만 생성
 
   if (view === 'month') {
     return (
@@ -174,17 +180,11 @@ const CalendarGridComponent: React.FC<CalendarGridProps> = ({
     );
   }
 
-  // useMemo를 사용하여 날짜 객체를 메모이제이션 (무한 루프 방지)
-  const today = useMemo(() => {
-    const now = new Date();
-    return now;
-  }, []); // 빈 의존성 배열로 한 번만 생성
-
   if (view === 'day') {
     return (
       <div className="bg-white relative" style={{ height: 'calc(100% - 60px)' }}>
         <DailyView
-          selectedDate={today} // 메모이제이션된 오늘 날짜
+          selectedDate={currentDate} // 네비게이션으로 변경된 날짜 사용
           onDateChange={onDateChangeWithoutSidebar || onDateSelect}
         />
       </div>
