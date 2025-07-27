@@ -64,6 +64,7 @@ export class TodoService extends BaseApiClient {
             ? this.convertDateToISO(todo.category.createdAt)
             : this.convertDateToISO(new Date()),
         },
+        todoType: todo.todoType,
         date: this.convertDateToISO(todo.date),
       };
 

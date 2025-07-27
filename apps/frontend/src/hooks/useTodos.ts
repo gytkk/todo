@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect } from 'react';
-import { TodoItem, TodoStats, TodoCategory } from '@calendar-todo/shared-types';
+import { TodoItem, TodoStats, TodoCategory, TodoType } from '@calendar-todo/shared-types';
 import { format } from 'date-fns';
 import { DEFAULT_CATEGORIES } from '@/constants/categories';
 import { TodoService } from '@/services/todoService';
@@ -62,7 +62,7 @@ export const useTodos = (categories: TodoCategory[] = DEFAULT_CATEGORIES) => {
     }
   }, [authLoading, loadTodos]);
 
-  const addTodo = useCallback(async (title: string, date: Date, categoryId: string) => {
+  const addTodo = useCallback(async (title: string, date: Date, categoryId: string, todoType: TodoType = 'event') => {
     if (!title.trim() || !date || !categoryId) return;
 
     const category = categories.find(cat => cat.id === categoryId) || 
@@ -74,6 +74,7 @@ export const useTodos = (categories: TodoCategory[] = DEFAULT_CATEGORIES) => {
       date,
       completed: false,
       category,
+      todoType,
     };
 
     try {

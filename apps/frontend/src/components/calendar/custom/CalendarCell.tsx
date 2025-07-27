@@ -1,7 +1,7 @@
 import React from 'react';
 import { CalendarCellProps } from './types/calendar';
 import { CalendarTodos } from './CalendarTodos';
-import { getTodoCompletionStats, hasIncompleteTodos, getPrimaryCategoryColor, shouldShowMixedCategoryIndicator } from './utils/calendarUtils';
+import { getTodoCompletionStats, hasIncompleteTodos, getPrimaryCategoryColor } from './utils/calendarUtils';
 
 export const CalendarCell: React.FC<CalendarCellProps> = ({
   date,
@@ -16,7 +16,7 @@ export const CalendarCell: React.FC<CalendarCellProps> = ({
   const { total, completed } = getTodoCompletionStats(todos);
   const hasIncomplete = hasIncompleteTodos(todos);
   const primaryColor = getPrimaryCategoryColor(todos);
-  const showMixedIndicator = shouldShowMixedCategoryIndicator(todos);
+  // const showMixedIndicator = shouldShowMixedCategoryIndicator(todos);
   
   // 필터링 정보 계산
   const { total: allTotal } = getTodoCompletionStats(allTodos);

@@ -3,11 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from "@calendar-todo/ui";
 import { CategorySelector } from "@/components/categories/CategorySelector";
-import { TodoCategory } from '@calendar-todo/shared-types';
+import { TodoCategory, TodoType } from '@calendar-todo/shared-types';
 import { Plus } from 'lucide-react';
 
 interface QuickAddTodoProps {
-  onAddTodo: (title: string, categoryId: string) => void;
+  onAddTodo: (title: string, categoryId: string, todoType: TodoType) => void;
   categories: TodoCategory[];
   disabled?: boolean;
   compact?: boolean;
@@ -20,6 +20,7 @@ export const QuickAddTodo: React.FC<QuickAddTodoProps> = ({
 }) => {
   const [title, setTitle] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
+  const [selectedTodoType, setSelectedTodoType] = useState<TodoType>("event");
   const [isInitialized, setIsInitialized] = useState(false);
 
   // 카테고리 목록이 로드되면 초기화
@@ -68,7 +69,7 @@ export const QuickAddTodo: React.FC<QuickAddTodoProps> = ({
 
   const handleSubmit = () => {
     if (title.trim() && selectedCategoryId) {
-      onAddTodo(title.trim(), selectedCategoryId);
+      onAddTodo(title.trim(), selectedCategoryId, selectedTodoType);
       setTitle("");
     }
   };
@@ -107,13 +108,40 @@ export const QuickAddTodo: React.FC<QuickAddTodoProps> = ({
           </Button>
         </div>
 
-        {/* 카테고리 선택 */}
-        <CategorySelector
-          categories={categories}
-          selectedCategoryId={selectedCategoryId}
-          onSelectCategory={setSelectedCategoryId}
-          disabled={disabled}
-        />
+        {/* 카테고리 선택 및 타입 선택 */}
+        <div className="flex gap-4">
+          <CategorySelector
+            categories={categories}
+            selectedCategoryId={selectedCategoryId}
+            onSelectCategory={setSelectedCategoryId}
+            disabled={disabled}
+          />
+          
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                value="event"
+                checked={selectedTodoType === "event"}
+                onChange={(e) => setSelectedTodoType(e.target.value as TodoType)}
+                disabled={disabled}
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
+              />
+              <span className="text-sm">📅 이벤트</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                value="task"
+                checked={selectedTodoType === "task"}
+                onChange={(e) => setSelectedTodoType(e.target.value as TodoType)}
+                disabled={disabled}
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
+              />
+              <span className="text-sm">📝 작업</span>
+            </label>
+          </div>
+        </div>
 
       </div>
     </div>

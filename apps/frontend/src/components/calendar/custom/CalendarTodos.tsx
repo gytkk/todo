@@ -17,7 +17,7 @@ export const CalendarTodos: React.FC<CalendarTodosProps> = ({
         {todos.slice(0, maxVisible).map((todo) => (
           <div
             key={todo.id}
-            className={`text-xs px-1.5 py-0.5 rounded-sm truncate flex-shrink-0 ${todo.completed
+            className={`text-xs px-1.5 py-0.5 rounded-sm truncate flex-shrink-0 flex items-center gap-1 ${todo.completed
               ? 'bg-gray-100 text-gray-500 line-through'
               : 'text-gray-900'
               }`}
@@ -25,9 +25,10 @@ export const CalendarTodos: React.FC<CalendarTodosProps> = ({
               backgroundColor: getCategoryColorWithOpacity(todo.category.color, 0.15),
               color: todo.category.color
             }}
-            title={todo.title}
+            title={`${todo.todoType === 'event' ? '📅 이벤트' : '📝 작업'}: ${todo.title}`}
           >
-            {todo.title}
+            <span className="text-xs flex-shrink-0">{todo.todoType === 'event' ? '📅' : '📝'}</span>
+            <span className="truncate">{todo.title}</span>
           </div>
         ))}
         {todos.length > maxVisible && (
@@ -52,6 +53,7 @@ export const CalendarTodos: React.FC<CalendarTodosProps> = ({
             backgroundColor: getCategoryColorWithOpacity(todo.category.color, 0.1),
             color: todo.category.color
           }}
+          title={`${todo.todoType === 'event' ? '📅 이벤트' : '📝 작업'}: ${todo.title}`}
         >
           <div className="flex items-center gap-2">
             <div
@@ -61,6 +63,7 @@ export const CalendarTodos: React.FC<CalendarTodosProps> = ({
                 backgroundColor: todo.category.color
               }}
             />
+            <span className="text-sm flex-shrink-0">{todo.todoType === 'event' ? '📅' : '📝'}</span>
             <span className="truncate">{todo.title}</span>
           </div>
         </div>

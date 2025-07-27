@@ -32,6 +32,7 @@ export class LocalTodoService {
         date: new Date(todo.date),
         completed: todo.completed,
         category: todo.category,
+        todoType: todo.todoType || 'event', // 기존 데이터 호환성을 위한 기본값
         userId: todo.userId,
       }));
     } catch (error) {
@@ -51,6 +52,7 @@ export class LocalTodoService {
         date: todo.date.toISOString(),
         completed: todo.completed,
         category: todo.category,
+        todoType: todo.todoType,
         userId: todo.userId,
       }));
 
@@ -149,6 +151,7 @@ export class LocalTodoService {
         date: todo.date,
         completed: todo.completed,
         category: todo.category,
+        todoType: todo.todoType,
         userId: tempUserId,
       };
 

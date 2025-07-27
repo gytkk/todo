@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { DaySection } from './DaySection';
 import { useDailyView } from './hooks/useDailyView';
 import { useTodoContext, useCategoryContext } from '@/contexts/AppContext';
+import { TodoType } from '@calendar-todo/shared-types';
 
 interface DailyViewProps {
   selectedDate?: Date;
@@ -313,8 +314,8 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
   // CSS Grid 레이아웃이 제대로 작동하면 자연스러운 스크롤이 가능해야 함
 
   // 할일 추가 핸들러 (날짜 지정)
-  const handleAddTodo = (date: Date) => (title: string, categoryId: string) => {
-    addTodo(title, date, categoryId);
+  const handleAddTodo = (date: Date) => (title: string, categoryId: string, todoType: TodoType) => {
+    addTodo(title, date, categoryId, todoType);
   };
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const selectedDayRef = useRef<HTMLDivElement>(null);

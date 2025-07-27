@@ -12,9 +12,9 @@ interface ResponsiveContainerProps {
 export const ResponsiveContainer = ({ 
   children, 
   className = '', 
-  sidebarOpen = false 
+  // sidebarOpen = false 
 }: ResponsiveContainerProps) => {
-  const { screenSize, isDesktopOrWider } = useResponsive();
+  const { screenSize } = useResponsive();
 
   // 고정 레이아웃 사용 - flex로 인한 레이아웃 변화 방지
   const getLayoutClasses = () => {

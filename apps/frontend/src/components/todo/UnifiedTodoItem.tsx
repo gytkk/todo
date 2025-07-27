@@ -22,7 +22,7 @@ function UnifiedTodoItemComponent({
   onEdit,
   compact = false,
   preventEventBubbling = false,
-  variant = 'auto'
+  // variant = 'auto'
 }: UnifiedTodoItemProps) {
   const handleToggle = useCallback(() => {
     onToggle(todo.id);
@@ -96,7 +96,12 @@ function UnifiedTodoItemComponent({
         </div>
 
         {/* 할일 내용 */}
-        <div className="flex-1 min-w-0 flex items-center">
+        <div className="flex-1 min-w-0 flex items-center gap-2">
+          {/* 타입 아이콘 */}
+          <span className={`flex-shrink-0 ${compact ? 'text-xs' : 'text-sm'}`} title={todo.todoType === 'event' ? '이벤트' : '작업'}>
+            {todo.todoType === 'event' ? '📅' : '📝'}
+          </span>
+          
           <span
             className={`font-medium transition-colors ${
               todo.completed

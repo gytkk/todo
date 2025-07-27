@@ -1,14 +1,14 @@
 "use client";
 
 import React, { createContext, useContext, ReactNode, useMemo } from 'react';
-import { TodoItem, TodoStats } from '@calendar-todo/shared-types';
+import { TodoItem, TodoStats, TodoType } from '@calendar-todo/shared-types';
 import { useTodos } from '@/hooks/useTodos';
 import { useCategoryContext } from './CategoryContext';
 
 interface TodoContextType {
   // Todo related
   todos: TodoItem[];
-  addTodo: (title: string, date: Date, categoryId: string) => void;
+  addTodo: (title: string, date: Date, categoryId: string, todoType?: TodoType) => void;
   toggleTodo: (id: string) => void;
   deleteTodo: (id: string) => void;
   clearAllTodos: () => void;
