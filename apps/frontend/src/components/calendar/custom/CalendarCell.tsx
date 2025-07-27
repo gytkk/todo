@@ -74,15 +74,10 @@ export const CalendarCell: React.FC<CalendarCellProps> = ({
           {(total > 0 || hasHiddenTodos) && (
             <div className="flex items-center gap-1">
               {hasIncomplete && (
-                <div className="relative">
-                  <div 
-                    className="w-2 h-2 rounded-full" 
-                    style={{ backgroundColor: primaryColor }}
-                  />
-                  {showMixedIndicator && (
-                    <div className="absolute -top-0.5 -right-0.5 w-1 h-1 bg-yellow-500 rounded-full border border-white" />
-                  )}
-                </div>
+                <div 
+                  className="w-2 h-2 rounded-full" 
+                  style={{ backgroundColor: primaryColor }}
+                />
               )}
               <div className="text-xs text-gray-500">
                 {hasHiddenTodos ? (
