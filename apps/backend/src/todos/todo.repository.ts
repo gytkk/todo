@@ -20,6 +20,7 @@ export class TodoRepository extends UserScopedRedisRepository<TodoEntity> {
       completed: todo.completed.toString(),
       priority: todo.priority,
       categoryId: todo.categoryId,
+      todoType: todo.todoType,
       dueDate: todo.dueDate.toISOString(),
       createdAt: todo.createdAt.toISOString(),
       updatedAt: todo.updatedAt.toISOString(),
@@ -35,6 +36,7 @@ export class TodoRepository extends UserScopedRedisRepository<TodoEntity> {
       completed: data.completed === "true",
       priority: data.priority as "high" | "medium" | "low",
       categoryId: data.categoryId || "default",
+      todoType: (data.todoType as "event" | "task") || "event", // 기본값 'event'로 마이그레이션 처리
       dueDate: new Date(data.dueDate),
       createdAt: new Date(data.createdAt),
       updatedAt: new Date(data.updatedAt),
@@ -96,6 +98,10 @@ export class TodoRepository extends UserScopedRedisRepository<TodoEntity> {
     );
     pipeline.sadd(priorityKey, newTodo.id);
 
+    // 타입별 인덱스
+    const typeKey = this.generateUserIndexKey(userId, "type", newTodo.todoType);
+    pipeline.sadd(typeKey, newTodo.id);
+
     // 기존 인덱스에서 제거 (업데이트인 경우)
     if (oldTodo) {
       if (
@@ -136,6 +142,15 @@ export class TodoRepository extends UserScopedRedisRepository<TodoEntity> {
         );
         pipeline.srem(oldPriorityKey, newTodo.id);
       }
+
+      if (oldTodo.todoType !== newTodo.todoType) {
+        const oldTypeKey = this.generateUserIndexKey(
+          userId,
+          "type",
+          oldTodo.todoType,
+        );
+        pipeline.srem(oldTypeKey, newTodo.id);
+      }
     }
   }
 
@@ -166,11 +181,13 @@ export class TodoRepository extends UserScopedRedisRepository<TodoEntity> {
       "priority",
       todo.priority,
     );
+    const typeKey = this.generateUserIndexKey(userId, "type", todo.todoType);
 
     pipeline.srem(dateKey, todo.id);
     pipeline.srem(categoryKey, todo.id);
     pipeline.srem(completedKey, todo.id);
     pipeline.srem(priorityKey, todo.id);
+    pipeline.srem(typeKey, todo.id);
   }
 
   protected async removeUserIndexes(
@@ -318,5 +335,24 @@ export class TodoRepository extends UserScopedRedisRepository<TodoEntity> {
   ): Promise<number> {
     const priorityKey = this.generateUserIndexKey(userId, "priority", priority);
     return await this.redisService.scard(priorityKey);
+  }
+
+  // 타입별 검색 메서드 추가
+  async findByUserIdAndType(
+    userId: string,
+    todoType: "event" | "task",
+  ): Promise<TodoEntity[]> {
+    const typeKey = this.generateUserIndexKey(userId, "type", todoType);
+    const todoIds = await this.redisService.smembers(typeKey);
+
+    return this.findByIds(todoIds);
+  }
+
+  async countByUserIdAndType(
+    userId: string,
+    todoType: "event" | "task",
+  ): Promise<number> {
+    const typeKey = this.generateUserIndexKey(userId, "type", todoType);
+    return await this.redisService.scard(typeKey);
   }
 }

@@ -38,6 +38,7 @@ describe("TodoController", () => {
     title: "테스트 할일",
     completed: false,
     category: mockCategory,
+    todoType: "event",
     date: new Date("2024-01-15"),
   };
 

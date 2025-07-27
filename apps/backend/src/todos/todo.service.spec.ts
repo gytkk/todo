@@ -38,6 +38,7 @@ describe("TodoService", () => {
     title: "테스트 할일",
     completed: false,
     category: mockCategory,
+    todoType: "event",
     date: new Date("2024-01-15"),
     userId: "user-1",
   };
@@ -387,7 +388,7 @@ describe("TodoService", () => {
       });
 
       const completedTodos = [completedTodo, oldCompletedTodo];
-      
+
       // Mock getStatsForUser to return basic stats
       mockRepository.getStatsForUser.mockResolvedValue({
         total: 4,
@@ -395,14 +396,17 @@ describe("TodoService", () => {
         incomplete: 2,
         byPriority: { high: 1, medium: 2, low: 1 },
       });
-      
+
       // Mock findByUserIdAndCompleted to return completed todos
       mockRepository.findByUserIdAndCompleted.mockResolvedValue(completedTodos);
 
       const result = await service.getStats("user-1");
 
       expect(mockRepository.getStatsForUser).toHaveBeenCalledWith("user-1");
-      expect(mockRepository.findByUserIdAndCompleted).toHaveBeenCalledWith("user-1", true);
+      expect(mockRepository.findByUserIdAndCompleted).toHaveBeenCalledWith(
+        "user-1",
+        true,
+      );
       expect(result).toEqual({
         total: 4,
         completed: 2,
@@ -420,7 +424,7 @@ describe("TodoService", () => {
         incomplete: 0,
         byPriority: { high: 0, medium: 0, low: 0 },
       });
-      
+
       // Mock findByUserIdAndCompleted to return empty array
       mockRepository.findByUserIdAndCompleted.mockResolvedValue([]);
 
@@ -494,12 +498,14 @@ describe("TodoService", () => {
           title: "할일 1",
           completed: false,
           category: mockCategory,
+          todoType: "event",
           date: new Date("2024-01-15"),
         },
         {
           title: "할일 2",
           completed: true,
           category: mockCategory,
+          todoType: "task",
           date: new Date("2024-01-16"),
         },
       ];

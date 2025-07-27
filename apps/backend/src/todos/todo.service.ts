@@ -54,6 +54,7 @@ export class TodoService {
       description: createTodoDto.description,
       priority: createTodoDto.priority || "medium",
       categoryId: category.id,
+      todoType: createTodoDto.todoType || "event", // 기본값을 'event'로 설정
       dueDate: new Date(createTodoDto.date),
       userId,
     };
@@ -163,6 +164,8 @@ export class TodoService {
     }
     if (updateTodoDto.date !== undefined)
       updateData.dueDate = new Date(updateTodoDto.date);
+    if (updateTodoDto.todoType !== undefined)
+      updateData.todoType = updateTodoDto.todoType;
 
     const updatedTodo = await this.todoRepository.update(id, updateData);
     const category = await this.userSettingsService.getCategoryById(
@@ -210,15 +213,18 @@ export class TodoService {
   async getStats(userId: string): Promise<TodoStats> {
     // Use efficient Redis counters instead of loading all todos
     const stats = await this.todoRepository.getStatsForUser(userId);
-    
+
     // For recent completions, query only completed todos and filter by date
     // This is more efficient than loading all todos
     const sevenDaysAgo = subDays(new Date(), 7);
-    const completedTodos = await this.todoRepository.findByUserIdAndCompleted(userId, true);
+    const completedTodos = await this.todoRepository.findByUserIdAndCompleted(
+      userId,
+      true,
+    );
     const recentCompletions = completedTodos.filter(
-      (todo) => todo.updatedAt >= sevenDaysAgo
+      (todo) => todo.updatedAt >= sevenDaysAgo,
     ).length;
-    
+
     const completionRate =
       stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
 

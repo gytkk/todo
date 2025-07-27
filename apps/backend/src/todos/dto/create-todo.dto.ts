@@ -8,6 +8,7 @@ import {
 } from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
+import { TodoType } from "@calendar-todo/shared-types";
 import { TodoCategoryDto } from "./todo-category.dto";
 
 export class CreateTodoDto {
@@ -52,4 +53,14 @@ export class CreateTodoDto {
   @IsDateString()
   @IsNotEmpty()
   date: string;
+
+  @ApiPropertyOptional({
+    description: "할일 타입",
+    enum: ["event", "task"],
+    example: "event",
+    default: "event",
+  })
+  @IsOptional()
+  @IsEnum(["event", "task"])
+  todoType?: TodoType;
 }

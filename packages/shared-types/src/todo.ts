@@ -28,6 +28,7 @@ export interface TodoItem {
   date: Date;
   completed: boolean;
   category: TodoCategory; // 카테고리 필드 추가
+  todoType: TodoType; // 할 일 타입 필드 추가
   userId?: string; // 사용자 인증 추가 시 필요
 }
 
@@ -37,6 +38,7 @@ export interface SavedTodoItem {
   date: string; // ISO string for serialization
   completed: boolean;
   category: TodoCategory; // 카테고리 필드 추가
+  todoType: TodoType; // 할 일 타입 필드 추가
   userId?: string;
 }
 
@@ -65,6 +67,7 @@ export interface CreateTodoRequest {
   title: string;
   date: string; // ISO date string
   category: TodoCategory; // 카테고리 전체 객체 포함
+  todoType: TodoType; // 할 일 타입 필드 추가
 }
 
 export interface CreateTodoResponse {
@@ -76,6 +79,7 @@ export interface UpdateTodoRequest {
   completed?: boolean;
   date?: string;
   category?: TodoCategory; // 카테고리 전체 객체 포함
+  todoType?: TodoType; // 할 일 타입 필드 추가
 }
 
 export interface UpdateTodoResponse {
@@ -91,6 +95,9 @@ export interface DeleteTodoResponse {
   success: boolean;
   deletedId: string;
 }
+
+// Todo 타입 정의
+export type TodoType = 'event' | 'task';
 
 // Category Action 타입 (카테고리 삭제 시 사용)
 export type CategoryAction = 'deleted' | 'moved' | 'cancelled';

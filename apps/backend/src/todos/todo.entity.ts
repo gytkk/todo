@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { TodoItem, TodoCategory } from "@calendar-todo/shared-types";
+import { TodoItem, TodoCategory, TodoType } from "@calendar-todo/shared-types";
 
 export class TodoEntity {
   id: string;
@@ -8,6 +8,7 @@ export class TodoEntity {
   completed: boolean;
   priority: "high" | "medium" | "low";
   categoryId: string;
+  todoType: TodoType;
   dueDate: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -20,6 +21,7 @@ export class TodoEntity {
     this.completed = data.completed || false;
     this.priority = data.priority || "medium";
     this.categoryId = data.categoryId || "personal";
+    this.todoType = data.todoType || "event"; // 기본값을 'event'로 설정
     this.dueDate = data.dueDate || new Date();
     this.createdAt = data.createdAt || new Date();
     this.updatedAt = data.updatedAt || new Date();
@@ -40,6 +42,7 @@ export class TodoEntity {
         createdAt: new Date(),
         order: 0,
       },
+      todoType: this.todoType,
       userId: this.userId,
     };
   }
@@ -51,6 +54,7 @@ export class TodoEntity {
     if (data.completed !== undefined) this.completed = data.completed;
     if (data.priority !== undefined) this.priority = data.priority;
     if (data.categoryId !== undefined) this.categoryId = data.categoryId;
+    if (data.todoType !== undefined) this.todoType = data.todoType;
     if (data.dueDate !== undefined) this.dueDate = data.dueDate;
 
     this.updatedAt = new Date();
