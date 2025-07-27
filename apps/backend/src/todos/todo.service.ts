@@ -287,4 +287,64 @@ export class TodoService {
 
     return createdTodos;
   }
+
+  /**
+   * 오늘 이전 날짜의 미완료 작업들을 오늘로 이동
+   */
+  async moveTasksToNextDay(userId: string): Promise<number> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // 이동이 필요한 작업들 조회
+    const tasksToMove = await this.getTasksDueForMove(userId);
+
+    if (tasksToMove.length === 0) {
+      return 0;
+    }
+
+    let movedCount = 0;
+
+    // 각 작업을 오늘로 이동
+    for (const task of tasksToMove) {
+      try {
+        await this.todoRepository.update(task.id, {
+          dueDate: today,
+          updatedAt: new Date(),
+        });
+        movedCount++;
+      } catch (error) {
+        console.error(`작업 ${task.id} 이동 실패:`, error);
+      }
+    }
+
+    return movedCount;
+  }
+
+  /**
+   * 이동이 필요한 작업들 조회
+   */
+  async getTasksDueForMove(userId: string): Promise<TodoEntity[]> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // 사용자의 모든 할 일 조회
+    const allTodos = await this.todoRepository.findByUserId(userId);
+
+    // 이동 조건에 맞는 작업들 필터링
+    return allTodos.filter((todo) => {
+      return (
+        todo.todoType === "task" && // 작업 타입
+        !todo.completed && // 미완료
+        todo.dueDate < today // 오늘 이전 날짜
+      );
+    });
+  }
+
+  /**
+   * 특정 사용자의 이동 대상 작업 개수 조회
+   */
+  async getTasksMoveCount(userId: string): Promise<number> {
+    const tasksToMove = await this.getTasksDueForMove(userId);
+    return tasksToMove.length;
+  }
 }

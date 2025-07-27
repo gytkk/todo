@@ -1,6 +1,11 @@
 import { TodoItem, TodoStats, TodoCategory } from '@calendar-todo/shared-types';
 import { BaseApiClient } from './BaseApiClient';
 
+interface TasksDueResponse {
+  tasks: TodoItem[];
+  count: number;
+}
+
 export class TodoService extends BaseApiClient {
   private static instance: TodoService;
   private readonly BASE_URL = '/api/todos';
@@ -258,5 +263,57 @@ export class TodoService extends BaseApiClient {
       reader.onerror = () => reject(new Error('Failed to read file'));
       reader.readAsText(file);
     });
+  }
+
+  /**
+   * 미완료 작업들을 오늘로 이동
+   */
+  async moveTasks(): Promise<{ message: string; movedCount: number } | null> {
+    try {
+      const response = await this.post<{ message: string; movedCount: number }>('/api/todos/move-tasks', {});
+
+      if (response.status === 401) {
+        return null;
+      }
+
+      if (response.error || !response.data) {
+        this.logError(`작업 이동 실패: ${response.error || response.status}`);
+        return null;
+      }
+
+      return response.data;
+    } catch (error) {
+      this.logError('작업 이동 중 오류 발생:', error);
+      return null;
+    }
+  }
+
+  /**
+   * 이동 대상 작업들 조회
+   */
+  async getTasksDue(): Promise<TasksDueResponse | null> {
+    try {
+      const response = await this.get<TasksDueResponse>('/api/todos/tasks-due');
+
+      if (response.status === 401) {
+        return null;
+      }
+
+      if (response.error || !response.data) {
+        this.logError(`이동 대상 작업 조회 실패: ${response.error || response.status}`);
+        return null;
+      }
+
+      // 날짜 문자열을 Date 객체로 변환
+      const tasks = response.data.tasks.map((task: TodoItem) => ({
+        ...task,
+        date: new Date(task.date),
+      }));
+
+      return { ...response.data, tasks };
+    } catch (error) {
+      this.logError('이동 대상 작업 조회 중 오류 발생:', error);
+      return null;
+    }
   }
 }

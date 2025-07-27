@@ -7,6 +7,7 @@ import { CalendarProvider } from './CalendarContext';
 import { SettingsProvider } from './SettingsContext';
 import { initializeDataCleanup } from '@/utils/dataCleanup';
 import { initializeTempUser } from '@/utils/tempUser';
+import { useTaskMover } from '@/hooks/useTaskMover';
 
 // Combined context type for backward compatibility
 interface AppContextType {
@@ -28,6 +29,9 @@ function AppContextProvider({ children }: AppProviderProps) {
     initializeDataCleanup();
     initializeTempUser();
   }, []);
+
+  // Initialize task mover for automatic task movement
+  useTaskMover();
 
   const contextValue: AppContextType = useMemo(() => ({
     initialized: true

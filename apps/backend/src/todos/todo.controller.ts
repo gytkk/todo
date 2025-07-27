@@ -38,6 +38,7 @@ import {
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { User } from "../users/user.entity";
+import { TodoItem } from "@calendar-todo/shared-types";
 
 @ApiTags("todos")
 @Controller("todos")
@@ -132,6 +133,92 @@ export class TodoController {
     );
     const stats = await this.todoService.getStats(user.id);
     return { todos, stats };
+  }
+
+  @Post("move-tasks")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: "미완료 작업들을 오늘로 이동",
+    description:
+      "오늘 이전 날짜의 미완료 작업(task)들을 오늘 날짜로 이동합니다.",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "작업 이동이 성공적으로 완료되었습니다",
+    schema: {
+      properties: {
+        message: {
+          type: "string",
+          example: "3개의 작업이 오늘로 이동되었습니다",
+        },
+        movedCount: { type: "number", example: 3 },
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({
+    description: "인증되지 않은 사용자입니다",
+  })
+  async moveTasks(
+    @CurrentUser() user: User,
+  ): Promise<{ message: string; movedCount: number }> {
+    const movedCount = await this.todoService.moveTasksToNextDay(user.id);
+
+    return {
+      message:
+        movedCount > 0
+          ? `${movedCount}개의 작업이 오늘로 이동되었습니다`
+          : "이동할 작업이 없습니다",
+      movedCount,
+    };
+  }
+
+  @Get("tasks-due")
+  @ApiOperation({
+    summary: "이동 대상 작업들 조회",
+    description: "오늘 이전 날짜의 미완료 작업(task)들을 조회합니다.",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "이동 대상 작업들이 성공적으로 조회되었습니다",
+    schema: {
+      properties: {
+        tasks: {
+          type: "array",
+          items: { $ref: "#/components/schemas/TodoItem" },
+        },
+        count: { type: "number", example: 3 },
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({
+    description: "인증되지 않은 사용자입니다",
+  })
+  async getTasksDue(
+    @CurrentUser() user: User,
+  ): Promise<{ tasks: TodoItem[]; count: number }> {
+    const tasksToMove = await this.todoService.getTasksDueForMove(user.id);
+
+    // Convert to TodoItem format
+    const tasks = tasksToMove.map((task) => ({
+      id: task.id,
+      title: task.title,
+      date: task.dueDate,
+      completed: task.completed,
+      todoType: task.todoType,
+      category: {
+        id: task.categoryId,
+        name: "Unknown",
+        color: "#64748b",
+        createdAt: new Date(),
+        order: 0,
+      },
+      userId: task.userId,
+    }));
+
+    return {
+      tasks,
+      count: tasks.length,
+    };
   }
 
   @Get("stats")
