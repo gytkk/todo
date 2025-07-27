@@ -60,6 +60,19 @@ export interface TodoStats {
   incomplete: number;
   completionRate: number;
   recentCompletions: number;
+  // 타입별 통계
+  byType: {
+    event: {
+      total: number;
+      completed: number;
+      incomplete: number;
+    };
+    task: {
+      total: number;
+      completed: number;
+      incomplete: number;
+    };
+  };
 }
 
 // API 요청/응답 타입들

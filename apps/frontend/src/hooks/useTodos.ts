@@ -14,6 +14,10 @@ export const useTodos = (categories: TodoCategory[] = DEFAULT_CATEGORIES) => {
     incomplete: 0,
     completionRate: 0,
     recentCompletions: 0,
+    byType: {
+      event: { total: 0, completed: 0, incomplete: 0 },
+      task: { total: 0, completed: 0, incomplete: 0 }
+    },
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,6 +53,10 @@ export const useTodos = (categories: TodoCategory[] = DEFAULT_CATEGORIES) => {
         incomplete: 0,
         completionRate: 0,
         recentCompletions: 0,
+        byType: {
+          event: { total: 0, completed: 0, incomplete: 0 },
+          task: { total: 0, completed: 0, incomplete: 0 }
+        },
       });
     } finally {
       setIsLoading(false);
@@ -203,6 +211,10 @@ export const useTodos = (categories: TodoCategory[] = DEFAULT_CATEGORIES) => {
           incomplete: 0,
           completionRate: 0,
           recentCompletions: 0,
+          byType: {
+            event: { total: 0, completed: 0, incomplete: 0 },
+            task: { total: 0, completed: 0, incomplete: 0 }
+          },
         });
       }
     } catch (err) {

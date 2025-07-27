@@ -19,6 +19,7 @@ interface CalendarViewProps {
   defaultView?: CalendarViewType;
   allTodos?: TodoItem[]; // 필터링 전 전체 할일 목록
   hasActiveFilters?: boolean; // 필터가 활성화되어 있는지 여부
+  recentlyMovedTaskIds?: string[]; // 최근 이동된 작업 ID 목록
 }
 
 function CalendarViewComponent({
@@ -31,7 +32,8 @@ function CalendarViewComponent({
   onCalendarClick,
   defaultView = 'day',
   allTodos = [],
-  hasActiveFilters = false
+  hasActiveFilters = false,
+  recentlyMovedTaskIds = []
 }: CalendarViewProps) {
   const [currentView, setCurrentView] = useState<CalendarViewType>(defaultView);
 
@@ -64,6 +66,7 @@ function CalendarViewComponent({
               onViewChange={handleViewChange}
               allTodos={allTodos}
               hasActiveFilters={hasActiveFilters}
+              recentlyMovedTaskIds={recentlyMovedTaskIds}
             />
           </div>
         </NoSSR>

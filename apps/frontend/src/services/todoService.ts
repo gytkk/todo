@@ -1,9 +1,15 @@
-import { TodoItem, TodoStats, TodoCategory } from '@calendar-todo/shared-types';
+import { TodoItem, TodoStats, TodoCategory, TodoType } from '@calendar-todo/shared-types';
 import { BaseApiClient } from './BaseApiClient';
 
 interface TasksDueResponse {
   tasks: TodoItem[];
   count: number;
+}
+
+interface MoveTasksResponse {
+  message: string;
+  movedCount: number;
+  movedTaskIds: string[];
 }
 
 export class TodoService extends BaseApiClient {
@@ -36,7 +42,7 @@ export class TodoService extends BaseApiClient {
       const response = await this.get<{ todos: TodoItem[]; stats: TodoStats }>(url);
 
       if (response.status === 401) {
-        return { todos: [], stats: { total: 0, completed: 0, incomplete: 0, completionRate: 0, recentCompletions: 0 } };
+        return { todos: [], stats: { total: 0, completed: 0, incomplete: 0, completionRate: 0, recentCompletions: 0, byType: { event: { total: 0, completed: 0, incomplete: 0 }, task: { total: 0, completed: 0, incomplete: 0 } } } };
       }
       
       if (response.error || !response.data) {
@@ -54,7 +60,7 @@ export class TodoService extends BaseApiClient {
       return { todos, stats: data.stats };
     } catch (error) {
       console.error('Error loading todos:', error);
-      return { todos: [], stats: { total: 0, completed: 0, incomplete: 0, completionRate: 0, recentCompletions: 0 } };
+      return { todos: [], stats: { total: 0, completed: 0, incomplete: 0, completionRate: 0, recentCompletions: 0, byType: { event: { total: 0, completed: 0, incomplete: 0 }, task: { total: 0, completed: 0, incomplete: 0 } } } };
     }
   }
 
@@ -191,13 +197,13 @@ export class TodoService extends BaseApiClient {
 
       if (response.error || !response.data) {
         this.logError(`통계 조회 실패: ${response.error || response.status}`);
-        return { total: 0, completed: 0, incomplete: 0, completionRate: 0, recentCompletions: 0 };
+        return { total: 0, completed: 0, incomplete: 0, completionRate: 0, recentCompletions: 0, byType: { event: { total: 0, completed: 0, incomplete: 0 }, task: { total: 0, completed: 0, incomplete: 0 } } };
       }
 
       return response.data.stats;
     } catch (error) {
       this.logError('Error getting stats', error);
-      return { total: 0, completed: 0, incomplete: 0, completionRate: 0, recentCompletions: 0 };
+      return { total: 0, completed: 0, incomplete: 0, completionRate: 0, recentCompletions: 0, byType: { event: { total: 0, completed: 0, incomplete: 0 }, task: { total: 0, completed: 0, incomplete: 0 } } };
     }
   }
 
@@ -242,6 +248,7 @@ export class TodoService extends BaseApiClient {
                 isDefault: true,
                 createdAt: new Date(),
               },
+              todoType: (todoItem.todoType as TodoType) || 'event', // 기본값: 이벤트
             };
           });
 
@@ -268,9 +275,9 @@ export class TodoService extends BaseApiClient {
   /**
    * 미완료 작업들을 오늘로 이동
    */
-  async moveTasks(): Promise<{ message: string; movedCount: number } | null> {
+  async moveTasks(): Promise<MoveTasksResponse | null> {
     try {
-      const response = await this.post<{ message: string; movedCount: number }>('/api/todos/move-tasks', {});
+      const response = await this.post<MoveTasksResponse>('/api/todos/move-tasks', {});
 
       if (response.status === 401) {
         return null;

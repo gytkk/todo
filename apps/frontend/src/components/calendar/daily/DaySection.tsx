@@ -4,19 +4,20 @@ import React from 'react';
 import { TodoItemCard } from './TodoItemCard';
 import { QuickAddTodo } from './QuickAddTodo';
 import { DayData } from './hooks/useDailyView';
-import { TodoCategory } from '@calendar-todo/shared-types';
+import { TodoCategory, TodoType } from '@calendar-todo/shared-types';
 import { format, differenceInDays, isSameDay, startOfDay } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
 interface DaySectionProps {
   dayData: DayData;
   categories: TodoCategory[];
-  onAddTodo: (title: string, categoryId: string) => void;
+  onAddTodo: (title: string, categoryId: string, todoType: TodoType) => void;
   onToggleTodo: (id: string) => void;
   onDeleteTodo: (id: string) => void;
   onEditTodo?: (id: string) => void;
   isMainSection?: boolean;
   isToday?: boolean;
+  recentlyMovedTaskIds?: string[];
 }
 
 export const DaySection: React.FC<DaySectionProps> = ({
@@ -27,14 +28,15 @@ export const DaySection: React.FC<DaySectionProps> = ({
   onDeleteTodo,
   onEditTodo,
   isMainSection = false,
+  recentlyMovedTaskIds = [],
 }) => {
   const { date, todos, stats } = dayData;
 
   // 모든 할일을 표시 (통일)
   const displayTodos = todos;
 
-  const handleAddTodo = (title: string, categoryId: string) => {
-    onAddTodo(title, categoryId);
+  const handleAddTodo = (title: string, categoryId: string, todoType: TodoType) => {
+    onAddTodo(title, categoryId, todoType);
   };
 
   const getDateLabel = () => {
@@ -127,6 +129,7 @@ export const DaySection: React.FC<DaySectionProps> = ({
             onDelete={onDeleteTodo}
             onEdit={onEditTodo}
             compact={false}
+            recentlyMoved={recentlyMovedTaskIds.includes(todo.id)}
           />
         ))}
 

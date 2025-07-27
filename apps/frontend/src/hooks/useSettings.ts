@@ -32,6 +32,7 @@ const defaultSettings: AppSettings = {
   // 할 일 설정
   oldTodoDisplayLimit: 14,
   autoMoveTodos: true,
+  showTaskMoveNotifications: true, // 작업 이동 알림 기본값: 활성화
   saturationAdjustment: {
     enabled: true,
     levels: [

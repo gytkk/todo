@@ -4,16 +4,19 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { DaySection } from './DaySection';
 import { useDailyView } from './hooks/useDailyView';
 import { useTodoContext, useCategoryContext } from '@/contexts/AppContext';
+// import { useTaskMover } from '@/hooks/useTaskMover';
 import { TodoType } from '@calendar-todo/shared-types';
 
 interface DailyViewProps {
   selectedDate?: Date;
   onDateChange?: (date: Date) => void;
+  recentlyMovedTaskIds?: string[];
 }
 
 const DailyViewComponent: React.FC<DailyViewProps> = ({
   selectedDate: initialDate,
   onDateChange,
+  recentlyMovedTaskIds = [],
 }) => {
   const {
     todos,
@@ -25,6 +28,8 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
     categories,
     refreshCategories
   } = useCategoryContext();
+  
+  // const { recentlyMovedTaskIds } = useTaskMover(); // 상위 컴포넌트에서 전달받음
 
   // 스크롤 기반 날짜 선택을 위한 상태 (비활성화됨)
   // const [, setVisibleDate] = useState<Date>(initialDate || new Date());
@@ -525,6 +530,7 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
                   onDeleteTodo={deleteTodo}
                   isMainSection={isSelectedDay}
                   isToday={isTodayActual}
+                  recentlyMovedTaskIds={recentlyMovedTaskIds}
                 />
               </div>
             );

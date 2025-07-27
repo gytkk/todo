@@ -1,4 +1,4 @@
-import { TodoItem, SavedTodoItem } from '@calendar-todo/shared-types';
+import { TodoItem, SavedTodoItem, TodoType } from '@calendar-todo/shared-types';
 import { TodoService } from './todoService';
 import { LocalTodoService } from './localTodoService';
 
@@ -44,6 +44,7 @@ export class MigrationService {
           isDefault: false,
           createdAt: new Date(),
         },
+        todoType: (todo as SavedTodoItem & { todoType?: TodoType }).todoType || 'event', // 기본값: 이벤트
         userId: todo.userId,
       }));
     } catch (error) {
@@ -85,6 +86,7 @@ export class MigrationService {
           date: todo.date,
           completed: todo.completed,
           category: todo.category,
+          todoType: todo.todoType || 'event', // 기본값: 이벤트
         };
 
         const createdTodo = await todoService.addTodo(todoToCreate);
@@ -223,6 +225,7 @@ export class MigrationService {
           date: todo.date,
           completed: todo.completed,
           category: todo.category,
+          todoType: todo.todoType || 'event', // 기본값: 이벤트
         };
 
         const createdTodo = await todoService.addTodo(todoToCreate);
@@ -282,6 +285,7 @@ export class MigrationService {
             date: todo.date,
             completed: todo.completed,
             category: todo.category,
+            todoType: todo.todoType || 'event', // 기본값: 이벤트
           };
 
           const createdTodo = await localTodoService.addTodo(todoToCreate);

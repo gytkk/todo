@@ -37,6 +37,7 @@ export interface AppSettings {
   // 할 일 설정
   oldTodoDisplayLimit: number;
   autoMoveTodos: boolean;
+  showTaskMoveNotifications: boolean; // 작업 이동 알림 표시 여부
   saturationAdjustment: {
     enabled: boolean;
     levels: Array<{ days: number; opacity: number }>;

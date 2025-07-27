@@ -48,6 +48,10 @@ describe("TodoController", () => {
     incomplete: 7,
     completionRate: 30,
     recentCompletions: 2,
+    byType: {
+      event: { total: 6, completed: 2, incomplete: 4 },
+      task: { total: 4, completed: 1, incomplete: 3 },
+    },
   };
 
   const mockTodoService = {

@@ -8,6 +8,7 @@ import { TodoList } from './TodoList';
 import { TodoStats } from './TodoStats';
 import { useTodoContext, useCategoryContext } from '@/contexts/AppContext';
 import { useMemo, useEffect, useRef, useCallback, memo } from 'react';
+import { TodoType } from '@calendar-todo/shared-types';
 import { useFocusTrap, useAria } from '@/hooks/useAccessibility';
 
 interface TodoSidebarProps {
@@ -31,17 +32,34 @@ function TodoSidebarComponent({ isOpen, selectedDate, onClose }: TodoSidebarProp
     return selectedDate ? getTodosByDate(selectedDate) : [];
   }, [selectedDate, getTodosByDate]);
 
-  const stats = useMemo(() => ({
-    total: selectedDateTodos.length,
-    completed: selectedDateTodos.filter(t => t.completed).length,
-    incomplete: selectedDateTodos.filter(t => !t.completed).length,
-    completionRate: 0,
-    recentCompletions: 0,
-  }), [selectedDateTodos]);
+  const stats = useMemo(() => {
+    const eventTodos = selectedDateTodos.filter(t => t.todoType === 'event');
+    const taskTodos = selectedDateTodos.filter(t => t.todoType === 'task');
+    
+    return {
+      total: selectedDateTodos.length,
+      completed: selectedDateTodos.filter(t => t.completed).length,
+      incomplete: selectedDateTodos.filter(t => !t.completed).length,
+      completionRate: 0,
+      recentCompletions: 0,
+      byType: {
+        event: {
+          total: eventTodos.length,
+          completed: eventTodos.filter(t => t.completed).length,
+          incomplete: eventTodos.filter(t => !t.completed).length,
+        },
+        task: {
+          total: taskTodos.length,
+          completed: taskTodos.filter(t => t.completed).length,
+          incomplete: taskTodos.filter(t => !t.completed).length,
+        },
+      },
+    };
+  }, [selectedDateTodos]);
 
-  const handleAddTodo = useCallback((title: string, categoryId: string) => {
+  const handleAddTodo = useCallback((title: string, categoryId: string, todoType: TodoType) => {
     if (selectedDate) {
-      addTodo(title, selectedDate, categoryId);
+      addTodo(title, selectedDate, categoryId, todoType);
     }
   }, [selectedDate, addTodo]);
 

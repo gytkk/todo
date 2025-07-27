@@ -10,6 +10,7 @@ interface TodoItemCardProps {
   onDelete: (id: string) => void;
   onEdit?: (id: string) => void;
   compact?: boolean;
+  recentlyMoved?: boolean;
 }
 
 export const TodoItemCard: React.FC<TodoItemCardProps> = ({
@@ -17,7 +18,8 @@ export const TodoItemCard: React.FC<TodoItemCardProps> = ({
   onToggle,
   onDelete,
   onEdit,
-  compact = false
+  compact = false,
+  recentlyMoved = false
 }) => {
   return (
     <UnifiedTodoItem
@@ -28,6 +30,7 @@ export const TodoItemCard: React.FC<TodoItemCardProps> = ({
       compact={compact}
       variant="daily"
       preventEventBubbling={true}
+      recentlyMoved={recentlyMoved}
     />
   );
 };

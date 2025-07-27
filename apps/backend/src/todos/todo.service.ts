@@ -228,12 +228,35 @@ export class TodoService {
     const completionRate =
       stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
 
+    // Get all todos to calculate type-based statistics
+    const allTodos = await this.todoRepository.findByUserId(userId);
+
+    // Calculate statistics by todo type
+    const eventTodos = allTodos.filter((todo) => todo.todoType === "event");
+    const taskTodos = allTodos.filter((todo) => todo.todoType === "task");
+
+    const eventStats = {
+      total: eventTodos.length,
+      completed: eventTodos.filter((todo) => todo.completed).length,
+      incomplete: eventTodos.filter((todo) => !todo.completed).length,
+    };
+
+    const taskStats = {
+      total: taskTodos.length,
+      completed: taskTodos.filter((todo) => todo.completed).length,
+      incomplete: taskTodos.filter((todo) => !todo.completed).length,
+    };
+
     return {
       total: stats.total,
       completed: stats.completed,
       incomplete: stats.incomplete,
       completionRate,
       recentCompletions,
+      byType: {
+        event: eventStats,
+        task: taskStats,
+      },
     };
   }
 
@@ -291,7 +314,9 @@ export class TodoService {
   /**
    * 오늘 이전 날짜의 미완료 작업들을 오늘로 이동
    */
-  async moveTasksToNextDay(userId: string): Promise<number> {
+  async moveTasksToNextDay(
+    userId: string,
+  ): Promise<{ movedCount: number; movedTaskIds: string[] }> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -299,10 +324,11 @@ export class TodoService {
     const tasksToMove = await this.getTasksDueForMove(userId);
 
     if (tasksToMove.length === 0) {
-      return 0;
+      return { movedCount: 0, movedTaskIds: [] };
     }
 
     let movedCount = 0;
+    const movedTaskIds: string[] = [];
 
     // 각 작업을 오늘로 이동
     for (const task of tasksToMove) {
@@ -312,12 +338,13 @@ export class TodoService {
           updatedAt: new Date(),
         });
         movedCount++;
+        movedTaskIds.push(task.id);
       } catch (error) {
         console.error(`작업 ${task.id} 이동 실패:`, error);
       }
     }
 
-    return movedCount;
+    return { movedCount, movedTaskIds };
   }
 
   /**

@@ -14,6 +14,7 @@ const CalendarGridComponent: React.FC<CalendarGridProps> = ({
   view,
   allTodos = [],
   hasActiveFilters = false,
+  recentlyMovedTaskIds = [],
 }) => {
   const calendarDates = useMemo(() => {
     return view === 'week'
@@ -186,6 +187,7 @@ const CalendarGridComponent: React.FC<CalendarGridProps> = ({
         <DailyView
           selectedDate={currentDate} // 네비게이션으로 변경된 날짜 사용
           onDateChange={onDateChangeWithoutSidebar || onDateSelect}
+          recentlyMovedTaskIds={recentlyMovedTaskIds}
         />
       </div>
     );

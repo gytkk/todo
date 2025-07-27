@@ -10,11 +10,14 @@ import { useCalendar } from "@/hooks/useCalendar";
 import { PageLoading } from "@/components/ui/loading";
 import { ResponsiveContainer, ResponsiveTodoInterface } from "@/components/responsive";
 import { useAuth } from "@/contexts/AuthContext";
+import { TaskMoveStatus } from "@/components/todo/TaskMoveStatus";
+import { useTaskMover } from "@/hooks/useTaskMover";
 
 function HomeContent() {
   const { todos } = useTodoContext();
   const { getFilteredTodos, refreshCategories, categoryFilter, categories } = useCategoryContext();
   const { isAuthenticated } = useAuth();
+  const { recentlyMovedTaskIds } = useTaskMover();
   const {
     selectedDate,
     isSidebarOpen,
@@ -84,10 +87,14 @@ function HomeContent() {
                 onCalendarClick={isAuthenticated ? handleCalendarClick : () => {}} // 미인증 시 비활성화
                 allTodos={todos} // 필터링 전 전체 할일 목록
                 hasActiveFilters={hasActiveFilters} // 필터 활성화 여부
+                recentlyMovedTaskIds={recentlyMovedTaskIds} // 최근 이동된 작업 ID 목록
               />
             }
           />
         </ResponsiveContainer>
+        
+        {/* 작업 이동 상태 표시 */}
+        {isAuthenticated && <TaskMoveStatus />}
       </ErrorBoundary>
     </AppLayout>
   );

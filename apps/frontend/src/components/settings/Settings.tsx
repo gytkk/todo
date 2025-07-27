@@ -538,12 +538,23 @@ export function Settings({ onClearData }: SettingsProps) {
 
                         <div className="flex items-center justify-between">
                           <div className="space-y-0.5">
-                            <Label className="text-sm font-medium">완료하지 않은 할 일 자동 이동</Label>
-                            <p className="text-sm text-gray-600">완료되지 않은 할 일을 다음 날로 자동 이동합니다</p>
+                            <Label className="text-sm font-medium">작업 자동 이동</Label>
+                            <p className="text-sm text-gray-600">미완료 작업(📝)을 다음 날로 자동 이동합니다 (이벤트는 고정)</p>
                           </div>
                           <Switch
                             checked={settings.autoMoveTodos}
                             onCheckedChange={(checked) => updateSetting('autoMoveTodos', checked)}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label className="text-sm font-medium">작업 이동 알림</Label>
+                            <p className="text-sm text-gray-600">작업이 이동될 때 알림을 표시합니다</p>
+                          </div>
+                          <Switch
+                            checked={settings.showTaskMoveNotifications}
+                            onCheckedChange={(checked) => updateSetting('showTaskMoveNotifications', checked)}
                           />
                         </div>
 

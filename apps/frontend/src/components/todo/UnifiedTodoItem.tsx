@@ -13,6 +13,7 @@ interface UnifiedTodoItemProps {
   compact?: boolean;
   preventEventBubbling?: boolean;
   variant?: 'sidebar' | 'daily' | 'auto';
+  recentlyMoved?: boolean;
 }
 
 function UnifiedTodoItemComponent({ 
@@ -22,6 +23,7 @@ function UnifiedTodoItemComponent({
   onEdit,
   compact = false,
   preventEventBubbling = false,
+  recentlyMoved = false,
   // variant = 'auto'
 }: UnifiedTodoItemProps) {
   const handleToggle = useCallback(() => {
@@ -47,7 +49,9 @@ function UnifiedTodoItemComponent({
   return (
     <div
       className={`group border rounded-lg transition-all duration-200 ${
-        todo.completed
+        recentlyMoved
+          ? 'bg-green-50 border-green-200 ring-2 ring-green-100'
+          : todo.completed
           ? 'bg-gray-50 border-gray-200'
           : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm'
       } ${
@@ -102,10 +106,24 @@ function UnifiedTodoItemComponent({
             {todo.todoType === 'event' ? '📅' : '📝'}
           </span>
           
+          {/* Recently moved 표시 */}
+          {recentlyMoved && (
+            <span 
+              className={`flex-shrink-0 px-1.5 py-0.5 text-xs bg-green-100 text-green-700 rounded-full font-medium ${
+                compact ? 'text-xs' : 'text-xs'
+              }`}
+              title="최근 자동 이동된 작업"
+            >
+              이동됨
+            </span>
+          )}
+          
           <span
             className={`font-medium transition-colors ${
               todo.completed
                 ? 'line-through text-gray-500'
+                : recentlyMoved
+                ? 'text-green-800'
                 : 'text-gray-900'
             } ${
               compact ? 'text-sm' : 'text-base'

@@ -14,6 +14,7 @@ export const CalendarContainer: React.FC<CalendarProps> = ({
   onViewChange,
   allTodos = [],
   hasActiveFilters = false,
+  recentlyMovedTaskIds = [],
 }) => {
   const [view, setView] = useState<CalendarView>(initialView);
 
@@ -50,6 +51,7 @@ export const CalendarContainer: React.FC<CalendarProps> = ({
         view={view}
         allTodos={allTodos}
         hasActiveFilters={hasActiveFilters}
+        recentlyMovedTaskIds={recentlyMovedTaskIds}
       />
     </div>
   );

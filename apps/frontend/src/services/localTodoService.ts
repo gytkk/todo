@@ -1,4 +1,4 @@
-import { TodoItem, TodoStats, TodoCategory, SavedTodoItem } from '@calendar-todo/shared-types';
+import { TodoItem, TodoStats, TodoCategory, SavedTodoItem, TodoType } from '@calendar-todo/shared-types';
 import { getTempUserId } from '@/utils/tempUser';
 
 /**
@@ -78,12 +78,32 @@ export class LocalTodoService {
       todo.completed && todo.date >= sevenDaysAgo
     ).length;
 
+    // 타입별 통계 계산
+    const eventTodos = todos.filter(todo => todo.todoType === 'event');
+    const taskTodos = todos.filter(todo => todo.todoType === 'task');
+    
+    const eventStats = {
+      total: eventTodos.length,
+      completed: eventTodos.filter(todo => todo.completed).length,
+      incomplete: eventTodos.filter(todo => !todo.completed).length,
+    };
+    
+    const taskStats = {
+      total: taskTodos.length,
+      completed: taskTodos.filter(todo => todo.completed).length,
+      incomplete: taskTodos.filter(todo => !todo.completed).length,
+    };
+
     return {
       total,
       completed,
       incomplete,
       completionRate,
       recentCompletions,
+      byType: {
+        event: eventStats,
+        task: taskStats,
+      },
     };
   }
 
@@ -132,7 +152,17 @@ export class LocalTodoService {
       console.error('로컬 할 일 조회 오류:', error);
       return { 
         todos: [], 
-        stats: { total: 0, completed: 0, incomplete: 0, completionRate: 0, recentCompletions: 0 } 
+        stats: { 
+          total: 0, 
+          completed: 0, 
+          incomplete: 0, 
+          completionRate: 0, 
+          recentCompletions: 0,
+          byType: {
+            event: { total: 0, completed: 0, incomplete: 0 },
+            task: { total: 0, completed: 0, incomplete: 0 }
+          }
+        } 
       };
     }
   }
@@ -254,7 +284,17 @@ export class LocalTodoService {
       return this.calculateStats(todos);
     } catch (error) {
       console.error('로컬 통계 조회 오류:', error);
-      return { total: 0, completed: 0, incomplete: 0, completionRate: 0, recentCompletions: 0 };
+      return { 
+        total: 0, 
+        completed: 0, 
+        incomplete: 0, 
+        completionRate: 0, 
+        recentCompletions: 0,
+        byType: {
+          event: { total: 0, completed: 0, incomplete: 0 },
+          task: { total: 0, completed: 0, incomplete: 0 }
+        }
+      };
     }
   }
 
@@ -309,6 +349,7 @@ export class LocalTodoService {
                 isDefault: true,
                 createdAt: new Date(),
               },
+              todoType: (todoItem.todoType as TodoType) || 'event', // 기본값: 이벤트
               userId: tempUserId,
             };
           });

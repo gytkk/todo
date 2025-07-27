@@ -152,6 +152,11 @@ export class TodoController {
           example: "3개의 작업이 오늘로 이동되었습니다",
         },
         movedCount: { type: "number", example: 3 },
+        movedTaskIds: {
+          type: "array",
+          items: { type: "string" },
+          example: ["task1", "task2", "task3"],
+        },
       },
     },
   })
@@ -160,15 +165,16 @@ export class TodoController {
   })
   async moveTasks(
     @CurrentUser() user: User,
-  ): Promise<{ message: string; movedCount: number }> {
-    const movedCount = await this.todoService.moveTasksToNextDay(user.id);
+  ): Promise<{ message: string; movedCount: number; movedTaskIds: string[] }> {
+    const result = await this.todoService.moveTasksToNextDay(user.id);
 
     return {
       message:
-        movedCount > 0
-          ? `${movedCount}개의 작업이 오늘로 이동되었습니다`
+        result.movedCount > 0
+          ? `${result.movedCount}개의 작업이 오늘로 이동되었습니다`
           : "이동할 작업이 없습니다",
-      movedCount,
+      movedCount: result.movedCount,
+      movedTaskIds: result.movedTaskIds,
     };
   }
 
