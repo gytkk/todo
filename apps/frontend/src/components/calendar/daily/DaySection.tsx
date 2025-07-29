@@ -116,6 +116,7 @@ export const DaySection: React.FC<DaySectionProps> = ({
           onAddTodo={handleAddTodo}
           categories={categories}
           compact={!isMainSection}
+          date={date}
         />
       </div>
 

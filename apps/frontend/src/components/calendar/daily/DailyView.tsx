@@ -495,7 +495,7 @@ const DailyViewComponent: React.FC<DailyViewProps> = ({
                                 target.tagName === 'BUTTON' ||
                                 target.tagName === 'SELECT' ||
                                 target.isContentEditable ||
-                                target.closest('input, textarea, button, select, [contenteditable]');
+                                target.closest('input, textarea, button, select, [contenteditable], [role="radio"], [role="radiogroup"]');
           
           if (!isInputElement) {
             // 클릭 시 포커스 주기 (포커스 가능한 요소가 아닌 경우에만)
