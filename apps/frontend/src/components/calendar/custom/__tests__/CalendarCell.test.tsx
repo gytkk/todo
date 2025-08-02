@@ -168,17 +168,18 @@ describe('CalendarCell', () => {
       expect(mockedGetPrimaryCategoryColor).toHaveBeenCalledWith(mockTodos);
     });
 
-    it('should show mixed category indicator when multiple categories exist', () => {
-      mockedShouldShowMixedCategoryIndicator.mockReturnValue(true);
+    it('should show primary category indicator when todos exist', () => {
+      mockedHasIncompleteTodos.mockReturnValue(true);
+      mockedGetPrimaryCategoryColor.mockReturnValue('#3b82f6');
       
       render(<CalendarCell {...defaultProps} todos={mockTodos} />);
       
-      // Look for the yellow mixed indicator
-      const mixedIndicator = screen.getAllByRole('generic').find(el => 
-        el.className.includes('bg-yellow-500')
+      // Look for the primary category indicator
+      const indicators = screen.getAllByRole('generic').filter(el => 
+        el.className.includes('w-2') && el.className.includes('h-2') && el.className.includes('rounded-full')
       );
       
-      expect(mixedIndicator).toBeInTheDocument();
+      expect(indicators.length).toBeGreaterThan(0);
     });
 
     it('should not show indicator when no incomplete todos', () => {

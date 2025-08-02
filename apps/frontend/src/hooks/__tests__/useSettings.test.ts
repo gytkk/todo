@@ -31,6 +31,7 @@ describe('useSettings', () => {
     weekStart: 'sunday',
     oldTodoDisplayLimit: 14,
     autoMoveTodos: true,
+    showTaskMoveNotifications: true,
     saturationAdjustment: {
       enabled: true,
       levels: [

@@ -36,6 +36,7 @@ const mockTodos: TodoItem[] = [
     date: new Date('2024-01-15'),
     completed: false,
     category: mockCategory1,
+    todoType: 'event',
   },
   {
     id: '2',
@@ -43,6 +44,7 @@ const mockTodos: TodoItem[] = [
     date: new Date('2024-01-15'),
     completed: false,
     category: mockCategory2,
+    todoType: 'task',
   },
   {
     id: '3',
@@ -50,6 +52,7 @@ const mockTodos: TodoItem[] = [
     date: new Date('2024-01-15'),
     completed: true,
     category: mockCategory1,
+    todoType: 'task',
   },
 ];
 
@@ -97,15 +100,15 @@ describe('CalendarTodos', () => {
     it('should apply gray styles to completed todos', () => {
       render(<CalendarTodos todos={mockTodos} compact={true} />);
       
-      const completedTodo = screen.getByText('Completed task');
-      expect(completedTodo).toHaveClass('bg-gray-100', 'text-gray-500', 'line-through');
+      const completedTodoContainer = screen.getByText('Completed task').closest('div');
+      expect(completedTodoContainer).toHaveClass('bg-gray-100', 'text-gray-500', 'line-through');
     });
 
     it('should show overflow indicator when there are more than 4 todos', () => {
       const manyTodos = [
         ...mockTodos,
-        { id: '4', title: 'Todo 4', date: new Date(), completed: false, category: mockCategory1 },
-        { id: '5', title: 'Todo 5', date: new Date(), completed: false, category: mockCategory1 },
+        { id: '4', title: 'Todo 4', date: new Date(), completed: false, category: mockCategory1, todoType: 'task' },
+        { id: '5', title: 'Todo 5', date: new Date(), completed: false, category: mockCategory1, todoType: 'event' },
       ];
       
       render(<CalendarTodos todos={manyTodos} compact={true} />);
@@ -120,6 +123,7 @@ describe('CalendarTodos', () => {
         date: new Date(),
         completed: false,
         category: mockCategory1,
+        todoType: 'task',
       }));
       
       render(<CalendarTodos todos={manyTodos} compact={true} />);
@@ -198,8 +202,8 @@ describe('CalendarTodos', () => {
     it('should have proper title attributes for truncated text', () => {
       render(<CalendarTodos todos={mockTodos} compact={true} />);
       
-      const workTodo = screen.getByText('Work meeting');
-      expect(workTodo).toHaveAttribute('title', 'Work meeting');
+      const workTodoContainer = screen.getByText('Work meeting').closest('div');
+      expect(workTodoContainer).toHaveAttribute('title', '📅 이벤트: Work meeting');
     });
 
     it('should render todos with proper semantic structure', () => {
@@ -221,6 +225,7 @@ describe('CalendarTodos', () => {
         date: new Date(),
         completed: false,
         category: mockCategory1,
+        todoType: 'event',
       }];
       
       render(<CalendarTodos todos={longTitleTodos} compact={true} />);
@@ -236,12 +241,15 @@ describe('CalendarTodos', () => {
         date: new Date(),
         completed: false,
         category: mockCategory1,
+        todoType: 'task',
       }];
       
       render(<CalendarTodos todos={emptyTitleTodos} compact={true} />);
       
-      // Should render even with empty title
-      expect(screen.getByTitle('')).toBeInTheDocument();
+      // Should render even with empty title - check if the element exists
+      const todoElements = screen.getAllByRole('generic');
+      const emptyTodoElement = todoElements.find(el => el.getAttribute('title') === '📝 작업: ');
+      expect(emptyTodoElement).toBeInTheDocument();
     });
   });
 });
