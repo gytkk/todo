@@ -38,7 +38,7 @@ export abstract class UserScopedRedisRepository<
     const userListKey = this.generateUserListKey(userId);
     const ids = await this.redisService.zrange(userListKey, 0, -1);
 
-    if (ids.length === 0) {
+    if (!ids || ids.length === 0) {
       return [];
     }
 

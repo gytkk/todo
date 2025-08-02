@@ -155,7 +155,7 @@ describe("UserScopedRedisRepository", () => {
       const userId = "user-123";
       const ids = ["item-1", "item-2"];
 
-      redisService.zrevrange.mockResolvedValue(ids);
+      redisService.zrange.mockResolvedValue(ids);
       mockPipeline.exec.mockResolvedValue([
         [
           null,
@@ -186,7 +186,7 @@ describe("UserScopedRedisRepository", () => {
       expect(result).toHaveLength(2);
       expect(result[0].userId).toBe(userId);
       expect(result[1].userId).toBe(userId);
-      expect(redisService.zrevrange).toHaveBeenCalledWith(
+      expect(redisService.zrange).toHaveBeenCalledWith(
         "testuser:user:user-123",
         0,
         -1,
@@ -195,7 +195,7 @@ describe("UserScopedRedisRepository", () => {
 
     it("should return empty array when user has no entities", async () => {
       const userId = "user-123";
-      redisService.zrevrange.mockResolvedValue([]);
+      redisService.zrange.mockResolvedValue([]);
 
       const result = await repository.findByUserId(userId);
 

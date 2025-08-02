@@ -177,7 +177,7 @@ describe("TodoRepository (Redis)", () => {
       mockRedisService.generateKey.mockReturnValueOnce(
         `todo:todo:user:${userId}`,
       );
-      mockRedisService.zrevrange.mockResolvedValue(todoIds);
+      mockRedisService.zrange.mockResolvedValue(todoIds);
 
       // Pipeline exec이 두 개의 hgetall 결과를 반환하도록 설정
       const mockPipelineForFindByUserId = {
