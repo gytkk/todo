@@ -11,20 +11,20 @@ import { useAuth } from '@/contexts/AuthContext';
  * @param deps 의존성 배열 (isAuthenticated는 자동으로 포함됨)
  * @returns 인증 체크가 포함된 메모이제이션된 콜백 함수
  */
-export function useAuthenticatedCallback<T extends (...args: unknown[]) => unknown>(
-  callback: T,
-  fallback: ReturnType<T>,
+export function useAuthenticatedCallback<TArgs extends unknown[], TReturn>(
+  callback: (...args: TArgs) => TReturn,
+  fallback: TReturn,
   deps: React.DependencyList = []
-): T {
+): (...args: TArgs) => TReturn {
   const { isAuthenticated } = useAuth();
 
   return useCallback(
-    ((...args: Parameters<T>) => {
+    (...args: TArgs): TReturn => {
       if (!isAuthenticated) {
         return fallback;
       }
       return callback(...args);
-    }) as T,
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [isAuthenticated, ...deps] // callback과 fallback은 parent에서 메모이제이션 해야 함
   );
