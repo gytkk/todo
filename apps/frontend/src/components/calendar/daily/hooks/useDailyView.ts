@@ -42,7 +42,7 @@ export const useDailyView = (
       newDate.setHours(12, 0, 0, 0); // 시간 정규화
       setSelectedDate(newDate);
     }
-  }, [initialDate?.getTime()]); // getTime()으로 변경 감지 최적화
+  }, [initialDate, selectedDate]); // 의존성 배열 수정
 
   // 더 많은 날짜 데이터 생성 (선택된 날짜 기준으로 앞뒤 90일씩)
   const dailyData: DailyViewData = useMemo(() => {

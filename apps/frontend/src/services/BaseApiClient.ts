@@ -33,11 +33,9 @@ export class BaseApiClient {
   ): T {
     const converted = { ...data };
     for (const field of dateFields) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const fieldValue = (converted as any)[field];
+      const fieldValue = (converted as Record<string, unknown>)[field];
       if (fieldValue && typeof fieldValue === 'string') {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (converted as any)[field] = new Date(fieldValue);
+        (converted as Record<string, unknown>)[field] = new Date(fieldValue);
       }
     }
     return converted;

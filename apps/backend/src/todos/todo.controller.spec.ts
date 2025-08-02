@@ -447,7 +447,7 @@ describe("TodoController", () => {
               id: "work",
               name: "Unknown",
               color: "#64748b",
-              createdAt: expect.any(Date),
+              createdAt: expect.any(Date) as Date,
               order: 0,
             },
             userId: "user-1",
@@ -462,7 +462,7 @@ describe("TodoController", () => {
               id: "personal",
               name: "Unknown",
               color: "#64748b",
-              createdAt: expect.any(Date),
+              createdAt: expect.any(Date) as Date,
               order: 0,
             },
             userId: "user-1",
@@ -576,7 +576,11 @@ describe("TodoController", () => {
         todoType: "task",
       };
 
-      const updatedTodo = { ...mockTodo, title: "Updated Task", todoType: "task" as const };
+      const updatedTodo = {
+        ...mockTodo,
+        title: "Updated Task",
+        todoType: "task" as const,
+      };
       mockTodoService.update.mockResolvedValue(updatedTodo);
 
       const result = await controller.update("todo-1", updateTodoDto, mockUser);
@@ -595,7 +599,11 @@ describe("TodoController", () => {
         completed: true,
       };
 
-      const updatedTodo = { ...mockTodo, title: "Updated Title Only", completed: true };
+      const updatedTodo = {
+        ...mockTodo,
+        title: "Updated Title Only",
+        completed: true,
+      };
       mockTodoService.update.mockResolvedValue(updatedTodo);
 
       const result = await controller.update("todo-1", updateTodoDto, mockUser);

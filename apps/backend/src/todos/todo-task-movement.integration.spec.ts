@@ -1,5 +1,6 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { INestApplication } from "@nestjs/common";
+import { Request } from "express";
 import * as request from "supertest";
 import { JwtService } from "@nestjs/jwt";
 import { TodoController } from "./todo.controller";
@@ -12,13 +13,27 @@ import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { createMockCategory } from "../test-helpers/category.helper";
 import { TodoCategory } from "@calendar-todo/shared-types";
 
+interface TasksDueResponse {
+  count: number;
+  tasks: Array<{
+    id: string;
+    todoType: string;
+    [key: string]: unknown;
+  }>;
+}
+
+interface MoveTasksResponse {
+  movedCount: number;
+  movedTaskIds: string[];
+}
+
 describe("Todo Task Movement Integration", () => {
   let app: INestApplication;
-  let todoService: TodoService;
-  let todoRepository: TodoRepository;
-  let jwtService: JwtService;
+  let _todoService: TodoService;
+  let _todoRepository: TodoRepository;
+  let _jwtService: JwtService;
 
-  const mockUser: User = {
+  const _mockUser: User = {
     id: "user-1",
     email: "test@example.com",
     name: "Test User",
@@ -86,20 +101,16 @@ describe("Todo Task Movement Integration", () => {
     })
       .overrideGuard(JwtAuthGuard)
       .useValue({
-        canActivate: jest.fn((context) => {
-          const request = context.switchToHttp().getRequest();
-          request.user = mockUser;
-          return true;
-        }),
+        canActivate: jest.fn(() => true),
       })
       .compile();
 
     app = module.createNestApplication();
     await app.init();
 
-    todoService = module.get<TodoService>(TodoService);
-    todoRepository = module.get<TodoRepository>(TodoRepository);
-    jwtService = module.get<JwtService>(JwtService);
+    _todoService = module.get<TodoService>(TodoService);
+    _todoRepository = module.get<TodoRepository>(TodoRepository);
+    _jwtService = module.get<JwtService>(JwtService);
   });
 
   afterEach(async () => {
@@ -171,11 +182,11 @@ describe("Todo Task Movement Integration", () => {
       expect(mockRepository.update).toHaveBeenCalledTimes(2);
       expect(mockRepository.update).toHaveBeenCalledWith("task-1", {
         dueDate: today,
-        updatedAt: expect.any(Date),
+        updatedAt: expect.any(Date) as Date,
       });
       expect(mockRepository.update).toHaveBeenCalledWith("task-2", {
         dueDate: today,
-        updatedAt: expect.any(Date),
+        updatedAt: expect.any(Date) as Date,
       });
     });
 
@@ -337,7 +348,7 @@ describe("Todo Task Movement Integration", () => {
               id: "work",
               name: "Unknown",
               color: "#64748b",
-              createdAt: expect.any(String),
+              createdAt: expect.any(String) as string,
               order: 0,
             },
             userId: "user-1",
@@ -352,7 +363,7 @@ describe("Todo Task Movement Integration", () => {
               id: "personal",
               name: "Unknown",
               color: "#64748b",
-              createdAt: expect.any(String),
+              createdAt: expect.any(String) as string,
               order: 0,
             },
             userId: "user-1",
@@ -433,12 +444,10 @@ describe("Todo Task Movement Integration", () => {
         .get("/todos/tasks-due")
         .expect(200);
 
-      expect(dueResponse.body.count).toBe(2);
-      expect(dueResponse.body.tasks).toHaveLength(2);
-      expect(dueResponse.body.tasks.map((t: any) => t.id)).toEqual([
-        "task-1",
-        "task-2",
-      ]);
+      const dueBody = dueResponse.body as TasksDueResponse;
+      expect(dueBody.count).toBe(2);
+      expect(dueBody.tasks).toHaveLength(2);
+      expect(dueBody.tasks.map((t) => t.id)).toEqual(["task-1", "task-2"]);
 
       // Step 3: Move the tasks
       const moveResponse = await request(app.getHttpServer())
@@ -455,11 +464,11 @@ describe("Todo Task Movement Integration", () => {
       expect(mockRepository.update).toHaveBeenCalledTimes(2);
       expect(mockRepository.update).toHaveBeenCalledWith("task-1", {
         dueDate: today,
-        updatedAt: expect.any(Date),
+        updatedAt: expect.any(Date) as Date,
       });
       expect(mockRepository.update).toHaveBeenCalledWith("task-2", {
         dueDate: today,
-        updatedAt: expect.any(Date),
+        updatedAt: expect.any(Date) as Date,
       });
     });
 
@@ -538,30 +547,38 @@ describe("Todo Task Movement Integration", () => {
         .get("/todos/tasks-due")
         .expect(200);
 
-      expect(dueResponse.body.count).toBe(2);
-      expect(dueResponse.body.tasks.map((t: any) => t.todoType)).toEqual([
-        "task",
-        "task",
-      ]);
-      expect(dueResponse.body.tasks.map((t: any) => t.id)).toEqual([
-        "task-1",
-        "task-2",
-      ]);
+      const dueBody2 = dueResponse.body as TasksDueResponse;
+      expect(dueBody2.count).toBe(2);
+      expect(dueBody2.tasks.map((t) => t.todoType)).toEqual(["task", "task"]);
+      expect(dueBody2.tasks.map((t) => t.id)).toEqual(["task-1", "task-2"]);
 
       // Move tasks - should only move tasks, not events
       const moveResponse = await request(app.getHttpServer())
         .post("/todos/move-tasks")
         .expect(200);
 
-      expect(moveResponse.body.movedCount).toBe(2);
-      expect(moveResponse.body.movedTaskIds).toEqual(["task-1", "task-2"]);
+      const moveBody = moveResponse.body as MoveTasksResponse;
+      expect(moveBody.movedCount).toBe(2);
+      expect(moveBody.movedTaskIds).toEqual(["task-1", "task-2"]);
 
       // Verify only tasks were updated
       expect(mockRepository.update).toHaveBeenCalledTimes(2);
-      expect(mockRepository.update).toHaveBeenCalledWith("task-1", expect.any(Object));
-      expect(mockRepository.update).toHaveBeenCalledWith("task-2", expect.any(Object));
-      expect(mockRepository.update).not.toHaveBeenCalledWith("event-1", expect.any(Object));
-      expect(mockRepository.update).not.toHaveBeenCalledWith("event-2", expect.any(Object));
+      expect(mockRepository.update).toHaveBeenCalledWith(
+        "task-1",
+        expect.any(Object),
+      );
+      expect(mockRepository.update).toHaveBeenCalledWith(
+        "task-2",
+        expect.any(Object),
+      );
+      expect(mockRepository.update).not.toHaveBeenCalledWith(
+        "event-1",
+        expect.any(Object),
+      );
+      expect(mockRepository.update).not.toHaveBeenCalledWith(
+        "event-2",
+        expect.any(Object),
+      );
     });
   });
 });

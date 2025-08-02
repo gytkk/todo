@@ -303,29 +303,27 @@ describe("CurrentUser Decorator", () => {
   });
 
   describe("실제 CurrentUser 데코레이터 통합 테스트", () => {
-    it("CurrentUser 데코레이터가 올바르게 export되어야 함", () => {
+    it("CurrentUser 데코레이터가 올바르게 export되어야 함", async () => {
       // 실제 CurrentUser 임포트 테스트
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { CurrentUser } = require("./current-user.decorator") as {
-        CurrentUser: unknown;
-      };
+      const { CurrentUser: ImportedCurrentUser } = await import(
+        "./current-user.decorator"
+      );
 
-      expect(CurrentUser).toBeDefined();
-      expect(typeof CurrentUser).toBe("function");
+      expect(ImportedCurrentUser).toBeDefined();
+      expect(typeof ImportedCurrentUser).toBe("function");
     });
 
-    it("CurrentUser 데코레이터가 createParamDecorator로 생성되어야 함", () => {
+    it("CurrentUser 데코레이터가 createParamDecorator로 생성되어야 함", async () => {
       // 실제 CurrentUser가 파라미터 데코레이터 형태인지 확인
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { CurrentUser } = require("./current-user.decorator") as {
-        CurrentUser: unknown;
-      };
+      const { CurrentUser: ImportedCurrentUser2 } = await import(
+        "./current-user.decorator"
+      );
 
       // 파라미터 데코레이터는 함수여야 함
-      expect(typeof CurrentUser).toBe("function");
+      expect(typeof ImportedCurrentUser2).toBe("function");
 
       // createParamDecorator로 생성된 데코레이터는 1개의 매개변수를 가짐 (data)
-      expect((CurrentUser as { length: number }).length).toBe(1);
+      expect((ImportedCurrentUser2 as { length: number }).length).toBe(1);
     });
   });
 

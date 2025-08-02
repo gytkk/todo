@@ -130,7 +130,7 @@ describe("TodoEntity", () => {
           id: "work",
           name: "Unknown",
           color: "#64748b",
-          createdAt: expect.any(Date),
+          createdAt: expect.any(Date) as Date,
           order: 0,
         },
         todoType: "task",
@@ -173,17 +173,19 @@ describe("TodoEntity", () => {
 
     it("should update todoType field", () => {
       const originalUpdatedAt = entity.updatedAt;
-      
+
       // Create a future date
       const futureTime = originalUpdatedAt.getTime() + 1000;
       const mockDate = new Date(futureTime);
-      jest.spyOn(global, 'Date').mockImplementation(() => mockDate as any);
-      
+      jest.spyOn(global, "Date").mockImplementation((() => mockDate) as any);
+
       entity.update({ todoType: "task" });
 
       expect(entity.todoType).toBe("task");
-      expect(entity.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
-      
+      expect(entity.updatedAt.getTime()).toBeGreaterThan(
+        originalUpdatedAt.getTime(),
+      );
+
       jest.restoreAllMocks();
     });
 
@@ -236,16 +238,18 @@ describe("TodoEntity", () => {
 
     it("should update updatedAt timestamp", () => {
       const originalUpdatedAt = entity.updatedAt;
-      
+
       // Simulate time passing by creating a future date
       const futureTime = originalUpdatedAt.getTime() + 1000;
       const mockDate = new Date(futureTime);
-      jest.spyOn(global, 'Date').mockImplementation(() => mockDate as any);
+      jest.spyOn(global, "Date").mockImplementation((() => mockDate) as any);
 
       entity.update({ todoType: "task" });
 
-      expect(entity.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
-      
+      expect(entity.updatedAt.getTime()).toBeGreaterThan(
+        originalUpdatedAt.getTime(),
+      );
+
       jest.restoreAllMocks();
     });
   });
@@ -273,12 +277,14 @@ describe("TodoEntity", () => {
       // Simulate time passing by creating a future date
       const futureTime = originalUpdatedAt.getTime() + 1000;
       const mockDate = new Date(futureTime);
-      jest.spyOn(global, 'Date').mockImplementation(() => mockDate as any);
+      jest.spyOn(global, "Date").mockImplementation((() => mockDate) as any);
 
       entity.toggleComplete();
 
-      expect(entity.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
-      
+      expect(entity.updatedAt.getTime()).toBeGreaterThan(
+        originalUpdatedAt.getTime(),
+      );
+
       jest.restoreAllMocks();
     });
 
@@ -290,7 +296,7 @@ describe("TodoEntity", () => {
       });
 
       entity.toggleComplete();
-      
+
       expect(entity.todoType).toBe("task");
       expect(entity.completed).toBe(true);
     });
@@ -299,7 +305,7 @@ describe("TodoEntity", () => {
   describe("edge cases", () => {
     it("should handle empty constructor", () => {
       const entity = new TodoEntity({});
-      
+
       expect(entity.id).toBeDefined();
       expect(entity.title).toBe("");
       expect(entity.todoType).toBe("event");

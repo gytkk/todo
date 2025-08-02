@@ -84,8 +84,8 @@ describe("CreateTodoDto", () => {
       const dto = plainToInstance(CreateTodoDto, {});
 
       const errors = await validate(dto);
-      const errorProperties = errors.map(error => error.property);
-      
+      const errorProperties = errors.map((error) => error.property);
+
       expect(errorProperties).toContain("title");
       expect(errorProperties).toContain("category");
       expect(errorProperties).toContain("date");
@@ -98,7 +98,7 @@ describe("CreateTodoDto", () => {
       });
 
       const errors = await validate(dto);
-      const titleError = errors.find(error => error.property === "title");
+      const titleError = errors.find((error) => error.property === "title");
       expect(titleError).toBeDefined();
       expect(titleError?.constraints).toHaveProperty("isNotEmpty");
     });
@@ -110,7 +110,7 @@ describe("CreateTodoDto", () => {
       });
 
       const errors = await validate(dto);
-      const dateError = errors.find(error => error.property === "date");
+      const dateError = errors.find((error) => error.property === "date");
       expect(dateError).toBeDefined();
       expect(dateError?.constraints).toHaveProperty("isDateString");
     });
@@ -122,14 +122,16 @@ describe("CreateTodoDto", () => {
       });
 
       const errors = await validate(dto);
-      const priorityError = errors.find(error => error.property === "priority");
+      const priorityError = errors.find(
+        (error) => error.property === "priority",
+      );
       expect(priorityError).toBeDefined();
       expect(priorityError?.constraints).toHaveProperty("isEnum");
     });
 
     it("should accept valid priority values", async () => {
       const priorities = ["high", "medium", "low"];
-      
+
       for (const priority of priorities) {
         const dto = plainToInstance(CreateTodoDto, {
           ...validCreateTodoDto,

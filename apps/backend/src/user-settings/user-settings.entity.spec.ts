@@ -478,23 +478,22 @@ describe("UserSettingsEntity", () => {
       const entity = new UserSettingsEntity({
         userId: "user-1",
         settings: {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           categories: [
             {
               id: "cat-1",
               name: "개인",
               color: "#3b82f6",
               createdAt: new Date("2023-01-01"),
-              // order 필드 없음
+              order: undefined, // order 필드를 명시적으로 undefined로 설정
             },
             {
               id: "cat-2",
               name: "회사",
               color: "#10b981",
               createdAt: new Date("2023-01-01"),
-              // order 필드 없음
+              order: undefined, // order 필드를 명시적으로 undefined로 설정
             },
-          ] as any,
+          ],
           categoryFilter: {},
           theme: "system",
           language: "ko",
@@ -546,7 +545,6 @@ describe("UserSettingsEntity", () => {
       const entity = new UserSettingsEntity({
         userId: "user-1",
         settings: {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           categories: [
             {
               id: "cat-1",
@@ -560,16 +558,16 @@ describe("UserSettingsEntity", () => {
               name: "회사",
               color: "#10b981",
               createdAt: new Date("2023-01-01"),
-              // order 필드 없음
+              order: undefined, // order 필드를 명시적으로 undefined로 설정
             },
             {
               id: "cat-3",
               name: "프로젝트",
               color: "#8b5cf6",
               createdAt: new Date("2023-01-01"),
-              // order 필드 없음
+              order: undefined, // order 필드를 명시적으로 undefined로 설정
             },
-          ] as any,
+          ],
           categoryFilter: {},
           theme: "system",
           language: "ko",

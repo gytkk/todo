@@ -140,7 +140,7 @@ describe("UpdateTodoDto", () => {
 
       const errors = await validate(dto);
       expect(errors).toHaveLength(2);
-      const errorProperties = errors.map(error => error.property);
+      const errorProperties = errors.map((error) => error.property);
       expect(errorProperties).toContain("title");
       expect(errorProperties).toContain("description");
     });

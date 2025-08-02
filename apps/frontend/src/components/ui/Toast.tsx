@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
@@ -48,6 +48,11 @@ export const Toast: React.FC<ToastProps> = ({
 
   const Icon = toastIcons[type];
 
+  const handleClose = useCallback(() => {
+    setIsExiting(true);
+    setTimeout(() => onClose(id), 300);
+  }, [id, onClose]);
+
   useEffect(() => {
     // 애니메이션을 위해 약간의 지연 후 표시
     const showTimer = setTimeout(() => setIsVisible(true), 100);
@@ -61,12 +66,7 @@ export const Toast: React.FC<ToastProps> = ({
       clearTimeout(showTimer);
       clearTimeout(closeTimer);
     };
-  }, [duration]);
-
-  const handleClose = () => {
-    setIsExiting(true);
-    setTimeout(() => onClose(id), 300);
-  };
+  }, [duration, handleClose]);
 
   return (
     <div

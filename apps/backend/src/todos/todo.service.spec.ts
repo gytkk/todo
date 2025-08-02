@@ -645,10 +645,13 @@ describe("TodoService", () => {
       expect(mockRepository.update).toHaveBeenCalledWith("todo-1", {
         title: "Updated Title",
       });
-      expect(mockRepository.update).not.toHaveBeenCalledWith(
-        "todo-1",
-        expect.objectContaining({ todoType: expect.anything() }),
-      );
+      // Verify that the update call did not include todoType
+      const updateCalls = mockRepository.update.mock.calls as [
+        string,
+        UpdateTodoDto,
+      ][];
+      const updateCallArgs = updateCalls[0][1];
+      expect(updateCallArgs).not.toHaveProperty("todoType");
     });
   });
 
@@ -827,11 +830,11 @@ describe("TodoService", () => {
       expect(mockRepository.update).toHaveBeenCalledTimes(2);
       expect(mockRepository.update).toHaveBeenCalledWith("task-1", {
         dueDate: today,
-        updatedAt: expect.any(Date),
+        updatedAt: expect.any(Date) as Date,
       });
       expect(mockRepository.update).toHaveBeenCalledWith("task-2", {
         dueDate: today,
-        updatedAt: expect.any(Date),
+        updatedAt: expect.any(Date) as Date,
       });
     });
 
@@ -910,7 +913,7 @@ describe("TodoService", () => {
       expect(mockRepository.update).toHaveBeenCalledTimes(1);
       expect(mockRepository.update).toHaveBeenCalledWith("task-1", {
         dueDate: today,
-        updatedAt: expect.any(Date),
+        updatedAt: expect.any(Date) as Date,
       });
     });
   });

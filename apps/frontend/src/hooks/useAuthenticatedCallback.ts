@@ -11,8 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
  * @param deps 의존성 배열 (isAuthenticated는 자동으로 포함됨)
  * @returns 인증 체크가 포함된 메모이제이션된 콜백 함수
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function useAuthenticatedCallback<T extends (...args: any[]) => any>(
+export function useAuthenticatedCallback<T extends (...args: unknown[]) => unknown>(
   callback: T,
   fallback: ReturnType<T>,
   deps: React.DependencyList = []
@@ -27,6 +26,6 @@ export function useAuthenticatedCallback<T extends (...args: any[]) => any>(
       return callback(...args);
     }) as T,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isAuthenticated, ...deps] // isAuthenticated가 자동으로 의존성에 포함됨
+    [isAuthenticated, ...deps] // callback과 fallback은 parent에서 메모이제이션 해야 함
   );
 }
