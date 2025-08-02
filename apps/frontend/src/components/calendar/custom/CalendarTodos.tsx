@@ -1,4 +1,5 @@
 import React from 'react';
+import { Calendar, Target } from 'lucide-react';
 import { CalendarTodosProps } from './types/calendar';
 import { getTodoCompletionStats, getCategoryColorWithOpacity } from './utils/calendarUtils';
 
@@ -25,9 +26,13 @@ export const CalendarTodos: React.FC<CalendarTodosProps> = ({
               backgroundColor: getCategoryColorWithOpacity(todo.category.color, 0.15),
               color: todo.category.color
             }}
-            title={`${todo.todoType === 'event' ? '📅 이벤트' : '📝 작업'}: ${todo.title}`}
+            title={`${todo.todoType === 'event' ? '이벤트' : '작업'}: ${todo.title}`}
           >
-            <span className="text-xs flex-shrink-0">{todo.todoType === 'event' ? '📅' : '📝'}</span>
+            {todo.todoType === 'event' ? (
+              <Calendar className="h-2.5 w-2.5 flex-shrink-0" />
+            ) : (
+              <Target className="h-2.5 w-2.5 flex-shrink-0" />
+            )}
             <span className="truncate">{todo.title}</span>
           </div>
         ))}
@@ -53,7 +58,7 @@ export const CalendarTodos: React.FC<CalendarTodosProps> = ({
             backgroundColor: getCategoryColorWithOpacity(todo.category.color, 0.1),
             color: todo.category.color
           }}
-          title={`${todo.todoType === 'event' ? '📅 이벤트' : '📝 작업'}: ${todo.title}`}
+          title={`${todo.todoType === 'event' ? '이벤트' : '작업'}: ${todo.title}`}
         >
           <div className="flex items-center gap-2">
             <div
@@ -63,7 +68,11 @@ export const CalendarTodos: React.FC<CalendarTodosProps> = ({
                 backgroundColor: todo.category.color
               }}
             />
-            <span className="text-sm flex-shrink-0">{todo.todoType === 'event' ? '📅' : '📝'}</span>
+            {todo.todoType === 'event' ? (
+              <Calendar className="h-3 w-3 flex-shrink-0" />
+            ) : (
+              <Target className="h-3 w-3 flex-shrink-0" />
+            )}
             <span className="truncate">{todo.title}</span>
           </div>
         </div>

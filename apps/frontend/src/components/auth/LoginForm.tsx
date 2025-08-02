@@ -14,8 +14,8 @@ import {
   CardDescription, 
   CardHeader, 
   CardTitle,
+  Switch,
 } from "@calendar-todo/ui";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -159,19 +159,17 @@ export function LoginForm() {
               control={form.control}
               name="rememberMe"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormItem className="flex flex-row items-center space-x-3 space-y-0">
                   <FormControl>
-                    <Checkbox
+                    <Switch
                       checked={field.value}
                       onCheckedChange={field.onChange}
                       disabled={isLoading}
                     />
                   </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel className="text-base cursor-pointer">
-                      로그인 유지
-                    </FormLabel>
-                  </div>
+                  <FormLabel className="text-base cursor-pointer font-normal leading-none flex items-center">
+                    로그인 유지
+                  </FormLabel>
                 </FormItem>
               )}
             />
@@ -191,7 +189,7 @@ export function LoginForm() {
               </div>
             )}
 
-            <Button type="submit" className="w-full h-12 text-base" disabled={isLoading}>
+            <Button type="submit" className="w-full h-12 text-base mt-4" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -3,7 +3,7 @@
 import React, { memo, useCallback } from 'react';
 import { Button, Switch } from "@calendar-todo/ui";
 import { TodoItem as TodoItemType } from '@calendar-todo/shared-types';
-import { Trash2, Edit3, Calendar, CheckSquare } from 'lucide-react';
+import { Trash2, Edit3, Calendar, Target } from 'lucide-react';
 
 interface UnifiedTodoItemProps {
   todo: TodoItemType;
@@ -115,11 +115,7 @@ function UnifiedTodoItemComponent({
           {/* 배지 스타일 타입 Switch */}
           <div className={`relative inline-flex items-center rounded-full text-xs font-medium transition-all cursor-pointer ${
             compact ? 'px-2 py-0.5' : 'px-3 py-1'
-          } ${
-            todo.todoType === 'event' 
-              ? 'bg-blue-100 text-blue-800 border border-blue-200 hover:bg-blue-200' 
-              : 'bg-green-100 text-green-800 border border-green-200 hover:bg-green-200'
-            }`}
+          } bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200`}
             onClick={handleTypeChange}
             title={`클릭하여 ${todo.todoType === 'event' ? '작업' : '이벤트'}으로 변경`}
           >
@@ -137,7 +133,7 @@ function UnifiedTodoItemComponent({
               </>
             ) : (
               <>
-                <CheckSquare className={`mr-1 ${compact ? 'h-2.5 w-2.5' : 'h-3 w-3'}`} />
+                <Target className={`mr-1 ${compact ? 'h-2.5 w-2.5' : 'h-3 w-3'}`} />
                 작업
               </>
             )}

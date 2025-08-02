@@ -4,7 +4,13 @@ import React, { useState, useEffect } from 'react';
 import { Button, Switch, Label } from "@calendar-todo/ui";
 import { CategorySelector } from "@/components/categories/CategorySelector";
 import { TodoCategory, TodoType } from '@calendar-todo/shared-types';
-import { Plus } from 'lucide-react';
+import { Plus, Calendar, Target } from 'lucide-react';
+
+// 세그먼트 컨트롤 비율 상수
+const SEGMENT_RATIOS = {
+  EVENT: 53, // 이벤트 버튼 비율 (%)
+  TASK: 47,  // 작업 버튼 비율 (%)
+} as const;
 
 interface QuickAddTodoProps {
   onAddTodo: (title: string, categoryId: string, todoType: TodoType) => void;
@@ -116,7 +122,7 @@ export const QuickAddTodo: React.FC<QuickAddTodoProps> = ({
         </div>
 
         {/* 카테고리 선택 및 타입 선택 */}
-        <div className="flex gap-4">
+        <div className="flex items-center justify-between gap-4">
           <CategorySelector
             categories={categories}
             selectedCategoryId={selectedCategoryId}
@@ -124,19 +130,59 @@ export const QuickAddTodo: React.FC<QuickAddTodoProps> = ({
             disabled={disabled}
           />
           
-          <div className="flex items-center gap-3">
-            <Label htmlFor={`todo-type-switch-${dateString}`} className="text-sm font-medium">
-              이벤트
-            </Label>
+          <div className="relative inline-flex bg-gray-100 rounded-lg p-1 whitespace-nowrap">
+            {/* 숨겨진 스위치 (기능은 유지) */}
             <Switch
               id={`todo-type-switch-${dateString}`}
               checked={selectedTodoType === "task"}
               onCheckedChange={(checked) => setSelectedTodoType(checked ? "task" : "event")}
               disabled={disabled}
+              className="absolute opacity-0 pointer-events-none"
             />
-            <Label htmlFor={`todo-type-switch-${dateString}`} className="text-sm font-medium">
+            
+            {/* 슬라이딩 배경 */}
+            <div 
+              className="absolute top-1 bottom-1 bg-white rounded-md shadow-sm transition-all duration-200 ease-in-out"
+              style={{
+                left: '0.25rem', // left-1과 동일
+                right: selectedTodoType === "event" 
+                  ? `${SEGMENT_RATIOS.TASK}%` 
+                  : '0.25rem', // right-1과 동일
+                ...(selectedTodoType === "task" && { left: `${SEGMENT_RATIOS.EVENT}%` })
+              }}
+            />
+            
+            {/* 이벤트 버튼 */}
+            <button
+              type="button"
+              onClick={() => setSelectedTodoType("event")}
+              disabled={disabled}
+              className={`relative z-10 px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-200 flex items-center justify-center gap-1 ${
+                selectedTodoType === "event"
+                  ? "text-gray-900"
+                  : "text-gray-500 hover:text-gray-700"
+              } ${disabled ? "cursor-not-allowed" : "cursor-pointer"}`}
+              style={{ flexBasis: `${SEGMENT_RATIOS.EVENT}%` }}
+            >
+              <Calendar className="h-3.5 w-3.5" />
+              이벤트
+            </button>
+            
+            {/* 작업 버튼 */}
+            <button
+              type="button"
+              onClick={() => setSelectedTodoType("task")}
+              disabled={disabled}
+              className={`relative z-10 px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-200 flex items-center justify-center gap-1 ${
+                selectedTodoType === "task"
+                  ? "text-gray-900"
+                  : "text-gray-500 hover:text-gray-700"
+              } ${disabled ? "cursor-not-allowed" : "cursor-pointer"}`}
+              style={{ flexBasis: `${SEGMENT_RATIOS.TASK}%` }}
+            >
+              <Target className="h-3.5 w-3.5" />
               작업
-            </Label>
+            </button>
           </div>
         </div>
 
