@@ -8,6 +8,7 @@ interface TodoListProps {
   todos: TodoItemType[];
   onToggleTodo: (id: string) => void;
   onDeleteTodo: (id: string) => void;
+  onTypeChange?: (id: string, newType: 'event' | 'task') => void;
   emptyMessage?: string;
 }
 
@@ -15,6 +16,7 @@ function TodoListComponent({
   todos, 
   onToggleTodo, 
   onDeleteTodo, 
+  onTypeChange,
   emptyMessage = "할일이 없습니다" 
 }: TodoListProps) {
   if (todos.length === 0) {
@@ -33,6 +35,7 @@ function TodoListComponent({
           todo={todo}
           onToggle={onToggleTodo}
           onDelete={onDeleteTodo}
+          onTypeChange={onTypeChange}
         />
       ))}
     </div>

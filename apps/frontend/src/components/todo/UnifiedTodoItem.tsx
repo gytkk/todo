@@ -1,15 +1,16 @@
 "use client";
 
 import React, { memo, useCallback } from 'react';
-import { Button } from "@calendar-todo/ui";
+import { Button, Switch } from "@calendar-todo/ui";
 import { TodoItem as TodoItemType } from '@calendar-todo/shared-types';
-import { Trash2, Edit3 } from 'lucide-react';
+import { Trash2, Edit3, Calendar, CheckSquare } from 'lucide-react';
 
 interface UnifiedTodoItemProps {
   todo: TodoItemType;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onEdit?: (id: string) => void;
+  onTypeChange?: (id: string, newType: 'event' | 'task') => void;
   compact?: boolean;
   preventEventBubbling?: boolean;
   variant?: 'sidebar' | 'daily' | 'auto';
@@ -21,6 +22,7 @@ function UnifiedTodoItemComponent({
   onToggle, 
   onDelete, 
   onEdit,
+  onTypeChange,
   compact = false,
   preventEventBubbling = false,
   recentlyMoved = false,
@@ -45,6 +47,15 @@ function UnifiedTodoItemComponent({
       onEdit(todo.id);
     }
   }, [todo.id, onEdit, preventEventBubbling]);
+
+  const handleTypeChange = useCallback((e: React.MouseEvent) => {
+    if (preventEventBubbling) {
+      e.stopPropagation();
+    }
+    if (onTypeChange) {
+      onTypeChange(todo.id, todo.todoType === 'event' ? 'task' : 'event');
+    }
+  }, [todo.id, todo.todoType, onTypeChange, preventEventBubbling]);
 
   return (
     <div
@@ -101,10 +112,36 @@ function UnifiedTodoItemComponent({
 
         {/* 할일 내용 */}
         <div className="flex-1 min-w-0 flex items-center gap-2">
-          {/* 타입 아이콘 */}
-          <span className={`flex-shrink-0 ${compact ? 'text-xs' : 'text-sm'}`} title={todo.todoType === 'event' ? '이벤트' : '작업'}>
-            {todo.todoType === 'event' ? '📅' : '📝'}
-          </span>
+          {/* 배지 스타일 타입 Switch */}
+          <div className={`relative inline-flex items-center rounded-full text-xs font-medium transition-all cursor-pointer ${
+            compact ? 'px-2 py-0.5' : 'px-3 py-1'
+          } ${
+            todo.todoType === 'event' 
+              ? 'bg-blue-100 text-blue-800 border border-blue-200 hover:bg-blue-200' 
+              : 'bg-green-100 text-green-800 border border-green-200 hover:bg-green-200'
+            }`}
+            onClick={handleTypeChange}
+            title={`클릭하여 ${todo.todoType === 'event' ? '작업' : '이벤트'}으로 변경`}
+          >
+            {onTypeChange && (
+              <Switch 
+                checked={todo.todoType === 'event'}
+                className="absolute inset-0 opacity-0 w-full h-full sr-only"
+                onCheckedChange={(checked) => onTypeChange(todo.id, checked ? 'event' : 'task')}
+              />
+            )}
+            {todo.todoType === 'event' ? (
+              <>
+                <Calendar className={`mr-1 ${compact ? 'h-2.5 w-2.5' : 'h-3 w-3'}`} />
+                이벤트
+              </>
+            ) : (
+              <>
+                <CheckSquare className={`mr-1 ${compact ? 'h-2.5 w-2.5' : 'h-3 w-3'}`} />
+                작업
+              </>
+            )}
+          </div>
           
           {/* Recently moved 표시 */}
           {recentlyMoved && (

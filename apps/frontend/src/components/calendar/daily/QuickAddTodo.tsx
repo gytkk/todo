@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Badge, Button } from "@calendar-todo/ui";
+import { Button, Switch, Label } from "@calendar-todo/ui";
 import { CategorySelector } from "@/components/categories/CategorySelector";
 import { TodoCategory, TodoType } from '@calendar-todo/shared-types';
 import { Plus } from 'lucide-react';
@@ -88,30 +88,7 @@ export const QuickAddTodo: React.FC<QuickAddTodoProps> = ({
     }
   };
 
-  const handleTodoTypeChange = (value: string) => {
-    // 스크롤 위치를 유지하기 위해 preventDefault 적용
-    setSelectedTodoType(value as TodoType);
-  };
 
-  const handleKeyDown = (e: React.KeyboardEvent, value: TodoType) => {
-    // 키보드 접근성 지원
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      handleTodoTypeChange(value);
-    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-      e.preventDefault();
-      const newValue = value === 'event' ? 'task' : 'event';
-      handleTodoTypeChange(newValue);
-      
-      // 포커스를 새로 선택된 배지로 이동
-      setTimeout(() => {
-        const targetBadge = e.currentTarget.parentElement?.querySelector(
-          `[aria-checked="true"]`
-        ) as HTMLElement;
-        targetBadge?.focus();
-      }, 0);
-    }
-  };
 
 
   return (
@@ -147,53 +124,19 @@ export const QuickAddTodo: React.FC<QuickAddTodoProps> = ({
             disabled={disabled}
           />
           
-          <div 
-            className="flex gap-1.5 items-center"
-            role="radiogroup"
-            aria-label="할일 타입 선택"
-          >
-            <Badge
-              variant="outline"
-              className={`cursor-pointer transition-all duration-200 border-2 px-2.5 py-1.5 text-xs sm:text-sm font-medium hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 min-h-[28px] ${
-                disabled ? 'opacity-50 cursor-not-allowed' : ''
-              } ${selectedTodoType === "event" 
-                ? 'shadow-md ring-1 ring-black/5 bg-blue-500 text-white border-blue-500' 
-                : 'hover:shadow-sm border-blue-300 bg-blue-50 text-blue-600 border-opacity-30'
-              }`}
-              onClick={() => !disabled && handleTodoTypeChange("event")}
-              role="radio"
-              aria-checked={selectedTodoType === "event"}
-              tabIndex={disabled ? -1 : (selectedTodoType === "event" ? 0 : -1)}
-              onKeyDown={(e) => handleKeyDown(e, "event")}
-            >
-              <div
-                className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full mr-1.5 flex-shrink-0 ${
-                  selectedTodoType === "event" ? 'bg-white' : 'bg-blue-500'
-                }`}
-              />
-              <span className="truncate">이벤트</span>
-            </Badge>
-            <Badge
-              variant="outline"
-              className={`cursor-pointer transition-all duration-200 border-2 px-2.5 py-1.5 text-xs sm:text-sm font-medium hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 min-h-[28px] ${
-                disabled ? 'opacity-50 cursor-not-allowed' : ''
-              } ${selectedTodoType === "task" 
-                ? 'shadow-md ring-1 ring-black/5 bg-green-500 text-white border-green-500' 
-                : 'hover:shadow-sm border-green-300 bg-green-50 text-green-600 border-opacity-30'
-              }`}
-              onClick={() => !disabled && handleTodoTypeChange("task")}
-              role="radio"
-              aria-checked={selectedTodoType === "task"}
-              tabIndex={disabled ? -1 : (selectedTodoType === "task" ? 0 : -1)}
-              onKeyDown={(e) => handleKeyDown(e, "task")}
-            >
-              <div
-                className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full mr-1.5 flex-shrink-0 ${
-                  selectedTodoType === "task" ? 'bg-white' : 'bg-green-500'
-                }`}
-              />
-              <span className="truncate">작업</span>
-            </Badge>
+          <div className="flex items-center gap-3">
+            <Label htmlFor={`todo-type-switch-${dateString}`} className="text-sm font-medium">
+              이벤트
+            </Label>
+            <Switch
+              id={`todo-type-switch-${dateString}`}
+              checked={selectedTodoType === "task"}
+              onCheckedChange={(checked) => setSelectedTodoType(checked ? "task" : "event")}
+              disabled={disabled}
+            />
+            <Label htmlFor={`todo-type-switch-${dateString}`} className="text-sm font-medium">
+              작업
+            </Label>
           </div>
         </div>
 

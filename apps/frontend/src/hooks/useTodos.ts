@@ -152,6 +152,35 @@ export const useTodos = (categories: TodoCategory[] = DEFAULT_CATEGORIES) => {
     }
   }, [isAuthenticated]);
 
+  const updateTodo = useCallback(async (id: string, updates: Partial<Pick<TodoItem, 'title' | 'completed' | 'date' | 'category' | 'todoType'>>) => {
+    try {
+      let success = false;
+      
+      if (isAuthenticated) {
+        // 인증된 사용자: API를 통해 업데이트
+        const todoService = TodoService.getInstance();
+        success = await todoService.updateTodo(id, updates);
+      } else {
+        // 미인증 사용자: 로컬 스토리지에서 업데이트
+        const localTodoService = LocalTodoService.getInstance();
+        success = await localTodoService.updateTodo(id, updates);
+      }
+
+      if (success) {
+        setTodos(prevTodos => {
+          return prevTodos.map(todo => {
+            if (todo.id === id) {
+              return { ...todo, ...updates };
+            }
+            return todo;
+          });
+        });
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '할일 업데이트 중 오류가 발생했습니다');
+    }
+  }, [isAuthenticated]);
+
   const deleteTodo = useCallback(async (id: string) => {
     try {
       let success = false;
@@ -236,6 +265,7 @@ export const useTodos = (categories: TodoCategory[] = DEFAULT_CATEGORIES) => {
   return {
     todos,
     addTodo,
+    updateTodo,
     toggleTodo,
     deleteTodo,
     clearAllTodos,

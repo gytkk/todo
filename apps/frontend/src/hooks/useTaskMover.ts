@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState } from 'react';
+import { useEffect, useCallback, useState, useRef } from 'react';
 import { TodoService } from '@/services/todoService';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSettings } from '@/hooks/useSettings';
@@ -15,6 +15,7 @@ export const useTaskMover = () => {
     movedTaskIds: string[];
   } | null>(null);
   const [recentlyMovedTaskIds, setRecentlyMovedTaskIds] = useState<string[]>([]);
+  const hasCheckedOnLogin = useRef(false);
   
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { settings } = useSettings();
@@ -84,10 +85,11 @@ export const useTaskMover = () => {
     }
   }, [isAuthenticated]);
 
-  // 앱 로드 시 자동으로 작업 이동 실행
+  // 로그인 시 한 번만 자동으로 작업 이동 실행
   useEffect(() => {
-    if (!authLoading && isAuthenticated && settings.autoMoveTodos) {
-      // 인증이 완료되고 자동 이동이 활성화된 경우 작업 이동 실행
+    if (!authLoading && isAuthenticated && settings.autoMoveTodos && !hasCheckedOnLogin.current) {
+      // 인증이 완료되고 자동 이동이 활성화된 경우 한 번만 작업 이동 실행
+      hasCheckedOnLogin.current = true;
       const timer = setTimeout(() => {
         moveTasks();
       }, 1000); // 1초 후 실행 (다른 초기화 작업들이 완료된 후)
@@ -95,6 +97,13 @@ export const useTaskMover = () => {
       return () => clearTimeout(timer);
     }
   }, [authLoading, isAuthenticated, settings.autoMoveTodos, moveTasks]);
+
+  // 로그아웃 시 플래그 리셋
+  useEffect(() => {
+    if (!isAuthenticated) {
+      hasCheckedOnLogin.current = false;
+    }
+  }, [isAuthenticated]);
 
   return {
     moveTasks,

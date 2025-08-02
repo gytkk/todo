@@ -9,6 +9,7 @@ interface TodoContextType {
   // Todo related
   todos: TodoItem[];
   addTodo: (title: string, date: Date, categoryId: string, todoType?: TodoType) => void;
+  updateTodo: (id: string, updates: Partial<Pick<TodoItem, 'title' | 'completed' | 'date' | 'category' | 'todoType'>>) => void;
   toggleTodo: (id: string) => void;
   deleteTodo: (id: string) => void;
   clearAllTodos: () => void;

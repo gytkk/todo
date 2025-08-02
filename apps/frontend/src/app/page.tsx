@@ -10,7 +10,6 @@ import { useCalendar } from "@/hooks/useCalendar";
 import { PageLoading } from "@/components/ui/loading";
 import { ResponsiveContainer, ResponsiveTodoInterface } from "@/components/responsive";
 import { useAuth } from "@/contexts/AuthContext";
-import { TaskMoveStatus } from "@/components/todo/TaskMoveStatus";
 import { useTaskMover } from "@/hooks/useTaskMover";
 
 function HomeContent() {
@@ -92,9 +91,6 @@ function HomeContent() {
             }
           />
         </ResponsiveContainer>
-        
-        {/* 작업 이동 상태 표시 */}
-        {isAuthenticated && <TaskMoveStatus />}
       </ErrorBoundary>
     </AppLayout>
   );

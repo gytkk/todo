@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, memo } from "react";
-import { Button } from "@calendar-todo/ui";
+import { Button, Switch, Label } from "@calendar-todo/ui";
 import { CategorySelector } from "@/components/categories/CategorySelector";
 import { TodoCategory, TodoType } from "@calendar-todo/shared-types";
 
@@ -54,29 +54,19 @@ function TodoFormComponent({ onAddTodo, categories, disabled = false }: TodoForm
           disabled={disabled}
         />
         
-        <div className="flex items-center gap-4">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="radio"
-              value="event"
-              checked={selectedTodoType === "event"}
-              onChange={(e) => setSelectedTodoType(e.target.value as TodoType)}
-              disabled={disabled}
-              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
-            />
-            <span className="text-sm">📅 이벤트</span>
-          </label>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="radio"
-              value="task"
-              checked={selectedTodoType === "task"}
-              onChange={(e) => setSelectedTodoType(e.target.value as TodoType)}
-              disabled={disabled}
-              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
-            />
-            <span className="text-sm">📝 작업</span>
-          </label>
+        <div className="flex items-center gap-3">
+          <Label htmlFor="todo-type-switch" className="text-sm font-medium">
+            이벤트
+          </Label>
+          <Switch
+            id="todo-type-switch"
+            checked={selectedTodoType === "task"}
+            onCheckedChange={(checked) => setSelectedTodoType(checked ? "task" : "event")}
+            disabled={disabled}
+          />
+          <Label htmlFor="todo-type-switch" className="text-sm font-medium">
+            작업
+          </Label>
         </div>
       </div>
     </div>

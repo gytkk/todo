@@ -18,7 +18,7 @@ interface TodoSidebarProps {
 }
 
 function TodoSidebarComponent({ isOpen, selectedDate, onClose }: TodoSidebarProps) {
-  const { addTodo, toggleTodo, deleteTodo, getTodosByDate } = useTodoContext();
+  const { addTodo, updateTodo, toggleTodo, deleteTodo, getTodosByDate } = useTodoContext();
   const { categories } = useCategoryContext();
   const sidebarRef = useRef<HTMLDivElement>(null);
   const focusTrapRef = useFocusTrap<HTMLDivElement>(isOpen);
@@ -62,6 +62,10 @@ function TodoSidebarComponent({ isOpen, selectedDate, onClose }: TodoSidebarProp
       addTodo(title, selectedDate, categoryId, todoType);
     }
   }, [selectedDate, addTodo]);
+
+  const handleTypeChange = useCallback((id: string, newType: 'event' | 'task') => {
+    updateTodo(id, { todoType: newType });
+  }, [updateTodo]);
 
   // ESC 키를 눌렀을 때 사이드바 닫기
   useEffect(() => {
@@ -189,6 +193,7 @@ function TodoSidebarComponent({ isOpen, selectedDate, onClose }: TodoSidebarProp
               todos={selectedDateTodos}
               onToggleTodo={toggleTodo}
               onDeleteTodo={deleteTodo}
+              onTypeChange={handleTypeChange}
               emptyMessage={
                 selectedDate
                   ? "이 날짜에 등록된 할일이 없습니다"

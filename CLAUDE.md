@@ -10,6 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **NEVER use `npm` commands directly** - always use `pnpm` or `turbo` for development tools
 - **AVOID `turbo build` during development** - use `turbo dev` for hot-reload and `turbo type-check`/`turbo lint` for validation
+- **DO NOT run development servers directly** - only describe commands for users to run themselves
 - Always write unit tests first, then implement business logic
 - Check lint errors and code style after you write code
 
@@ -115,7 +116,7 @@ This project uses Turborepo for monorepo management with the following structure
 
 - **shared-types**: TypeScript type definitions shared between frontend and backend
   - **App Types**: Application settings, user info, categories (`packages/shared-types/src/app.ts`)
-  - **Todo Types**: Todo items, calendar events, API interfaces (`packages/shared-types/src/todo.ts`)
+  - **Todo Types**: Todo items with todoType field, calendar events, API interfaces (`packages/shared-types/src/todo.ts`)
   - **Auth Types**: Authentication and user management (`packages/shared-types/src/auth.ts`)
 - **shared-config**: Common configuration files for linting and TypeScript
 - **ui**: Shared UI components library
@@ -135,9 +136,11 @@ This project uses Turborepo for monorepo management with the following structure
 
 ### Todo Management
 
+- **Todo Types**: Support for 'event' (fixed date) and 'task' (moveable) types
 - **Category Support**: Colored categories with customizable names and colors
 - **Completion Tracking**: Mark todos as complete/incomplete
 - **Date-based Organization**: Todos organized by calendar dates
+- **Date Movement**: Advanced task movement logic for incomplete tasks
 - **Quick Actions**: Add, edit, delete todos with intuitive UI
 - **Statistics**: Todo completion analytics and reporting
 - **Filtering**: Category-based filtering and user-scoped data isolation
@@ -179,8 +182,11 @@ This project uses Turborepo for monorepo management with the following structure
   - `POST /todos` - Create new todo
   - `PUT /todos/:id` - Update todo
   - `DELETE /todos/:id` - Delete todo
-  - `PUT /todos/:id/toggle` - Toggle todo completion
+  - `DELETE /todos` - Delete all todos
+  - `PATCH /todos/:id/toggle` - Toggle todo completion
   - `GET /todos/stats` - Get todo statistics
+  - `POST /todos/move-tasks` - Move incomplete tasks to new dates
+  - `GET /todos/tasks-due` - Get tasks due for movement
 - **Settings & Categories**: `/user-settings/*`
   - `GET /user-settings` - Get user settings
   - `PUT /user-settings` - Update user settings
@@ -200,6 +206,9 @@ This project uses Turborepo for monorepo management with the following structure
 
 ### Recent Changes
 
+- **Todo Type System**: Added 'event' and 'task' types for different todo behaviors
+- **Task Movement Logic**: Implemented advanced date movement for incomplete tasks
+- **Unified Todo Components**: Created unified components for consistent todo handling
 - **Next.js 15 App Router**: Implemented page-level routing with App Router
 - **React 19 Upgrade**: Updated to React 19 with latest features and hooks
 - **Monorepo Structure**: Enhanced with shared UI components package
