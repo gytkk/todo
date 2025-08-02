@@ -395,7 +395,9 @@ describe("UserSettingsRepository", () => {
       };
 
       mockRedisService.generateKey.mockReturnValue("todo:user-settings:user-1");
-      mockRedisService.get.mockResolvedValue(JSON.stringify(dataWithoutNotifications));
+      mockRedisService.get.mockResolvedValue(
+        JSON.stringify(dataWithoutNotifications),
+      );
 
       const result = await repository.findByUserId(userId);
 
@@ -432,7 +434,9 @@ describe("UserSettingsRepository", () => {
       };
 
       mockRedisService.generateKey.mockReturnValue("todo:user-settings:user-1");
-      mockRedisService.get.mockResolvedValue(JSON.stringify(dataWithEmptyNotifications));
+      mockRedisService.get.mockResolvedValue(
+        JSON.stringify(dataWithEmptyNotifications),
+      );
 
       const result = await repository.findByUserId(userId);
 
@@ -488,12 +492,14 @@ describe("UserSettingsRepository", () => {
       };
 
       mockRedisService.generateKey.mockReturnValue("todo:user-settings:user-1");
-      mockRedisService.get.mockResolvedValue(JSON.stringify(dataWithoutCategoryOrder));
+      mockRedisService.get.mockResolvedValue(
+        JSON.stringify(dataWithoutCategoryOrder),
+      );
 
       const result = await repository.findByUserId(userId);
 
       expect(result).toBeInstanceOf(UserSettingsEntity);
-      
+
       // getCategories 호출 시 order 필드가 자동으로 마이그레이션됨
       const categories = result?.getCategories();
       expect(categories).toHaveLength(2);
@@ -543,7 +549,7 @@ describe("UserSettingsRepository", () => {
       const result = await repository.findByUserId(userId);
 
       expect(result).toBeInstanceOf(UserSettingsEntity);
-      
+
       // 모든 새 필드들이 올바르게 설정되어야 함
       expect(result?.settings.autoMoveTodos).toBe(false);
       expect(result?.settings.showTaskMoveNotifications).toBe(false);

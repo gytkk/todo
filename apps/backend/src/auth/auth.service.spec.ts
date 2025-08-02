@@ -322,7 +322,9 @@ describe("AuthService", () => {
       findByIdSpy.mockResolvedValue(mockUser);
       getUserSettingsSpy.mockRejectedValue(new Error("Settings service error"));
 
-      await expect(service.refreshToken("valid-refresh-token")).rejects.toThrow();
+      await expect(
+        service.refreshToken("valid-refresh-token"),
+      ).rejects.toThrow();
     });
   });
 });

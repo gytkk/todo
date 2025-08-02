@@ -467,7 +467,13 @@ describe("UpdateSettingsDto", () => {
 
     describe("notifications validation", () => {
       it("유효한 notifications 객체로 검증을 통과해야 함", async () => {
-        const validNotifications: Array<Partial<{ enabled: boolean; dailyReminder: boolean; weeklyReport: boolean; }>> = [
+        const validNotifications: Array<
+          Partial<{
+            enabled: boolean;
+            dailyReminder: boolean;
+            weeklyReport: boolean;
+          }>
+        > = [
           { enabled: true, dailyReminder: false, weeklyReport: false },
           { enabled: false, dailyReminder: true, weeklyReport: true },
           { enabled: true, dailyReminder: true, weeklyReport: false },
@@ -475,6 +481,7 @@ describe("UpdateSettingsDto", () => {
         ];
 
         for (const notifications of validNotifications) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           const dto = createDto({ notifications: notifications as any });
           const errors = await validate(dto);
           expect(errors).toHaveLength(0);
@@ -618,7 +625,13 @@ describe("UpdateSettingsDto", () => {
         { dateFormat: "DD/MM/YYYY" },
         { timeFormat: "24h" },
         { weekStart: "monday" },
-        { notifications: { enabled: false, dailyReminder: true, weeklyReport: true } },
+        {
+          notifications: {
+            enabled: false,
+            dailyReminder: true,
+            weeklyReport: true,
+          },
+        },
         { autoBackup: false },
         { backupInterval: "daily" },
         { theme: "dark", language: "en" },
@@ -652,7 +665,10 @@ describe("UpdateSettingsDto", () => {
         autoMoveTodos: "true" as unknown as boolean,
         showTaskMoveNotifications: 1 as unknown as boolean,
         completedTodoDisplay: "invalid" as "all" | "yesterday" | "none",
-        dateFormat: "invalid-format" as "YYYY-MM-DD" | "MM/DD/YYYY" | "DD/MM/YYYY",
+        dateFormat: "invalid-format" as
+          | "YYYY-MM-DD"
+          | "MM/DD/YYYY"
+          | "DD/MM/YYYY",
         timeFormat: "invalid-time" as "12h" | "24h",
         weekStart: "invalid-day" as "sunday" | "monday" | "saturday",
         notifications: "not-object" as unknown as {
@@ -683,25 +699,11 @@ describe("UpdateSettingsDto", () => {
       ];
 
       expectedProperties.forEach((property) => {
-        const propertyError = errors.find((error) => error.property === property);
+        const propertyError = errors.find(
+          (error) => error.property === property,
+        );
         expect(propertyError).toBeDefined();
       });
-    });
-
-      const errors = await validate(dto);
-      expect(errors).toHaveLength(3);
-
-      const themeError = errors.find((error) => error.property === "theme");
-      const languageError = errors.find(
-        (error) => error.property === "language",
-      );
-      const filterError = errors.find(
-        (error) => error.property === "categoryFilter",
-      );
-
-      expect(themeError).toBeDefined();
-      expect(languageError).toBeDefined();
-      expect(filterError).toBeDefined();
     });
 
     it("추가 속성이 있어도 검증을 통과해야 함", async () => {

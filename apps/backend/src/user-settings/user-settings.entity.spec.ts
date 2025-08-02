@@ -124,6 +124,7 @@ describe("UserSettingsEntity", () => {
 
       const entity = new UserSettingsEntity({
         userId: "user-1",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         settings: partialSettings as any, // 타입 호환성을 위한 캐스팅
       });
 
@@ -168,16 +169,18 @@ describe("UserSettingsEntity", () => {
         dateFormat: "YYYY-MM-DD" as const,
         timeFormat: "24h" as const,
         weekStart: "monday" as const,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         notifications: {
           enabled: false, // 일부만 제공
           // dailyReminder, weeklyReport는 누락
-        } as Partial<{ enabled: boolean; dailyReminder: boolean; weeklyReport: boolean; }>,
+        } as any,
         autoBackup: false,
         backupInterval: "weekly" as const,
       };
 
       const entity = new UserSettingsEntity({
         userId: "user-1",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         settings: partialSettings as any, // 타입 호환성을 위한 캐스팅
       });
 
@@ -208,13 +211,15 @@ describe("UserSettingsEntity", () => {
         dateFormat: "YYYY-MM-DD" as const,
         timeFormat: "24h" as const,
         weekStart: "monday" as const,
-        notifications: {} as Partial<{ enabled: boolean; dailyReminder: boolean; weeklyReport: boolean; }>, // 빈 객체
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        notifications: {} as any, // 빈 객체
         autoBackup: false,
         backupInterval: "weekly" as const,
       };
 
       const entity = new UserSettingsEntity({
         userId: "user-1",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         settings: partialSettings as any, // 타입 호환성을 위한 캐스팅
       });
 
@@ -244,6 +249,7 @@ describe("UserSettingsEntity", () => {
 
       const entity = new UserSettingsEntity({
         userId: "user-1",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         settings: legacySettings as any, // 레거시 데이터 호환성을 위한 캐스팅
       });
 

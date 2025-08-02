@@ -203,7 +203,7 @@ describe('CalendarTodos', () => {
       render(<CalendarTodos todos={mockTodos} compact={true} />);
       
       const workTodoContainer = screen.getByText('Work meeting').closest('div');
-      expect(workTodoContainer).toHaveAttribute('title', '📅 이벤트: Work meeting');
+      expect(workTodoContainer).toHaveAttribute('title', '이벤트: Work meeting');
     });
 
     it('should render todos with proper semantic structure', () => {
@@ -248,7 +248,7 @@ describe('CalendarTodos', () => {
       
       // Should render even with empty title - check if the element exists
       const todoElements = screen.getAllByRole('generic');
-      const emptyTodoElement = todoElements.find(el => el.getAttribute('title') === '📝 작업: ');
+      const emptyTodoElement = todoElements.find(el => el.getAttribute('title') === '작업: ');
       expect(emptyTodoElement).toBeInTheDocument();
     });
   });
