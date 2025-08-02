@@ -23,7 +23,6 @@ export { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogFooter, Dialo
 // } from "./components/form";
 
 export { Input } from "./components/input";
-export type { InputProps } from "./components/input";
 
 export { Label } from "./components/label";
 
@@ -51,7 +50,6 @@ export {
 export { Switch } from "./components/switch";
 
 export { Textarea } from "./components/textarea";
-export type { TextareaProps } from "./components/textarea";
 
 // Lib utilities
 export { cn } from "./lib/utils";
