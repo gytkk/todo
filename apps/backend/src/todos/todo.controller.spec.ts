@@ -63,6 +63,8 @@ describe("TodoController", () => {
     toggle: jest.fn(),
     getStats: jest.fn(),
     removeAllByUserId: jest.fn(),
+    moveTasksToNextDay: jest.fn(),
+    getTasksDueForMove: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -328,6 +330,277 @@ describe("TodoController", () => {
         deletedCount: 0,
         message: "모든 할일이 삭제되었습니다",
       });
+    });
+  });
+
+  describe("moveTasks", () => {
+    it("should successfully move tasks to today", async () => {
+      const moveResult = {
+        movedCount: 3,
+        movedTaskIds: ["task-1", "task-2", "task-3"],
+      };
+
+      mockTodoService.moveTasksToNextDay.mockResolvedValue(moveResult);
+
+      const result = await controller.moveTasks(mockUser);
+
+      expect(mockTodoService.moveTasksToNextDay).toHaveBeenCalledWith(
+        mockUser.id,
+      );
+      expect(result).toEqual({
+        message: "3개의 작업이 오늘로 이동되었습니다",
+        movedCount: 3,
+        movedTaskIds: ["task-1", "task-2", "task-3"],
+      });
+    });
+
+    it("should return appropriate message when no tasks to move", async () => {
+      const moveResult = {
+        movedCount: 0,
+        movedTaskIds: [],
+      };
+
+      mockTodoService.moveTasksToNextDay.mockResolvedValue(moveResult);
+
+      const result = await controller.moveTasks(mockUser);
+
+      expect(mockTodoService.moveTasksToNextDay).toHaveBeenCalledWith(
+        mockUser.id,
+      );
+      expect(result).toEqual({
+        message: "이동할 작업이 없습니다",
+        movedCount: 0,
+        movedTaskIds: [],
+      });
+    });
+
+    it("should handle single task move", async () => {
+      const moveResult = {
+        movedCount: 1,
+        movedTaskIds: ["task-1"],
+      };
+
+      mockTodoService.moveTasksToNextDay.mockResolvedValue(moveResult);
+
+      const result = await controller.moveTasks(mockUser);
+
+      expect(result).toEqual({
+        message: "1개의 작업이 오늘로 이동되었습니다",
+        movedCount: 1,
+        movedTaskIds: ["task-1"],
+      });
+    });
+
+    it("should propagate service errors", async () => {
+      mockTodoService.moveTasksToNextDay.mockRejectedValue(
+        new Error("Move failed"),
+      );
+
+      await expect(controller.moveTasks(mockUser)).rejects.toThrow(
+        "Move failed",
+      );
+    });
+  });
+
+  describe("getTasksDue", () => {
+    it("should return tasks due for move", async () => {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      const taskEntities = [
+        {
+          id: "task-1",
+          title: "Overdue Task 1",
+          dueDate: yesterday,
+          completed: false,
+          todoType: "task",
+          categoryId: "work",
+          userId: "user-1",
+        },
+        {
+          id: "task-2",
+          title: "Overdue Task 2",
+          dueDate: yesterday,
+          completed: false,
+          todoType: "task",
+          categoryId: "personal",
+          userId: "user-1",
+        },
+      ];
+
+      mockTodoService.getTasksDueForMove.mockResolvedValue(taskEntities);
+
+      const result = await controller.getTasksDue(mockUser);
+
+      expect(mockTodoService.getTasksDueForMove).toHaveBeenCalledWith(
+        mockUser.id,
+      );
+      expect(result).toEqual({
+        tasks: [
+          {
+            id: "task-1",
+            title: "Overdue Task 1",
+            date: yesterday,
+            completed: false,
+            todoType: "task",
+            category: {
+              id: "work",
+              name: "Unknown",
+              color: "#64748b",
+              createdAt: expect.any(Date),
+              order: 0,
+            },
+            userId: "user-1",
+          },
+          {
+            id: "task-2",
+            title: "Overdue Task 2",
+            date: yesterday,
+            completed: false,
+            todoType: "task",
+            category: {
+              id: "personal",
+              name: "Unknown",
+              color: "#64748b",
+              createdAt: expect.any(Date),
+              order: 0,
+            },
+            userId: "user-1",
+          },
+        ],
+        count: 2,
+      });
+    });
+
+    it("should return empty array when no tasks due", async () => {
+      mockTodoService.getTasksDueForMove.mockResolvedValue([]);
+
+      const result = await controller.getTasksDue(mockUser);
+
+      expect(mockTodoService.getTasksDueForMove).toHaveBeenCalledWith(
+        mockUser.id,
+      );
+      expect(result).toEqual({
+        tasks: [],
+        count: 0,
+      });
+    });
+
+    it("should handle single task due", async () => {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      const taskEntities = [
+        {
+          id: "task-1",
+          title: "Single Overdue Task",
+          dueDate: yesterday,
+          completed: false,
+          todoType: "task",
+          categoryId: "work",
+          userId: "user-1",
+        },
+      ];
+
+      mockTodoService.getTasksDueForMove.mockResolvedValue(taskEntities);
+
+      const result = await controller.getTasksDue(mockUser);
+
+      expect(result.count).toBe(1);
+      expect(result.tasks).toHaveLength(1);
+      expect(result.tasks[0].id).toBe("task-1");
+    });
+
+    it("should propagate service errors", async () => {
+      mockTodoService.getTasksDueForMove.mockRejectedValue(
+        new Error("Query failed"),
+      );
+
+      await expect(controller.getTasksDue(mockUser)).rejects.toThrow(
+        "Query failed",
+      );
+    });
+  });
+
+  describe("create with todoType", () => {
+    it("should create todo with specified todoType", async () => {
+      const createTodoDto: CreateTodoDto = {
+        title: "Task Todo",
+        category: {
+          ...mockCategory,
+          createdAt: mockCategory.createdAt.toISOString(),
+        },
+        date: "2024-01-15T09:00:00.000Z",
+        todoType: "task",
+      };
+
+      const taskTodo = { ...mockTodo, todoType: "task" as const };
+      mockTodoService.create.mockResolvedValue(taskTodo);
+
+      const result = await controller.create(createTodoDto, mockUser);
+
+      expect(mockTodoService.create).toHaveBeenCalledWith(
+        createTodoDto,
+        mockUser.id,
+      );
+      expect(result).toEqual({ todo: taskTodo });
+    });
+
+    it("should create todo with default todoType when not specified", async () => {
+      const createTodoDto: CreateTodoDto = {
+        title: "Event Todo",
+        category: {
+          ...mockCategory,
+          createdAt: mockCategory.createdAt.toISOString(),
+        },
+        date: "2024-01-15T09:00:00.000Z",
+        // todoType not specified
+      };
+
+      mockTodoService.create.mockResolvedValue(mockTodo);
+
+      const result = await controller.create(createTodoDto, mockUser);
+
+      expect(mockTodoService.create).toHaveBeenCalledWith(
+        createTodoDto,
+        mockUser.id,
+      );
+      expect(result).toEqual({ todo: mockTodo });
+    });
+  });
+
+  describe("update with todoType", () => {
+    it("should update todo with todoType", async () => {
+      const updateTodoDto: UpdateTodoDto = {
+        title: "Updated Task",
+        todoType: "task",
+      };
+
+      const updatedTodo = { ...mockTodo, title: "Updated Task", todoType: "task" as const };
+      mockTodoService.update.mockResolvedValue(updatedTodo);
+
+      const result = await controller.update("todo-1", updateTodoDto, mockUser);
+
+      expect(mockTodoService.update).toHaveBeenCalledWith(
+        "todo-1",
+        updateTodoDto,
+        mockUser.id,
+      );
+      expect(result).toEqual({ todo: updatedTodo });
+    });
+
+    it("should update other fields without affecting todoType", async () => {
+      const updateTodoDto: UpdateTodoDto = {
+        title: "Updated Title Only",
+        completed: true,
+      };
+
+      const updatedTodo = { ...mockTodo, title: "Updated Title Only", completed: true };
+      mockTodoService.update.mockResolvedValue(updatedTodo);
+
+      const result = await controller.update("todo-1", updateTodoDto, mockUser);
+
+      expect(result.todo.todoType).toBe("event"); // Should remain unchanged
     });
   });
 });
