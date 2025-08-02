@@ -258,4 +258,306 @@ describe("UserSettingsRepository", () => {
       expect(mockRedisService.zadd).toHaveBeenCalled();
     });
   });
+
+  describe("레거시 데이터 호환성", () => {
+    it("확장 필드가 없는 레거시 데이터를 올바르게 파싱해야 함", async () => {
+      const userId = "user-1";
+      const legacyData = {
+        id: "settings-1",
+        userId: "user-1",
+        createdAt: "2023-01-01T00:00:00.000Z",
+        updatedAt: "2023-01-01T00:00:00.000Z",
+        settings: {
+          categories: [
+            {
+              id: "cat-1",
+              name: "업무",
+              color: "#FF6B6B",
+              isDefault: true, // 레거시 필드
+              createdAt: "2023-01-01T00:00:00.000Z",
+              // order 필드 없음
+            },
+          ],
+          categoryFilter: { "cat-1": true },
+          theme: "light" as const,
+          language: "ko",
+          // 새로 추가된 필드들 없음
+        },
+      };
+
+      mockRedisService.generateKey.mockReturnValue("todo:user-settings:user-1");
+      mockRedisService.get.mockResolvedValue(JSON.stringify(legacyData));
+
+      const result = await repository.findByUserId(userId);
+
+      expect(result).toBeInstanceOf(UserSettingsEntity);
+      expect(result?.userId).toBe(userId);
+
+      // 기존 필드는 유지
+      expect(result?.settings.theme).toBe("light");
+      expect(result?.settings.language).toBe("ko");
+      expect(result?.settings.categories).toHaveLength(1);
+
+      // 새로 추가된 필드들이 기본값으로 설정되어야 함
+      expect(result?.settings.autoMoveTodos).toBe(true);
+      expect(result?.settings.showTaskMoveNotifications).toBe(true);
+      expect(result?.settings.completedTodoDisplay).toBe("yesterday");
+      expect(result?.settings.dateFormat).toBe("YYYY-MM-DD");
+      expect(result?.settings.timeFormat).toBe("24h");
+      expect(result?.settings.weekStart).toBe("monday");
+      expect(result?.settings.notifications).toEqual({
+        enabled: true,
+        dailyReminder: false,
+        weeklyReport: false,
+      });
+      expect(result?.settings.autoBackup).toBe(false);
+      expect(result?.settings.backupInterval).toBe("weekly");
+    });
+
+    it("부분적으로 누락된 필드가 있는 데이터를 올바르게 파싱해야 함", async () => {
+      const userId = "user-1";
+      const partialData = {
+        id: "settings-1",
+        userId: "user-1",
+        createdAt: "2023-01-01T00:00:00.000Z",
+        updatedAt: "2023-01-01T00:00:00.000Z",
+        settings: {
+          categories: [
+            {
+              id: "cat-1",
+              name: "개인",
+              color: "#3b82f6",
+              createdAt: "2023-01-01T00:00:00.000Z",
+              order: 0,
+            },
+          ],
+          categoryFilter: { "cat-1": true },
+          theme: "dark" as const,
+          language: "en",
+          // 일부 새 필드만 포함
+          autoMoveTodos: false,
+          dateFormat: "MM/DD/YYYY" as const,
+          notifications: {
+            enabled: false,
+            // dailyReminder, weeklyReport 누락
+          },
+          // 나머지 필드들은 누락
+        },
+      };
+
+      mockRedisService.generateKey.mockReturnValue("todo:user-settings:user-1");
+      mockRedisService.get.mockResolvedValue(JSON.stringify(partialData));
+
+      const result = await repository.findByUserId(userId);
+
+      expect(result).toBeInstanceOf(UserSettingsEntity);
+
+      // 제공된 필드는 유지
+      expect(result?.settings.theme).toBe("dark");
+      expect(result?.settings.language).toBe("en");
+      expect(result?.settings.autoMoveTodos).toBe(false);
+      expect(result?.settings.dateFormat).toBe("MM/DD/YYYY");
+      expect(result?.settings.notifications.enabled).toBe(false);
+
+      // 누락된 필드들은 기본값으로 설정
+      expect(result?.settings.showTaskMoveNotifications).toBe(true);
+      expect(result?.settings.completedTodoDisplay).toBe("yesterday");
+      expect(result?.settings.timeFormat).toBe("24h");
+      expect(result?.settings.weekStart).toBe("monday");
+      expect(result?.settings.notifications.dailyReminder).toBe(false);
+      expect(result?.settings.notifications.weeklyReport).toBe(false);
+      expect(result?.settings.autoBackup).toBe(false);
+      expect(result?.settings.backupInterval).toBe("weekly");
+    });
+
+    it("notifications 객체가 누락된 경우 기본값으로 설정되어야 함", async () => {
+      const userId = "user-1";
+      const dataWithoutNotifications = {
+        id: "settings-1",
+        userId: "user-1",
+        createdAt: "2023-01-01T00:00:00.000Z",
+        updatedAt: "2023-01-01T00:00:00.000Z",
+        settings: {
+          categories: [],
+          categoryFilter: {},
+          theme: "system" as const,
+          language: "ko",
+          autoMoveTodos: true,
+          showTaskMoveNotifications: true,
+          completedTodoDisplay: "yesterday" as const,
+          dateFormat: "YYYY-MM-DD" as const,
+          timeFormat: "24h" as const,
+          weekStart: "monday" as const,
+          // notifications 객체 누락
+          autoBackup: false,
+          backupInterval: "weekly" as const,
+        },
+      };
+
+      mockRedisService.generateKey.mockReturnValue("todo:user-settings:user-1");
+      mockRedisService.get.mockResolvedValue(JSON.stringify(dataWithoutNotifications));
+
+      const result = await repository.findByUserId(userId);
+
+      expect(result).toBeInstanceOf(UserSettingsEntity);
+      expect(result?.settings.notifications).toEqual({
+        enabled: true,
+        dailyReminder: false,
+        weeklyReport: false,
+      });
+    });
+
+    it("빈 notifications 객체인 경우 기본값으로 병합되어야 함", async () => {
+      const userId = "user-1";
+      const dataWithEmptyNotifications = {
+        id: "settings-1",
+        userId: "user-1",
+        createdAt: "2023-01-01T00:00:00.000Z",
+        updatedAt: "2023-01-01T00:00:00.000Z",
+        settings: {
+          categories: [],
+          categoryFilter: {},
+          theme: "system" as const,
+          language: "ko",
+          autoMoveTodos: true,
+          showTaskMoveNotifications: true,
+          completedTodoDisplay: "yesterday" as const,
+          dateFormat: "YYYY-MM-DD" as const,
+          timeFormat: "24h" as const,
+          weekStart: "monday" as const,
+          notifications: {}, // 빈 객체
+          autoBackup: false,
+          backupInterval: "weekly" as const,
+        },
+      };
+
+      mockRedisService.generateKey.mockReturnValue("todo:user-settings:user-1");
+      mockRedisService.get.mockResolvedValue(JSON.stringify(dataWithEmptyNotifications));
+
+      const result = await repository.findByUserId(userId);
+
+      expect(result).toBeInstanceOf(UserSettingsEntity);
+      expect(result?.settings.notifications).toEqual({
+        enabled: true,
+        dailyReminder: false,
+        weeklyReport: false,
+      });
+    });
+
+    it("카테고리의 order 필드가 누락된 경우 마이그레이션되어야 함", async () => {
+      const userId = "user-1";
+      const dataWithoutCategoryOrder = {
+        id: "settings-1",
+        userId: "user-1",
+        createdAt: "2023-01-01T00:00:00.000Z",
+        updatedAt: "2023-01-01T00:00:00.000Z",
+        settings: {
+          categories: [
+            {
+              id: "cat-1",
+              name: "개인",
+              color: "#3b82f6",
+              createdAt: "2023-01-01T00:00:00.000Z",
+              // order 필드 없음
+            },
+            {
+              id: "cat-2",
+              name: "회사",
+              color: "#10b981",
+              createdAt: "2023-01-01T00:00:00.000Z",
+              // order 필드 없음
+            },
+          ],
+          categoryFilter: { "cat-1": true, "cat-2": true },
+          theme: "system" as const,
+          language: "ko",
+          autoMoveTodos: true,
+          showTaskMoveNotifications: true,
+          completedTodoDisplay: "yesterday" as const,
+          dateFormat: "YYYY-MM-DD" as const,
+          timeFormat: "24h" as const,
+          weekStart: "monday" as const,
+          notifications: {
+            enabled: true,
+            dailyReminder: false,
+            weeklyReport: false,
+          },
+          autoBackup: false,
+          backupInterval: "weekly" as const,
+        },
+      };
+
+      mockRedisService.generateKey.mockReturnValue("todo:user-settings:user-1");
+      mockRedisService.get.mockResolvedValue(JSON.stringify(dataWithoutCategoryOrder));
+
+      const result = await repository.findByUserId(userId);
+
+      expect(result).toBeInstanceOf(UserSettingsEntity);
+      
+      // getCategories 호출 시 order 필드가 자동으로 마이그레이션됨
+      const categories = result?.getCategories();
+      expect(categories).toHaveLength(2);
+      expect(categories?.[0].order).toBe(0);
+      expect(categories?.[1].order).toBe(1);
+    });
+
+    it("완전히 새로운 데이터 구조에도 대응해야 함", async () => {
+      const userId = "user-1";
+      const completeNewData = {
+        id: "settings-1",
+        userId: "user-1",
+        createdAt: "2023-01-01T00:00:00.000Z",
+        updatedAt: "2023-01-01T00:00:00.000Z",
+        settings: {
+          categories: [
+            {
+              id: "cat-1",
+              name: "프로젝트",
+              color: "#8b5cf6",
+              createdAt: "2023-01-01T00:00:00.000Z",
+              order: 0,
+            },
+          ],
+          categoryFilter: { "cat-1": true },
+          theme: "dark" as const,
+          language: "en",
+          autoMoveTodos: false,
+          showTaskMoveNotifications: false,
+          completedTodoDisplay: "all" as const,
+          dateFormat: "DD/MM/YYYY" as const,
+          timeFormat: "12h" as const,
+          weekStart: "sunday" as const,
+          notifications: {
+            enabled: true,
+            dailyReminder: true,
+            weeklyReport: true,
+          },
+          autoBackup: true,
+          backupInterval: "daily" as const,
+        },
+      };
+
+      mockRedisService.generateKey.mockReturnValue("todo:user-settings:user-1");
+      mockRedisService.get.mockResolvedValue(JSON.stringify(completeNewData));
+
+      const result = await repository.findByUserId(userId);
+
+      expect(result).toBeInstanceOf(UserSettingsEntity);
+      
+      // 모든 새 필드들이 올바르게 설정되어야 함
+      expect(result?.settings.autoMoveTodos).toBe(false);
+      expect(result?.settings.showTaskMoveNotifications).toBe(false);
+      expect(result?.settings.completedTodoDisplay).toBe("all");
+      expect(result?.settings.dateFormat).toBe("DD/MM/YYYY");
+      expect(result?.settings.timeFormat).toBe("12h");
+      expect(result?.settings.weekStart).toBe("sunday");
+      expect(result?.settings.notifications).toEqual({
+        enabled: true,
+        dailyReminder: true,
+        weeklyReport: true,
+      });
+      expect(result?.settings.autoBackup).toBe(true);
+      expect(result?.settings.backupInterval).toBe("daily");
+    });
+  });
 });

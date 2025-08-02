@@ -36,6 +36,33 @@ describe("AuthController", () => {
       emailVerified: false,
       createdAt: new Date("2023-01-01"),
     },
+    userSettings: {
+      categories: [
+        {
+          id: "default-1",
+          name: "기본",
+          color: "#3b82f6",
+          createdAt: new Date("2023-01-01"),
+          order: 0,
+        },
+      ],
+      categoryFilter: { "default-1": true },
+      theme: "system",
+      language: "ko",
+      autoMoveTodos: true,
+      showTaskMoveNotifications: true,
+      completedTodoDisplay: "yesterday",
+      dateFormat: "YYYY-MM-DD",
+      timeFormat: "24h",
+      weekStart: "monday",
+      notifications: {
+        enabled: true,
+        dailyReminder: false,
+        weeklyReport: false,
+      },
+      autoBackup: false,
+      backupInterval: "weekly",
+    },
   };
 
   beforeEach(async () => {
@@ -140,6 +167,7 @@ describe("AuthController", () => {
         accessToken: "new-access-token",
         refreshToken: "new-refresh-token",
         user: mockAuthResponse.user,
+        userSettings: mockAuthResponse.userSettings,
       };
 
       refreshTokenSpy.mockResolvedValue(newAuthResponse);

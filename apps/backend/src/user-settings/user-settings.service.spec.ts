@@ -1,8 +1,47 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { UserSettingsService } from "./user-settings.service";
 import { UserSettingsRepository } from "./user-settings.repository";
-import { UserSettingsEntity } from "./user-settings.entity";
+import { UserSettingsEntity, UserSettingsData } from "./user-settings.entity";
 import { NotFoundException, BadRequestException } from "@nestjs/common";
+
+// 테스트용 기본 설정 헬퍼 함수
+const createMockUserSettings = (
+  overrides: Partial<UserSettingsData> = {},
+): UserSettingsData => ({
+  categories: [
+    {
+      id: "cat-1",
+      name: "개인",
+      color: "#3b82f6",
+      createdAt: new Date("2023-01-01"),
+      order: 0,
+    },
+    {
+      id: "cat-2",
+      name: "회사",
+      color: "#10b981",
+      createdAt: new Date("2023-01-01"),
+      order: 1,
+    },
+  ],
+  categoryFilter: { "cat-1": true, "cat-2": true },
+  theme: "system",
+  language: "ko",
+  autoMoveTodos: true,
+  showTaskMoveNotifications: true,
+  completedTodoDisplay: "yesterday",
+  dateFormat: "YYYY-MM-DD",
+  timeFormat: "24h",
+  weekStart: "monday",
+  notifications: {
+    enabled: true,
+    dailyReminder: false,
+    weeklyReport: false,
+  },
+  autoBackup: false,
+  backupInterval: "weekly",
+  ...overrides,
+});
 
 describe("UserSettingsService", () => {
   let service: UserSettingsService;
@@ -10,28 +49,14 @@ describe("UserSettingsService", () => {
   const mockUserSettingsEntity = new UserSettingsEntity({
     id: "settings-1",
     userId: "user-1",
-    settings: {
-      categories: [
-        {
-          id: "cat-1",
-          name: "개인",
-          color: "#3b82f6",
-          createdAt: new Date("2023-01-01"),
-        },
-        {
-          id: "cat-2",
-          name: "회사",
-          color: "#10b981",
-          createdAt: new Date("2023-01-01"),
-        },
-      ],
+    settings: createMockUserSettings({
       categoryFilter: {
         "cat-1": true,
         "cat-2": true,
       },
       theme: "system",
       language: "ko",
-    },
+    }),
     createdAt: new Date("2023-01-01"),
     updatedAt: new Date("2023-01-01"),
   });

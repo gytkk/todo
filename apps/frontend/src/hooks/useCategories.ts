@@ -1,10 +1,21 @@
 import { useState, useCallback, useEffect } from 'react';
-import { TodoCategory, CategoryFilter } from '@calendar-todo/shared-types';
+import { TodoCategory, CategoryFilter, UserSettingsData } from '@calendar-todo/shared-types';
 import { TodoItem } from '@calendar-todo/shared-types';
 import { CategoryService } from '@/services/categoryService';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthenticatedCallback } from './useAuthenticatedCallback';
 import { DEFAULT_CATEGORIES, STORAGE_KEYS } from '@/constants/categories';
+
+// 저장된 사용자 설정 로드 헬퍼 함수
+const getStoredUserSettings = (): UserSettingsData | null => {
+  try {
+    const settingsData = localStorage.getItem('user_settings') || sessionStorage.getItem('user_settings');
+    return settingsData ? JSON.parse(settingsData) : null;
+  } catch (error) {
+    console.error('Failed to parse stored user settings:', error);
+    return null;
+  }
+};
 
 export const useCategories = () => {
   const [categories, setCategories] = useState<TodoCategory[]>([]);
@@ -47,6 +58,36 @@ export const useCategories = () => {
 
     try {
       setLoading(true);
+      
+      // 먼저 저장된 사용자 설정 확인 (로그인 시 받은 데이터)
+      const storedSettings = getStoredUserSettings();
+      if (storedSettings) {
+        // 저장된 설정에서 카테고리와 필터 복원
+        const categories: TodoCategory[] = storedSettings.categories.map(cat => ({
+          id: cat.id,
+          name: cat.name,
+          color: cat.color,
+          createdAt: cat.createdAt,
+          order: cat.order || 0
+        }));
+        
+        setCategories(categories);
+        setCategoryFilter(storedSettings.categoryFilter);
+        
+        // 확장된 설정들 로그 출력 (개발용)
+        console.log('로그인 시 로드된 사용자 설정:', {
+          autoMoveTodos: storedSettings.autoMoveTodos,
+          theme: storedSettings.theme,
+          language: storedSettings.language,
+          dateFormat: storedSettings.dateFormat,
+          notifications: storedSettings.notifications
+        });
+        
+        setLoading(false);
+        return;
+      }
+      
+      // 저장된 설정이 없으면 API 호출
       const service = CategoryService.getInstance();
       const categories = await service.getCategories();
       setCategories(categories);

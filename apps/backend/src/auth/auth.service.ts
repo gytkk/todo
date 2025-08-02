@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { UserService } from "../users/user.service";
 import { JwtAuthService } from "./jwt.service";
+import { UserSettingsService } from "../user-settings/user-settings.service";
 import { User } from "../users/user.entity";
 import { RegisterDto } from "./dto/register.dto";
 import { AuthResponse } from "@calendar-todo/shared-types";
@@ -10,6 +11,7 @@ export class AuthService {
   constructor(
     private readonly userService: UserService,
     private readonly jwtAuthService: JwtAuthService,
+    private readonly userSettingsService: UserSettingsService,
   ) {}
 
   async register(registerDto: RegisterDto): Promise<AuthResponse> {
@@ -42,10 +44,16 @@ export class AuthService {
         throw new Error("User not found or inactive");
       }
 
+      // Load user settings
+      const userSettings = await this.userSettingsService.getUserSettings(
+        user.id,
+      );
+
       return {
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
         user: user.toProfile(),
+        userSettings,
       };
     } catch {
       throw new Error("Invalid refresh token");
@@ -86,10 +94,16 @@ export class AuthService {
       rememberMe,
     );
 
+    // Load user settings
+    const userSettings = await this.userSettingsService.getUserSettings(
+      user.id,
+    );
+
     return {
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
       user: user.toProfile(),
+      userSettings,
     };
   }
 }

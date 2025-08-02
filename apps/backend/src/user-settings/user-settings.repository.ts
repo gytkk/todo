@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { UserSettingsEntity } from "./user-settings.entity";
+import { UserSettingsEntity, UserSettingsData } from "./user-settings.entity";
 import { RedisService } from "../redis/redis.service";
 
 @Injectable()
@@ -31,8 +31,24 @@ export class UserSettingsRepository {
           categoryFilter: { [categoryId: string]: boolean };
           theme: "light" | "dark" | "system";
           language: string;
+          // 새로 추가된 필드들 (기존 데이터 호환성을 위해 optional)
+          autoMoveTodos?: boolean;
+          showTaskMoveNotifications?: boolean;
+          completedTodoDisplay?: "all" | "yesterday" | "none";
+          dateFormat?: "YYYY-MM-DD" | "MM/DD/YYYY" | "DD/MM/YYYY";
+          timeFormat?: "12h" | "24h";
+          weekStart?: "sunday" | "monday" | "saturday";
+          notifications?: {
+            enabled: boolean;
+            dailyReminder: boolean;
+            weeklyReport: boolean;
+          };
+          autoBackup?: boolean;
+          backupInterval?: "daily" | "weekly" | "monthly";
         };
       };
+      // UserSettingsEntity 생성자에서 기본값 병합을 처리하므로
+      // settings를 Partial로 전달해도 안전함
       return new UserSettingsEntity({
         ...parsedData,
         createdAt: new Date(parsedData.createdAt),
@@ -43,7 +59,7 @@ export class UserSettingsRepository {
             ...cat,
             createdAt: new Date(cat.createdAt),
           })),
-        },
+        } as UserSettingsData,
       });
     } catch (error) {
       console.error("Error parsing user settings from Redis:", error);

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Button, Switch, Label } from "@calendar-todo/ui";
+import { Button, Switch } from "@calendar-todo/ui";
 import { CategorySelector } from "@/components/categories/CategorySelector";
 import { TodoCategory, TodoType } from '@calendar-todo/shared-types';
 import { Plus, Calendar, Target } from 'lucide-react';

@@ -1,5 +1,37 @@
 import { UserSettingsEntity, UserSettingsData } from "./user-settings.entity";
 
+// 테스트용 기본 설정 헬퍼 함수
+const createMockUserSettings = (
+  overrides: Partial<UserSettingsData> = {},
+): UserSettingsData => ({
+  categories: [
+    {
+      id: "default-1",
+      name: "기본",
+      color: "#3b82f6",
+      createdAt: new Date(),
+      order: 0,
+    },
+  ],
+  categoryFilter: { "default-1": true },
+  theme: "system",
+  language: "ko",
+  autoMoveTodos: true,
+  showTaskMoveNotifications: true,
+  completedTodoDisplay: "yesterday",
+  dateFormat: "YYYY-MM-DD",
+  timeFormat: "24h",
+  weekStart: "monday",
+  notifications: {
+    enabled: true,
+    dailyReminder: false,
+    weeklyReport: false,
+  },
+  autoBackup: false,
+  backupInterval: "weekly",
+  ...overrides,
+});
+
 describe("UserSettingsEntity", () => {
   describe("constructor", () => {
     it("새로운 UserSettingsEntity를 기본값으로 생성해야 함", () => {
@@ -16,7 +48,7 @@ describe("UserSettingsEntity", () => {
     });
 
     it("제공된 데이터로 UserSettingsEntity를 생성해야 함", () => {
-      const customSettings: UserSettingsData = {
+      const customSettings: UserSettingsData = createMockUserSettings({
         categories: [
           {
             id: "custom-1",
@@ -28,7 +60,7 @@ describe("UserSettingsEntity", () => {
         categoryFilter: { "custom-1": true },
         theme: "dark",
         language: "en",
-      };
+      });
 
       const entity = new UserSettingsEntity({
         id: "settings-1",
@@ -45,6 +77,194 @@ describe("UserSettingsEntity", () => {
       expect(entity.settings.categories).toHaveLength(1);
       expect(entity.createdAt).toEqual(new Date("2023-01-01"));
       expect(entity.updatedAt).toEqual(new Date("2023-01-02"));
+    });
+
+    it("확장된 설정 필드들의 기본값이 올바르게 설정되어야 함", () => {
+      const entity = new UserSettingsEntity({ userId: "user-1" });
+
+      // 할일 관련 기본 설정
+      expect(entity.settings.autoMoveTodos).toBe(true);
+      expect(entity.settings.showTaskMoveNotifications).toBe(true);
+      expect(entity.settings.completedTodoDisplay).toBe("yesterday");
+
+      // 캘린더 기본 설정
+      expect(entity.settings.dateFormat).toBe("YYYY-MM-DD");
+      expect(entity.settings.timeFormat).toBe("24h");
+      expect(entity.settings.weekStart).toBe("monday");
+
+      // 알림 기본 설정
+      expect(entity.settings.notifications).toEqual({
+        enabled: true,
+        dailyReminder: false,
+        weeklyReport: false,
+      });
+
+      // 데이터 관리 기본 설정
+      expect(entity.settings.autoBackup).toBe(false);
+      expect(entity.settings.backupInterval).toBe("weekly");
+    });
+
+    it("부분적인 기존 데이터로 생성 시 누락된 필드가 기본값으로 병합되어야 함", () => {
+      // 일부 필드만 포함된 기존 설정
+      const partialSettings: Partial<UserSettingsData> = {
+        categories: [
+          {
+            id: "cat-1",
+            name: "테스트",
+            color: "#ff0000",
+            createdAt: new Date(),
+            order: 0,
+          },
+        ],
+        categoryFilter: { "cat-1": true },
+        theme: "dark" as const,
+        language: "en",
+        // 나머지 필드들은 누락됨
+      };
+
+      const entity = new UserSettingsEntity({
+        userId: "user-1",
+        settings: partialSettings as any, // 타입 호환성을 위한 캐스팅
+      });
+
+      // 제공된 필드는 유지
+      expect(entity.settings.theme).toBe("dark");
+      expect(entity.settings.language).toBe("en");
+      expect(entity.settings.categories).toHaveLength(1);
+
+      // 누락된 필드들은 기본값으로 설정
+      expect(entity.settings.autoMoveTodos).toBe(true);
+      expect(entity.settings.showTaskMoveNotifications).toBe(true);
+      expect(entity.settings.completedTodoDisplay).toBe("yesterday");
+      expect(entity.settings.dateFormat).toBe("YYYY-MM-DD");
+      expect(entity.settings.timeFormat).toBe("24h");
+      expect(entity.settings.weekStart).toBe("monday");
+      expect(entity.settings.notifications).toEqual({
+        enabled: true,
+        dailyReminder: false,
+        weeklyReport: false,
+      });
+      expect(entity.settings.autoBackup).toBe(false);
+      expect(entity.settings.backupInterval).toBe("weekly");
+    });
+
+    it("notifications 객체의 부분적 제공 시 나머지는 기본값으로 병합되어야 함", () => {
+      const partialSettings: Partial<UserSettingsData> = {
+        categories: [
+          {
+            id: "cat-1",
+            name: "테스트",
+            color: "#ff0000",
+            createdAt: new Date(),
+            order: 0,
+          },
+        ],
+        categoryFilter: { "cat-1": true },
+        theme: "system" as const,
+        language: "ko",
+        autoMoveTodos: true,
+        showTaskMoveNotifications: true,
+        completedTodoDisplay: "yesterday" as const,
+        dateFormat: "YYYY-MM-DD" as const,
+        timeFormat: "24h" as const,
+        weekStart: "monday" as const,
+        notifications: {
+          enabled: false, // 일부만 제공
+          // dailyReminder, weeklyReport는 누락
+        } as Partial<{ enabled: boolean; dailyReminder: boolean; weeklyReport: boolean; }>,
+        autoBackup: false,
+        backupInterval: "weekly" as const,
+      };
+
+      const entity = new UserSettingsEntity({
+        userId: "user-1",
+        settings: partialSettings as any, // 타입 호환성을 위한 캐스팅
+      });
+
+      // 제공된 notifications.enabled는 유지
+      expect(entity.settings.notifications.enabled).toBe(false);
+      // 누락된 필드들은 기본값으로 설정
+      expect(entity.settings.notifications.dailyReminder).toBe(false);
+      expect(entity.settings.notifications.weeklyReport).toBe(false);
+    });
+
+    it("빈 notifications 객체 제공 시 모든 필드가 기본값으로 설정되어야 함", () => {
+      const partialSettings: Partial<UserSettingsData> = {
+        categories: [
+          {
+            id: "cat-1",
+            name: "테스트",
+            color: "#ff0000",
+            createdAt: new Date(),
+            order: 0,
+          },
+        ],
+        categoryFilter: { "cat-1": true },
+        theme: "system" as const,
+        language: "ko",
+        autoMoveTodos: true,
+        showTaskMoveNotifications: true,
+        completedTodoDisplay: "yesterday" as const,
+        dateFormat: "YYYY-MM-DD" as const,
+        timeFormat: "24h" as const,
+        weekStart: "monday" as const,
+        notifications: {} as Partial<{ enabled: boolean; dailyReminder: boolean; weeklyReport: boolean; }>, // 빈 객체
+        autoBackup: false,
+        backupInterval: "weekly" as const,
+      };
+
+      const entity = new UserSettingsEntity({
+        userId: "user-1",
+        settings: partialSettings as any, // 타입 호환성을 위한 캐스팅
+      });
+
+      expect(entity.settings.notifications).toEqual({
+        enabled: true,
+        dailyReminder: false,
+        weeklyReport: false,
+      });
+    });
+
+    it("레거시 데이터 (확장 필드 없음)로 생성 시 기본값들이 추가되어야 함", () => {
+      // 확장 전의 레거시 설정 데이터
+      const legacySettings: Partial<UserSettingsData> = {
+        categories: [
+          {
+            id: "cat-1",
+            name: "개인",
+            color: "#3b82f6",
+            createdAt: new Date(),
+          },
+        ],
+        categoryFilter: { "cat-1": true },
+        theme: "light" as const,
+        language: "ko",
+        // 확장된 필드들은 모두 누락
+      };
+
+      const entity = new UserSettingsEntity({
+        userId: "user-1",
+        settings: legacySettings as any, // 레거시 데이터 호환성을 위한 캐스팅
+      });
+
+      // 기존 필드는 유지
+      expect(entity.settings.theme).toBe("light");
+      expect(entity.settings.language).toBe("ko");
+
+      // 새로 추가된 모든 필드들이 기본값으로 설정되어야 함
+      expect(entity.settings.autoMoveTodos).toBe(true);
+      expect(entity.settings.showTaskMoveNotifications).toBe(true);
+      expect(entity.settings.completedTodoDisplay).toBe("yesterday");
+      expect(entity.settings.dateFormat).toBe("YYYY-MM-DD");
+      expect(entity.settings.timeFormat).toBe("24h");
+      expect(entity.settings.weekStart).toBe("monday");
+      expect(entity.settings.notifications).toEqual({
+        enabled: true,
+        dailyReminder: false,
+        weeklyReport: false,
+      });
+      expect(entity.settings.autoBackup).toBe(false);
+      expect(entity.settings.backupInterval).toBe("weekly");
     });
 
     it("기본 카테고리가 올바르게 생성되어야 함", () => {
@@ -385,7 +605,7 @@ describe("UserSettingsEntity", () => {
     });
 
     it("전체 설정을 업데이트해야 함", () => {
-      const newSettings: UserSettingsData = {
+      const newSettings: UserSettingsData = createMockUserSettings({
         categories: [
           {
             id: "new-cat",
@@ -397,7 +617,7 @@ describe("UserSettingsEntity", () => {
         categoryFilter: { "new-cat": true },
         theme: "light",
         language: "ko",
-      };
+      });
 
       entity.updateSettings(newSettings);
 
@@ -477,7 +697,7 @@ describe("UserSettingsEntity", () => {
       // order 필드가 없는 카테고리 데이터로 엔티티 생성
       const entity = new UserSettingsEntity({
         userId: "user-1",
-        settings: {
+        settings: createMockUserSettings({
           categories: [
             {
               id: "cat-1",
@@ -497,7 +717,7 @@ describe("UserSettingsEntity", () => {
           categoryFilter: {},
           theme: "system",
           language: "ko",
-        },
+        }),
       });
 
       // getCategories 호출 시 마이그레이션이 자동으로 실행됨
@@ -511,7 +731,7 @@ describe("UserSettingsEntity", () => {
     it("order 필드가 이미 있는 카테고리는 변경하지 않아야 함", () => {
       const entity = new UserSettingsEntity({
         userId: "user-1",
-        settings: {
+        settings: createMockUserSettings({
           categories: [
             {
               id: "cat-1",
@@ -531,7 +751,7 @@ describe("UserSettingsEntity", () => {
           categoryFilter: {},
           theme: "system",
           language: "ko",
-        },
+        }),
       });
 
       const categories = entity.getCategories();
@@ -544,7 +764,7 @@ describe("UserSettingsEntity", () => {
     it("일부 카테고리만 order 필드가 없을 때 올바르게 마이그레이션해야 함", () => {
       const entity = new UserSettingsEntity({
         userId: "user-1",
-        settings: {
+        settings: createMockUserSettings({
           categories: [
             {
               id: "cat-1",
@@ -571,7 +791,7 @@ describe("UserSettingsEntity", () => {
           categoryFilter: {},
           theme: "system",
           language: "ko",
-        },
+        }),
       });
 
       const categories = entity.getCategories();

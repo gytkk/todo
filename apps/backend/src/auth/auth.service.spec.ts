@@ -2,6 +2,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { AuthService } from "./auth.service";
 import { UserService } from "../users/user.service";
 import { JwtAuthService } from "./jwt.service";
+import { UserSettingsService } from "../user-settings/user-settings.service";
 import { User } from "../users/user.entity";
 import { RegisterDto } from "./dto/register.dto";
 
@@ -9,6 +10,7 @@ describe("AuthService", () => {
   let service: AuthService;
   let userService: UserService;
   let jwtAuthService: JwtAuthService;
+  let userSettingsService: UserSettingsService;
 
   // Spy function references
   let createSpy: jest.SpyInstance;
@@ -17,6 +19,7 @@ describe("AuthService", () => {
   let generateTokenPairSpy: jest.SpyInstance;
   let verifyRefreshTokenSpy: jest.SpyInstance;
   let refreshAccessTokenSpy: jest.SpyInstance;
+  let getUserSettingsSpy: jest.SpyInstance;
 
   const mockUser = new User({
     id: "test-user-id",
@@ -29,10 +32,39 @@ describe("AuthService", () => {
     updatedAt: new Date("2023-01-01"),
   });
 
+  const mockUserSettings = {
+    categories: [
+      {
+        id: "cat-1",
+        name: "개인",
+        color: "#3b82f6",
+        createdAt: new Date("2023-01-01"),
+        order: 0,
+      },
+    ],
+    categoryFilter: { "cat-1": true },
+    theme: "system" as const,
+    language: "ko",
+    autoMoveTodos: true,
+    showTaskMoveNotifications: true,
+    completedTodoDisplay: "yesterday" as const,
+    dateFormat: "YYYY-MM-DD" as const,
+    timeFormat: "24h" as const,
+    weekStart: "monday" as const,
+    notifications: {
+      enabled: true,
+      dailyReminder: false,
+      weeklyReport: false,
+    },
+    autoBackup: false,
+    backupInterval: "weekly" as const,
+  };
+
   const mockAuthResponse = {
     accessToken: "access-token",
     refreshToken: "refresh-token",
     user: mockUser.toProfile(),
+    userSettings: mockUserSettings,
   };
 
   beforeEach(async () => {
@@ -50,6 +82,10 @@ describe("AuthService", () => {
       refreshAccessToken: jest.fn(),
     };
 
+    const mockUserSettingsService = {
+      getUserSettings: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
@@ -61,12 +97,17 @@ describe("AuthService", () => {
           provide: JwtAuthService,
           useValue: mockJwtAuthService,
         },
+        {
+          provide: UserSettingsService,
+          useValue: mockUserSettingsService,
+        },
       ],
     }).compile();
 
     service = module.get<AuthService>(AuthService);
     userService = module.get<UserService>(UserService);
     jwtAuthService = module.get<JwtAuthService>(JwtAuthService);
+    userSettingsService = module.get<UserSettingsService>(UserSettingsService);
 
     // Create spies for UserService methods
     createSpy = jest.spyOn(userService, "create");
@@ -77,6 +118,12 @@ describe("AuthService", () => {
     generateTokenPairSpy = jest.spyOn(jwtAuthService, "generateTokenPair");
     verifyRefreshTokenSpy = jest.spyOn(jwtAuthService, "verifyRefreshToken");
     refreshAccessTokenSpy = jest.spyOn(jwtAuthService, "refreshAccessToken");
+
+    // Create spy for UserSettingsService methods
+    getUserSettingsSpy = jest.spyOn(userSettingsService, "getUserSettings");
+
+    // Default mock implementation
+    getUserSettingsSpy.mockResolvedValue(mockUserSettings);
   });
 
   it("should be defined", () => {
@@ -90,7 +137,7 @@ describe("AuthService", () => {
       name: "John Doe",
     };
 
-    it("should register a new user and return auth response", async () => {
+    it("should register a new user and return auth response with userSettings", async () => {
       createSpy.mockResolvedValue(mockUser);
       generateTokenPairSpy.mockResolvedValue({
         accessToken: "access-token",
@@ -105,7 +152,9 @@ describe("AuthService", () => {
         mockUser.email,
         false,
       );
+      expect(getUserSettingsSpy).toHaveBeenCalledWith(mockUser.id);
       expect(result).toEqual(mockAuthResponse);
+      expect(result.userSettings).toBeDefined();
     });
 
     it("should propagate error from user creation", async () => {
@@ -113,6 +162,17 @@ describe("AuthService", () => {
       createSpy.mockRejectedValue(error);
 
       await expect(service.register(registerDto)).rejects.toThrow(error);
+    });
+
+    it("should handle userSettings service error gracefully", async () => {
+      createSpy.mockResolvedValue(mockUser);
+      generateTokenPairSpy.mockResolvedValue({
+        accessToken: "access-token",
+        refreshToken: "refresh-token",
+      });
+      getUserSettingsSpy.mockRejectedValue(new Error("Settings service error"));
+
+      await expect(service.register(registerDto)).rejects.toThrow();
     });
   });
 
@@ -146,7 +206,7 @@ describe("AuthService", () => {
   });
 
   describe("login", () => {
-    it("should generate tokens for valid user", async () => {
+    it("should generate tokens for valid user with userSettings", async () => {
       generateTokenPairSpy.mockResolvedValue({
         accessToken: "access-token",
         refreshToken: "refresh-token",
@@ -159,12 +219,29 @@ describe("AuthService", () => {
         mockUser.email,
         false,
       );
+      expect(getUserSettingsSpy).toHaveBeenCalledWith(mockUser.id);
       expect(result).toEqual(mockAuthResponse);
+      expect(result.userSettings).toBeDefined();
+    });
+
+    it("should pass rememberMe flag to generateTokenPair", async () => {
+      generateTokenPairSpy.mockResolvedValue({
+        accessToken: "access-token",
+        refreshToken: "refresh-token",
+      });
+
+      await service.login(mockUser, true);
+
+      expect(generateTokenPairSpy).toHaveBeenCalledWith(
+        mockUser.id,
+        mockUser.email,
+        true,
+      );
     });
   });
 
   describe("refreshToken", () => {
-    it("should generate new tokens for valid refresh token", async () => {
+    it("should generate new tokens for valid refresh token with userSettings", async () => {
       refreshAccessTokenSpy.mockResolvedValue({
         accessToken: "new-access-token",
         refreshToken: "new-refresh-token",
@@ -180,11 +257,14 @@ describe("AuthService", () => {
       expect(refreshAccessTokenSpy).toHaveBeenCalledWith("valid-refresh-token");
       expect(verifyRefreshTokenSpy).toHaveBeenCalledWith("new-refresh-token");
       expect(findByIdSpy).toHaveBeenCalledWith("test-user-id");
+      expect(getUserSettingsSpy).toHaveBeenCalledWith("test-user-id");
       expect(result).toEqual({
         accessToken: "new-access-token",
         refreshToken: "new-refresh-token",
         user: mockUser.toProfile(),
+        userSettings: mockUserSettings,
       });
+      expect(result.userSettings).toBeDefined();
     });
 
     it("should throw error for invalid refresh token", async () => {
@@ -198,6 +278,10 @@ describe("AuthService", () => {
     });
 
     it("should throw error if user not found", async () => {
+      refreshAccessTokenSpy.mockResolvedValue({
+        accessToken: "new-access-token",
+        refreshToken: "new-refresh-token",
+      });
       verifyRefreshTokenSpy.mockReturnValue({
         sub: "non-existent-user-id",
         type: "refresh",
@@ -211,6 +295,10 @@ describe("AuthService", () => {
 
     it("should throw error if user is inactive", async () => {
       const inactiveUser = new User({ ...mockUser, isActive: false });
+      refreshAccessTokenSpy.mockResolvedValue({
+        accessToken: "new-access-token",
+        refreshToken: "new-refresh-token",
+      });
       verifyRefreshTokenSpy.mockReturnValue({
         sub: "test-user-id",
         type: "refresh",
@@ -220,6 +308,21 @@ describe("AuthService", () => {
       await expect(service.refreshToken("valid-refresh-token")).rejects.toThrow(
         "Invalid refresh token",
       );
+    });
+
+    it("should handle userSettings service error during refresh", async () => {
+      refreshAccessTokenSpy.mockResolvedValue({
+        accessToken: "new-access-token",
+        refreshToken: "new-refresh-token",
+      });
+      verifyRefreshTokenSpy.mockReturnValue({
+        sub: "test-user-id",
+        type: "refresh",
+      });
+      findByIdSpy.mockResolvedValue(mockUser);
+      getUserSettingsSpy.mockRejectedValue(new Error("Settings service error"));
+
+      await expect(service.refreshToken("valid-refresh-token")).rejects.toThrow();
     });
   });
 });

@@ -63,6 +63,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       storage.setItem('auth_token', authResponse.accessToken);
       storage.setItem('refresh_token', authResponse.refreshToken);
       
+      // 사용자 설정도 업데이트 (refresh 시에도 최신 설정 받기)
+      if (authResponse.userSettings) {
+        storage.setItem('user_settings', JSON.stringify(authResponse.userSettings));
+      }
+      
       const maxAge = rememberMe ? 30 * 24 * 60 * 60 : 0;
       const cookieOptions = maxAge > 0 ? `max-age=${maxAge}` : '';
       document.cookie = `auth-token=${authResponse.accessToken}; path=/; ${cookieOptions}; samesite=strict`;
@@ -174,6 +179,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         isActive: true,
         updatedAt: new Date(),
       }));
+      
+      // 사용자 설정 저장
+      storage.setItem('user_settings', JSON.stringify(authResponse.userSettings));
 
       // rememberMe 설정도 저장
       storage.setItem('remember_me', String(credentials.rememberMe || false));
@@ -202,10 +210,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_data');
+    localStorage.removeItem('user_settings');
     localStorage.removeItem('remember_me');
     sessionStorage.removeItem('auth_token');
     sessionStorage.removeItem('refresh_token');
     sessionStorage.removeItem('user_data');
+    sessionStorage.removeItem('user_settings');
     sessionStorage.removeItem('remember_me');
     
     // 쿠키 정리

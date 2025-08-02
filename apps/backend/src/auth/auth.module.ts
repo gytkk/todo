@@ -10,10 +10,12 @@ import { LocalStrategy } from "./strategies/local.strategy";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 import { UserModule } from "../users/user.module";
 import { RedisModule } from "../redis/redis.module";
+import { UserSettingsModule } from "../user-settings/user-settings.module";
 
 @Module({
   imports: [
     UserModule,
+    UserSettingsModule,
     RedisModule,
     PassportModule,
     JwtModule.registerAsync({

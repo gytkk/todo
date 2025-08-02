@@ -14,7 +14,27 @@ export interface UserSettingsData {
   categoryFilter: { [categoryId: string]: boolean };
   theme: "light" | "dark" | "system";
   language: string;
-  // 필요시 다른 설정들 추가 가능
+
+  // 할일 관련 설정
+  autoMoveTodos: boolean; // 미완료 작업 자동 이동
+  showTaskMoveNotifications: boolean; // 작업 이동 알림 표시
+  completedTodoDisplay: "all" | "yesterday" | "none"; // 완료된 할일 표시 방식
+
+  // 캘린더 설정
+  dateFormat: "YYYY-MM-DD" | "MM/DD/YYYY" | "DD/MM/YYYY";
+  timeFormat: "12h" | "24h";
+  weekStart: "sunday" | "monday" | "saturday";
+
+  // 알림 설정
+  notifications: {
+    enabled: boolean;
+    dailyReminder: boolean;
+    weeklyReport: boolean;
+  };
+
+  // 데이터 관리 설정
+  autoBackup: boolean;
+  backupInterval: "daily" | "weekly" | "monthly";
 }
 
 export class UserSettingsEntity {
@@ -27,7 +47,21 @@ export class UserSettingsEntity {
   constructor(data: Partial<UserSettingsEntity>) {
     this.id = data.id || uuidv4();
     this.userId = data.userId || "";
-    this.settings = data.settings || this.getDefaultSettings();
+
+    // 기본값과 전달받은 설정을 병합하여 누락된 필드 보완
+    const defaultSettings = this.getDefaultSettings();
+    this.settings = data.settings
+      ? {
+          ...defaultSettings,
+          ...data.settings,
+          // notifications 객체는 중첩되어 있으므로 별도로 병합
+          notifications: {
+            ...defaultSettings.notifications,
+            ...(data.settings.notifications || {}),
+          },
+        }
+      : defaultSettings;
+
     this.createdAt = data.createdAt || new Date();
     this.updatedAt = data.updatedAt || new Date();
   }
@@ -45,6 +79,27 @@ export class UserSettingsEntity {
       ),
       theme: "system",
       language: "ko",
+
+      // 할일 관련 기본 설정
+      autoMoveTodos: true,
+      showTaskMoveNotifications: true,
+      completedTodoDisplay: "yesterday",
+
+      // 캘린더 기본 설정
+      dateFormat: "YYYY-MM-DD",
+      timeFormat: "24h",
+      weekStart: "monday",
+
+      // 알림 기본 설정
+      notifications: {
+        enabled: true,
+        dailyReminder: false,
+        weeklyReport: false,
+      },
+
+      // 데이터 관리 기본 설정
+      autoBackup: false,
+      backupInterval: "weekly",
     };
   }
 
