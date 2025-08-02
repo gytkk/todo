@@ -1,5 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { INestApplication } from "@nestjs/common";
+import { INestApplication, ExecutionContext } from "@nestjs/common";
 import { Request } from "express";
 import * as request from "supertest";
 import { JwtService } from "@nestjs/jwt";
@@ -101,7 +101,11 @@ describe("Todo Task Movement Integration", () => {
     })
       .overrideGuard(JwtAuthGuard)
       .useValue({
-        canActivate: jest.fn(() => true),
+        canActivate: jest.fn((context: ExecutionContext) => {
+          const request = context.switchToHttp().getRequest<Request>();
+          request.user = _mockUser;
+          return true;
+        }),
       })
       .compile();
 
