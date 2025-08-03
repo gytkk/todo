@@ -6,7 +6,40 @@ import { AppSettings, Category, UserInfo } from '@calendar-todo/shared-types';
 // Mock useLocalStorage hook
 jest.mock('../useLocalStorage');
 
+// Mock useAuth hook
+jest.mock('@/contexts/AuthContext', () => ({
+  useAuth: jest.fn(),
+}));
+
+// Mock services
+jest.mock('@/services/settingsApiService', () => ({
+  SettingsApiService: {
+    getInstance: jest.fn(() => ({
+      convertToAppSettings: jest.fn(),
+      convertFromAppSettings: jest.fn(),
+      getUserSettings: jest.fn(),
+      updateUserSettings: jest.fn(),
+      resetUserSettings: jest.fn(),
+      exportUserData: jest.fn(),
+      importUserData: jest.fn(),
+    })),
+  },
+}));
+
+jest.mock('@/services/userApiService', () => ({
+  UserApiService: {
+    getInstance: jest.fn(() => ({
+      updateUserProfile: jest.fn(),
+      changePassword: jest.fn(),
+    })),
+  },
+}));
+
 const mockUseLocalStorage = useLocalStorage as jest.MockedFunction<typeof useLocalStorage>;
+
+// Import mocked useAuth
+import { useAuth } from '@/contexts/AuthContext';
+const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 
 describe('useSettings', () => {
   const defaultSettings: AppSettings = {
@@ -53,6 +86,16 @@ describe('useSettings', () => {
   beforeEach(() => {
     mockSetRawSettings = jest.fn();
     mockUseLocalStorage.mockReturnValue([defaultSettings, mockSetRawSettings]);
+    
+    // Mock useAuth to return unauthenticated state by default
+    mockUseAuth.mockReturnValue({
+      isAuthenticated: false,
+      isLoading: false,
+      user: null,
+      login: jest.fn(),
+      logout: jest.fn(),
+      register: jest.fn(),
+    });
   });
 
   afterEach(() => {
@@ -131,23 +174,6 @@ describe('useSettings', () => {
     });
   });
 
-  describe('setSettings', () => {
-    it('전체 설정을 업데이트해야 함', () => {
-      const { result } = renderHook(() => useSettings());
-
-      const newSettings = {
-        ...defaultSettings,
-        theme: 'dark' as const,
-        language: 'en' as const,
-      };
-
-      act(() => {
-        result.current.setSettings(newSettings);
-      });
-
-      expect(mockSetRawSettings).toHaveBeenCalledWith(newSettings);
-    });
-  });
 
   describe('updateSetting', () => {
     it('개별 설정을 업데이트해야 함', () => {
@@ -499,7 +525,7 @@ describe('useSettings', () => {
 
       // useSettings 훅이 함수를 매번 새로 생성할 수 있음
       expect(typeof result.current.updateSetting).toBe('function');
-      expect(typeof result.current.setSettings).toBe('function');
+      expect(typeof result.current.resetSettings).toBe('function');
     });
   });
 });

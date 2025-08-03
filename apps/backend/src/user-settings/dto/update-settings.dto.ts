@@ -5,6 +5,9 @@ import {
   IsIn,
   IsNotEmpty,
   IsBoolean,
+  IsNumber,
+  Min,
+  Max,
 } from "class-validator";
 import { ApiPropertyOptional } from "@nestjs/swagger";
 
@@ -129,4 +132,77 @@ export class UpdateSettingsDto {
   @IsString()
   @IsIn(["daily", "weekly", "monthly"])
   backupInterval?: "daily" | "weekly" | "monthly";
+
+  // 새로 추가된 설정들
+  @ApiPropertyOptional({
+    description: "프리셋 테마 색상",
+    example: "#3b82f6",
+  })
+  @IsOptional()
+  @IsString()
+  themeColor?: string;
+
+  @ApiPropertyOptional({
+    description: "사용자 정의 색상",
+    example: "#ff6b6b",
+  })
+  @IsOptional()
+  @IsString()
+  customColor?: string;
+
+  @ApiPropertyOptional({
+    description: "기본 캘린더 보기",
+    enum: ["month", "week", "day"],
+    example: "month",
+  })
+  @IsOptional()
+  @IsString()
+  @IsIn(["month", "week", "day"])
+  defaultView?: "month" | "week" | "day";
+
+  @ApiPropertyOptional({
+    description: "타임존 설정",
+    example: "Asia/Seoul",
+  })
+  @IsOptional()
+  @IsString()
+  timezone?: string;
+
+  @ApiPropertyOptional({
+    description: "오래된 할일 표시 제한 (일 단위)",
+    example: 14,
+    minimum: 1,
+    maximum: 365,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(365)
+  oldTodoDisplayLimit?: number;
+
+  @ApiPropertyOptional({
+    description: "포화도 조정 설정",
+    example: {
+      enabled: true,
+      levels: [
+        { days: 1, opacity: 0.9 },
+        { days: 3, opacity: 0.7 },
+        { days: 7, opacity: 0.5 },
+      ],
+    },
+  })
+  @IsOptional()
+  @IsObject()
+  saturationAdjustment?: {
+    enabled: boolean;
+    levels: Array<{ days: number; opacity: number }>;
+  };
+
+  @ApiPropertyOptional({
+    description: "주말 표시 여부",
+    example: true,
+  })
+  @IsOptional()
+  @IsBoolean()
+  showWeekends?: boolean;
 }

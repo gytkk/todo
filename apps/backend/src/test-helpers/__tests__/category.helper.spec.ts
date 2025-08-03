@@ -10,7 +10,7 @@ describe("category.helper", () => {
         id: "test-category-id",
         name: "Test Category",
         color: "#3b82f6",
-        createdAt: expect.any(Date),
+        createdAt: expect.any(Date) as Date,
         order: 0,
       });
     });
@@ -48,7 +48,7 @@ describe("category.helper", () => {
         id: "test-category-id", // 기본값
         name: "Partial Override", // override
         color: "#00ff00", // override
-        createdAt: expect.any(Date), // 기본값
+        createdAt: expect.any(Date) as Date, // 기본값
         order: 0, // 기본값
       });
     });
@@ -60,7 +60,7 @@ describe("category.helper", () => {
         id: "test-category-id",
         name: "Test Category",
         color: "#3b82f6",
-        createdAt: expect.any(Date),
+        createdAt: expect.any(Date) as Date,
         order: 0,
       });
     });
@@ -138,14 +138,14 @@ describe("category.helper", () => {
         id: "category-1",
         name: "Category 1",
         color: "#3b82f6",
-        createdAt: expect.any(Date),
+        createdAt: expect.any(Date) as Date,
         order: 0,
       });
       expect(categories[1]).toEqual({
         id: "category-2",
         name: "Category 2",
         color: "#3b82f6",
-        createdAt: expect.any(Date),
+        createdAt: expect.any(Date) as Date,
         order: 1,
       });
     });
@@ -176,7 +176,7 @@ describe("category.helper", () => {
         id: "category-1",
         name: "Category 1",
         color: "#3b82f6",
-        createdAt: expect.any(Date),
+        createdAt: expect.any(Date) as Date,
         order: 0,
       });
     });
@@ -185,7 +185,7 @@ describe("category.helper", () => {
       const categories = createMockCategories(10);
 
       expect(categories).toHaveLength(10);
-      
+
       categories.forEach((category, index) => {
         expect(category.id).toBe(`category-${index + 1}`);
         expect(category.name).toBe(`Category ${index + 1}`);
@@ -247,7 +247,7 @@ describe("category.helper", () => {
       expect(categories1).not.toBe(categories2); // 배열 참조가 다름
       expect(categories1[0]).not.toBe(categories2[0]); // 첫 번째 요소 참조가 다름
       expect(categories1[1]).not.toBe(categories2[1]); // 두 번째 요소 참조가 다름
-      
+
       // 하지만 내용은 같아야 함
       expect(categories1).toEqual(categories2);
     });
@@ -271,7 +271,7 @@ describe("category.helper", () => {
       sizes.forEach((size) => {
         const categories = createMockCategories(size);
         expect(categories).toHaveLength(size);
-        
+
         if (size > 0) {
           expect(categories[0].id).toBe("category-1");
           expect(categories[size - 1].id).toBe(`category-${size}`);
@@ -323,7 +323,7 @@ describe("category.helper", () => {
         id: "test-category-id",
         name: "Test Category",
         color: "#3b82f6",
-        createdAt: expect.any(Date),
+        createdAt: expect.any(Date) as Date,
         order: 0,
       });
     });

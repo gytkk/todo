@@ -62,6 +62,23 @@ describe("AuthController", () => {
       },
       autoBackup: false,
       backupInterval: "weekly",
+      // 새로 추가된 설정들 (프론트엔드 AppSettings와 동기화)
+      themeColor: "#3B82F6",
+      customColor: "#3B82F6",
+      defaultView: "month",
+      timezone: "Asia/Seoul",
+      oldTodoDisplayLimit: 14,
+      saturationAdjustment: {
+        enabled: true,
+        levels: [
+          { days: 1, opacity: 0.9 },
+          { days: 3, opacity: 0.7 },
+          { days: 7, opacity: 0.5 },
+          { days: 14, opacity: 0.3 },
+          { days: 30, opacity: 0.1 },
+        ],
+      },
+      showWeekends: true,
     },
   };
 

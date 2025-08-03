@@ -35,6 +35,18 @@ export interface UserSettingsData {
   // 데이터 관리 설정
   autoBackup: boolean;
   backupInterval: "daily" | "weekly" | "monthly";
+
+  // 새로 추가된 설정들 (프론트엔드 AppSettings와 동기화)
+  themeColor: string; // 프리셋 테마 색상
+  customColor: string; // 사용자 정의 색상
+  defaultView: "month" | "week" | "day"; // 기본 캘린더 보기
+  timezone: string; // 타임존 설정
+  oldTodoDisplayLimit: number; // 오래된 할일 표시 제한 (일 단위)
+  saturationAdjustment: {
+    enabled: boolean;
+    levels: Array<{ days: number; opacity: number }>;
+  }; // 포화도 조정 설정
+  showWeekends: boolean; // 주말 표시 여부
 }
 
 export class UserSettingsEntity {
@@ -58,6 +70,15 @@ export class UserSettingsEntity {
           notifications: {
             ...defaultSettings.notifications,
             ...(data.settings.notifications || {}),
+          },
+          // saturationAdjustment 객체도 중첩되어 있으므로 별도로 병합
+          saturationAdjustment: {
+            ...defaultSettings.saturationAdjustment,
+            ...(data.settings.saturationAdjustment || {}),
+            // levels 배열은 완전 교체 (기본값과 병합하지 않음)
+            levels:
+              data.settings.saturationAdjustment?.levels ||
+              defaultSettings.saturationAdjustment.levels,
           },
         }
       : defaultSettings;
@@ -100,6 +121,24 @@ export class UserSettingsEntity {
       // 데이터 관리 기본 설정
       autoBackup: false,
       backupInterval: "weekly",
+
+      // 새로 추가된 설정들의 기본값
+      themeColor: "#3b82f6", // 기본 파란색
+      customColor: "#3b82f6",
+      defaultView: "month",
+      timezone: "Asia/Seoul",
+      oldTodoDisplayLimit: 14, // 14일 이전 할일까지 표시
+      saturationAdjustment: {
+        enabled: true,
+        levels: [
+          { days: 1, opacity: 0.9 },
+          { days: 3, opacity: 0.7 },
+          { days: 7, opacity: 0.5 },
+          { days: 14, opacity: 0.3 },
+          { days: 30, opacity: 0.1 },
+        ],
+      },
+      showWeekends: true,
     };
   }
 

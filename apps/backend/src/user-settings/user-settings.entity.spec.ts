@@ -29,6 +29,23 @@ const createMockUserSettings = (
   },
   autoBackup: false,
   backupInterval: "weekly",
+  // 새로 추가된 필드들
+  themeColor: "#3b82f6",
+  customColor: "#3b82f6",
+  defaultView: "month",
+  timezone: "Asia/Seoul",
+  oldTodoDisplayLimit: 14,
+  saturationAdjustment: {
+    enabled: true,
+    levels: [
+      { days: 1, opacity: 0.9 },
+      { days: 3, opacity: 0.7 },
+      { days: 7, opacity: 0.5 },
+      { days: 14, opacity: 0.3 },
+      { days: 30, opacity: 0.1 },
+    ],
+  },
+  showWeekends: true,
   ...overrides,
 });
 

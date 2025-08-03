@@ -45,6 +45,9 @@ export function Settings({ onClearData }: SettingsProps) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [activeSection, setActiveSection] = useState('user-info');
   const [mounted, setMounted] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   // 섹션 정보 정의
   const sections = useMemo(() => [
@@ -60,7 +63,11 @@ export function Settings({ onClearData }: SettingsProps) {
   const {
     settings,
     updateSetting,
-    resetSettings
+    resetSettings,
+    updateUserInfo,
+    changePassword,
+    exportData,
+    importData,
   } = useSettings();
 
   // Hydration 완료 후 mounted 상태 설정
@@ -105,20 +112,59 @@ export function Settings({ onClearData }: SettingsProps) {
     onClearData();
   };
 
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async () => {
     if (newPassword !== confirmPassword) {
       alert('새 비밀번호가 일치하지 않습니다.');
       return;
     }
-    if (newPassword.length < 6) {
-      alert('비밀번호는 6자리 이상이어야 합니다.');
+    if (newPassword.length < 8) {
+      alert('비밀번호는 8자리 이상이어야 합니다.');
       return;
     }
-    alert('비밀번호가 변경되었습니다.');
-    setShowPasswordModal(false);
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
+
+    setIsLoading(true);
+    try {
+      await changePassword(currentPassword, newPassword);
+      alert('비밀번호가 성공적으로 변경되었습니다.');
+      setShowPasswordModal(false);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error) {
+      console.error('Password change failed:', error);
+      alert('비밀번호 변경에 실패했습니다. 현재 비밀번호를 확인해주세요.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleNameEdit = () => {
+    setIsEditingName(true);
+    setEditedName(settings.userInfo?.name || '');
+  };
+
+  const handleNameSave = async () => {
+    if (!editedName.trim()) {
+      alert('이름을 입력해주세요.');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await updateUserInfo({ name: editedName.trim() });
+      setIsEditingName(false);
+      alert('이름이 성공적으로 변경되었습니다.');
+    } catch (error) {
+      console.error('Name update failed:', error);
+      alert('이름 변경에 실패했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleNameCancel = () => {
+    setIsEditingName(false);
+    setEditedName('');
   };
 
 
@@ -134,6 +180,61 @@ export function Settings({ onClearData }: SettingsProps) {
       if (confirm('정말로 계정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
         alert('계정이 삭제되었습니다.');
       }
+    }
+  };
+
+  const handleResetSettings = async () => {
+    if (confirm('정말로 설정을 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+      setIsLoading(true);
+      try {
+        await resetSettings();
+        alert('설정이 성공적으로 초기화되었습니다.');
+      } catch (error) {
+        console.error('Settings reset failed:', error);
+        alert('설정 초기화에 실패했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const handleExportData = async () => {
+    try {
+      setIsLoading(true);
+      const blob = await exportData();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `todo-calendar-export-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      alert('데이터가 성공적으로 내보내졌습니다.');
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('데이터 내보내기에 실패했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleImportData = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsLoading(true);
+      await importData(file);
+      alert('데이터가 성공적으로 가져와졌습니다.');
+      // 파일 입력 초기화
+      event.target.value = '';
+    } catch (error) {
+      console.error('Import failed:', error);
+      alert('데이터 가져오기에 실패했습니다: ' + (error as Error).message);
+      event.target.value = '';
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -238,9 +339,46 @@ export function Settings({ onClearData }: SettingsProps) {
                           <div className="md:col-span-2 space-y-4">
                             <div className="space-y-2">
                               <Label className="text-sm font-medium">사용자 이름</Label>
-                              <p className="text-base text-gray-900 px-3 py-2 min-h-[40px] flex items-center bg-gray-50 rounded-md border">
-                                {settings.userInfo?.name || '사용자'}
-                              </p>
+                              {isEditingName ? (
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                    value={editedName}
+                                    onChange={(e) => setEditedName(e.target.value)}
+                                    placeholder="사용자 이름을 입력하세요"
+                                    disabled={isLoading}
+                                    className="flex-1"
+                                  />
+                                  <Button 
+                                    size="sm" 
+                                    onClick={handleNameSave}
+                                    disabled={isLoading || !editedName.trim()}
+                                  >
+                                    저장
+                                  </Button>
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline" 
+                                    onClick={handleNameCancel}
+                                    disabled={isLoading}
+                                  >
+                                    취소
+                                  </Button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center justify-between px-3 py-2 min-h-[40px] bg-gray-50 rounded-md border">
+                                  <span className="text-base text-gray-900">
+                                    {settings.userInfo?.name || '사용자'}
+                                  </span>
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost" 
+                                    onClick={handleNameEdit}
+                                    disabled={isLoading}
+                                  >
+                                    편집
+                                  </Button>
+                                </div>
+                              )}
                             </div>
                             <div className="space-y-2">
                               <Label className="text-sm font-medium">이메일 주소</Label>
@@ -317,7 +455,12 @@ export function Settings({ onClearData }: SettingsProps) {
                                     <Button variant="outline" onClick={() => setShowPasswordModal(false)}>
                                       취소
                                     </Button>
-                                    <Button onClick={handlePasswordChange}>변경</Button>
+                                    <Button 
+                                      onClick={handlePasswordChange}
+                                      disabled={isLoading || !currentPassword || !newPassword || !confirmPassword}
+                                    >
+                                      {isLoading ? '변경 중...' : '변경'}
+                                    </Button>
                                   </div>
                                 </div>
                               </DialogContent>
@@ -601,15 +744,12 @@ export function Settings({ onClearData }: SettingsProps) {
                           </div>
                           <Button
                             variant="destructive"
-                            onClick={() => {
-                              if (confirm('정말로 설정을 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
-                                resetSettings();
-                              }
-                            }}
+                            onClick={handleResetSettings}
+                            disabled={isLoading}
                             className="w-full"
                           >
                             <RefreshCw className="h-4 w-4 mr-2" />
-                            설정 초기화
+                            {isLoading ? '초기화 중...' : '설정 초기화'}
                           </Button>
                         </div>
                       </CardContent>
@@ -640,6 +780,46 @@ export function Settings({ onClearData }: SettingsProps) {
                             <Label className="text-sm font-medium">문의 이메일</Label>
                             <p className="text-sm text-gray-600">support@todo-calendar.com</p>
                           </div>
+                        </div>
+
+                        <div className="border-t pt-6">
+                          <Label className="text-sm font-medium mb-3 block">데이터 관리</Label>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <Button
+                              variant="outline"
+                              onClick={handleExportData}
+                              disabled={isLoading}
+                              className="flex items-center gap-2"
+                            >
+                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                              {isLoading ? '내보내는 중...' : '데이터 내보내기'}
+                            </Button>
+                            
+                            <div className="relative">
+                              <input
+                                type="file"
+                                accept=".json"
+                                onChange={handleImportData}
+                                disabled={isLoading}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                              />
+                              <Button
+                                variant="outline"
+                                disabled={isLoading}
+                                className="w-full flex items-center gap-2 pointer-events-none"
+                              >
+                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                                </svg>
+                                {isLoading ? '가져오는 중...' : '데이터 가져오기'}
+                              </Button>
+                            </div>
+                          </div>
+                          <p className="text-sm text-gray-500 mt-2">
+                            설정과 할일 데이터를 JSON 형식으로 내보내거나 가져올 수 있습니다.
+                          </p>
                         </div>
                       </CardContent>
                     </Card>

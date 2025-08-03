@@ -25,6 +25,7 @@ import { CreateCategoryDto } from "./dto/create-category.dto";
 import { UpdateCategoryDto } from "./dto/update-category.dto";
 import { UpdateSettingsDto } from "./dto/update-settings.dto";
 import { ReorderCategoriesDto } from "./dto/reorder-categories.dto";
+import { ImportDataDto } from "./dto/import-data.dto";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 
 @ApiTags("User Settings")
@@ -184,5 +185,50 @@ export class UserSettingsController {
       console.error("Reorder categories error:", error);
       throw error;
     }
+  }
+
+  @Post("reset")
+  @ApiOperation({ summary: "사용자 설정 초기화" })
+  @ApiResponse({ status: 200, description: "설정 초기화 성공" })
+  async resetUserSettings(@Request() req: RequestWithUser) {
+    const settings = await this.userSettingsService.resetUserSettings(
+      req.user.id,
+    );
+    return { settings };
+  }
+
+  @Get("export")
+  @ApiOperation({ summary: "사용자 데이터 내보내기" })
+  @ApiResponse({
+    status: 200,
+    description: "사용자 데이터 내보내기 성공",
+    schema: {
+      type: "object",
+      properties: {
+        data: {
+          type: "object",
+          description: "사용자의 모든 설정 및 데이터",
+        },
+      },
+    },
+  })
+  async exportUserData(@Request() req: RequestWithUser) {
+    const data = await this.userSettingsService.exportUserData(req.user.id);
+    return { data };
+  }
+
+  @Post("import")
+  @ApiOperation({ summary: "사용자 데이터 가져오기" })
+  @ApiResponse({ status: 200, description: "데이터 가져오기 성공" })
+  @ApiResponse({ status: 400, description: "잘못된 데이터 형식" })
+  async importUserData(
+    @Request() req: RequestWithUser,
+    @Body() importData: ImportDataDto,
+  ) {
+    const settings = await this.userSettingsService.importUserData(
+      req.user.id,
+      importData,
+    );
+    return { settings };
   }
 }

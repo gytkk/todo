@@ -33,6 +33,18 @@ export interface UserSettingsData {
   // 데이터 관리 설정
   autoBackup: boolean;
   backupInterval: "daily" | "weekly" | "monthly";
+
+  // 새로 추가된 설정들 (프론트엔드 AppSettings와 동기화)
+  themeColor: string;
+  customColor: string;
+  defaultView: "month" | "week" | "day";
+  timezone: string;
+  oldTodoDisplayLimit: number;
+  saturationAdjustment: {
+    enabled: boolean;
+    levels: Array<{ days: number; opacity: number }>;
+  };
+  showWeekends: boolean;
 }
 
 // 사용자 관련 타입들

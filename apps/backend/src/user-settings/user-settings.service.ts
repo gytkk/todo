@@ -4,7 +4,21 @@ import {
   BadRequestException,
 } from "@nestjs/common";
 import { UserSettingsRepository } from "./user-settings.repository";
-import { UserSettingsData } from "./user-settings.entity";
+import { UserSettingsData, UserSettingsEntity } from "./user-settings.entity";
+
+export interface ExportData {
+  version: string;
+  exportDate: string;
+  userId: string;
+  settings: UserSettingsData;
+}
+
+export interface ImportData {
+  version?: string;
+  exportDate?: string;
+  userId?: string;
+  settings: Record<string, unknown>;
+}
 import { TodoCategory } from "@calendar-todo/shared-types";
 
 @Injectable()
@@ -215,5 +229,52 @@ export class UserSettingsService {
 
     // 업데이트된 카테고리 목록 반환
     return settings.getCategories();
+  }
+
+  async resetUserSettings(userId: string): Promise<UserSettingsData> {
+    // 기본 설정으로 완전히 초기화
+    const defaultEntity = new UserSettingsEntity({ userId });
+    await this.userSettingsRepository.create(defaultEntity);
+    return defaultEntity.settings;
+  }
+
+  async exportUserData(userId: string): Promise<ExportData> {
+    // 사용자의 모든 설정 데이터를 내보내기
+    const userSettings = await this.userSettingsRepository.findByUserId(userId);
+    if (!userSettings) {
+      throw new NotFoundException("User settings not found");
+    }
+
+    return {
+      version: "1.0",
+      exportDate: new Date().toISOString(),
+      userId: userId,
+      settings: userSettings.settings,
+    };
+  }
+
+  async importUserData(
+    userId: string,
+    importData: ImportData,
+  ): Promise<UserSettingsData> {
+    // 데이터 유효성 검사
+    if (!importData || !importData.settings) {
+      throw new BadRequestException("Invalid import data format");
+    }
+
+    // 기존 설정 가져오기 또는 새로 생성
+    let userSettings = await this.userSettingsRepository.findByUserId(userId);
+    if (!userSettings) {
+      userSettings = new UserSettingsEntity({ userId });
+    }
+
+    // 가져온 데이터로 설정 업데이트 (기본값과 병합)
+    const updatedEntity = new UserSettingsEntity({
+      ...userSettings,
+      settings: importData.settings as unknown as UserSettingsData,
+    });
+
+    await this.userSettingsRepository.update(userId, updatedEntity);
+    return updatedEntity.settings;
   }
 }
