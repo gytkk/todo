@@ -1,4 +1,5 @@
 import { UserInfo } from '@calendar-todo/shared-types';
+import { authenticatedFetch } from '@/lib/apiUtils';
 
 export interface UpdateUserRequest {
   name?: string;
@@ -25,12 +26,8 @@ export class UserApiService {
    */
   async getUserProfile(): Promise<UserInfo> {
     try {
-      const response = await fetch(`${this.baseUrl}/me`, {
+      const response = await authenticatedFetch(`${this.baseUrl}/me`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -54,12 +51,8 @@ export class UserApiService {
    */
   async updateUserProfile(updates: UpdateUserRequest): Promise<UserInfo> {
     try {
-      const response = await fetch(`${this.baseUrl}/me`, {
+      const response = await authenticatedFetch(`${this.baseUrl}/me`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
         body: JSON.stringify(updates),
       });
 
@@ -84,12 +77,8 @@ export class UserApiService {
    */
   async changePassword(passwordData: ChangePasswordRequest): Promise<void> {
     try {
-      const response = await fetch(`${this.baseUrl}/me/password`, {
+      const response = await authenticatedFetch(`${this.baseUrl}/me/password`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
         body: JSON.stringify(passwordData),
       });
 
@@ -108,12 +97,8 @@ export class UserApiService {
    */
   async deleteAccount(): Promise<void> {
     try {
-      const response = await fetch(`${this.baseUrl}/me`, {
+      const response = await authenticatedFetch(`${this.baseUrl}/me`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
       });
 
       if (!response.ok) {

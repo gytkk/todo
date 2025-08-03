@@ -503,7 +503,7 @@ export function Settings({ onClearData }: SettingsProps) {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div className="space-y-2">
                             <Label htmlFor="language-select">언어 설정</Label>
-                            <Select value={settings.language} onValueChange={(value) => updateSetting('language', value as AppSettings['language'])}>
+                            <Select value={mounted ? settings.language : 'ko'} onValueChange={(value) => updateSetting('language', value as AppSettings['language'])}>
                               <SelectTrigger id="language-select">
                                 <SelectValue placeholder="언어를 선택하세요" />
                               </SelectTrigger>
@@ -516,7 +516,7 @@ export function Settings({ onClearData }: SettingsProps) {
 
                           <div className="space-y-2">
                             <Label htmlFor="theme-select">다크 모드 설정</Label>
-                            <Select value={settings.theme} onValueChange={(value) => updateSetting('theme', value as AppSettings['theme'])}>
+                            <Select value={mounted ? settings.theme : 'light'} onValueChange={(value) => updateSetting('theme', value as AppSettings['theme'])}>
                               <SelectTrigger id="theme-select">
                                 <SelectValue placeholder="테마를 선택하세요" />
                               </SelectTrigger>
@@ -530,7 +530,7 @@ export function Settings({ onClearData }: SettingsProps) {
 
                           <div className="space-y-2">
                             <Label htmlFor="default-view-select">기본 보기</Label>
-                            <Select value={settings.defaultView} onValueChange={(value) => updateSetting('defaultView', value as AppSettings['defaultView'])}>
+                            <Select value={mounted ? settings.defaultView : 'month'} onValueChange={(value) => updateSetting('defaultView', value as AppSettings['defaultView'])}>
                               <SelectTrigger id="default-view-select">
                                 <SelectValue placeholder="기본 보기를 선택하세요" />
                               </SelectTrigger>
@@ -564,12 +564,12 @@ export function Settings({ onClearData }: SettingsProps) {
                             <input
                               id="custom-color"
                               type="color"
-                              value={mounted ? settings.customColor : '#3B82F6'}
+                              value={mounted && settings.customColor ? settings.customColor : '#3B82F6'}
                               onChange={(e) => updateSetting('customColor', e.target.value)}
                               className="w-12 h-12 border rounded cursor-pointer"
                             />
                             <Input
-                              value={mounted ? settings.customColor : '#3B82F6'}
+                              value={mounted && settings.customColor ? settings.customColor : '#3B82F6'}
                               onChange={(e) => updateSetting('customColor', e.target.value)}
                               placeholder="#000000"
                               className="flex-1"
@@ -594,7 +594,7 @@ export function Settings({ onClearData }: SettingsProps) {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div className="space-y-2">
                             <Label htmlFor="date-format-select">날짜 형식</Label>
-                            <Select value={settings.dateFormat} onValueChange={(value) => updateSetting('dateFormat', value as AppSettings['dateFormat'])}>
+                            <Select value={mounted ? settings.dateFormat : 'YYYY-MM-DD'} onValueChange={(value) => updateSetting('dateFormat', value as AppSettings['dateFormat'])}>
                               <SelectTrigger id="date-format-select">
                                 <SelectValue placeholder="날짜 형식을 선택하세요" />
                               </SelectTrigger>
@@ -608,7 +608,7 @@ export function Settings({ onClearData }: SettingsProps) {
 
                           <div className="space-y-2">
                             <Label htmlFor="time-format-select">시간 형식</Label>
-                            <Select value={settings.timeFormat} onValueChange={(value) => updateSetting('timeFormat', value as AppSettings['timeFormat'])}>
+                            <Select value={mounted ? settings.timeFormat : '24h'} onValueChange={(value) => updateSetting('timeFormat', value as AppSettings['timeFormat'])}>
                               <SelectTrigger id="time-format-select">
                                 <SelectValue placeholder="시간 형식을 선택하세요" />
                               </SelectTrigger>
@@ -621,7 +621,7 @@ export function Settings({ onClearData }: SettingsProps) {
 
                           <div className="space-y-2">
                             <Label htmlFor="timezone-select">타임존</Label>
-                            <Select value={settings.timezone} onValueChange={(value) => updateSetting('timezone', value)}>
+                            <Select value={mounted ? settings.timezone : 'Asia/Seoul'} onValueChange={(value) => updateSetting('timezone', value)}>
                               <SelectTrigger id="timezone-select">
                                 <SelectValue placeholder="타임존을 선택하세요" />
                               </SelectTrigger>
@@ -636,7 +636,7 @@ export function Settings({ onClearData }: SettingsProps) {
 
                           <div className="space-y-2">
                             <Label htmlFor="week-start-select">주 시작일</Label>
-                            <Select value={settings.weekStart} onValueChange={(value) => updateSetting('weekStart', value as AppSettings['weekStart'])}>
+                            <Select value={mounted ? settings.weekStart : 'sunday'} onValueChange={(value) => updateSetting('weekStart', value as AppSettings['weekStart'])}>
                               <SelectTrigger id="week-start-select">
                                 <SelectValue placeholder="주 시작일을 선택하세요" />
                               </SelectTrigger>
@@ -671,7 +671,7 @@ export function Settings({ onClearData }: SettingsProps) {
                               type="number"
                               min="1"
                               max="365"
-                              value={settings.oldTodoDisplayLimit}
+                              value={mounted ? settings.oldTodoDisplayLimit?.toString() || '14' : '14'}
                               onChange={(e) => updateSetting('oldTodoDisplayLimit', parseInt(e.target.value) || 14)}
                               className="w-20"
                             />
@@ -685,7 +685,7 @@ export function Settings({ onClearData }: SettingsProps) {
                             <p className="text-sm text-gray-600">미완료 작업(📝)을 다음 날로 자동 이동합니다 (이벤트는 고정)</p>
                           </div>
                           <Switch
-                            checked={settings.autoMoveTodos}
+                            checked={mounted ? settings.autoMoveTodos : true}
                             onCheckedChange={(checked) => updateSetting('autoMoveTodos', checked)}
                           />
                         </div>
@@ -696,14 +696,14 @@ export function Settings({ onClearData }: SettingsProps) {
                             <p className="text-sm text-gray-600">작업이 이동될 때 알림을 표시합니다</p>
                           </div>
                           <Switch
-                            checked={settings.showTaskMoveNotifications}
+                            checked={mounted ? settings.showTaskMoveNotifications : true}
                             onCheckedChange={(checked) => updateSetting('showTaskMoveNotifications', checked)}
                           />
                         </div>
 
                         <div className="space-y-2">
                           <Label htmlFor="completed-todo-display">완료된 할 일 표시</Label>
-                          <Select value={settings.completedTodoDisplay} onValueChange={(value) => updateSetting('completedTodoDisplay', value as AppSettings['completedTodoDisplay'])}>
+                          <Select value={mounted ? settings.completedTodoDisplay : 'yesterday'} onValueChange={(value) => updateSetting('completedTodoDisplay', value as AppSettings['completedTodoDisplay'])}>
                             <SelectTrigger id="completed-todo-display">
                               <SelectValue placeholder="완료된 할 일 표시 방식을 선택하세요" />
                             </SelectTrigger>

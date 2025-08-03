@@ -82,7 +82,7 @@ const migrateSettings = (oldSettings: unknown): AppSettings => {
 };
 
 export const useSettings = () => {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user, updateUser } = useAuth();
   const [rawSettings, setRawSettings] = useLocalStorage<unknown>('app-settings', defaultSettings);
   const [settings, setSettings] = useState<AppSettings>(defaultSettings);
   const [loading, setLoading] = useState(false);
@@ -125,6 +125,12 @@ export const useSettings = () => {
             ...apiSettings,
             // 카테고리는 별도 처리 (useCategories에서 관리)
             categories: migratedLocalSettings.categories,
+            // AuthContext의 사용자 정보로 userInfo 동기화
+            userInfo: user ? {
+              name: user.name || '사용자',
+              email: user.email,
+              profileImage: user.profileImage
+            } : migratedLocalSettings.userInfo,
           };
 
           setSettings(combinedSettings);
@@ -139,13 +145,27 @@ export const useSettings = () => {
               ...migratedLocalSettings,
               ...apiSettings,
               categories: migratedLocalSettings.categories,
+              // AuthContext의 사용자 정보로 userInfo 동기화
+              userInfo: user ? {
+                name: user.name || '사용자',
+                email: user.email,
+                profileImage: user.profileImage
+              } : migratedLocalSettings.userInfo,
             };
 
             setSettings(combinedSettings);
           } catch (error) {
             console.error('Failed to load settings from API, using local settings:', error);
             const migratedSettings = migrateSettings(rawSettings);
-            setSettings(migratedSettings);
+            setSettings({
+              ...migratedSettings,
+              // AuthContext의 사용자 정보로 userInfo 동기화
+              userInfo: user ? {
+                name: user.name || '사용자',
+                email: user.email,
+                profileImage: user.profileImage
+              } : migratedSettings.userInfo,
+            });
           }
         }
       }
@@ -153,7 +173,7 @@ export const useSettings = () => {
       setLoading(false);
       setInitialized(true);
     }
-  }, [isAuthenticated, authLoading, rawSettings, initialized, getStoredUserSettings, settingsApiService]);
+  }, [isAuthenticated, authLoading, rawSettings, initialized, getStoredUserSettings, settingsApiService, user]);
 
   // 인증 상태 변경 시 설정 초기화
   useEffect(() => {
@@ -179,12 +199,14 @@ export const useSettings = () => {
       // 인증된 사용자: 백엔드 API에 동기화
       try {
         const settingsUpdate = settingsApiService.convertFromAppSettings({ [key]: value });
+        console.log(`Updating setting ${String(key)} to backend:`, settingsUpdate);
         await settingsApiService.updateUserSettings(settingsUpdate);
+        console.log(`Successfully updated setting ${String(key)} to backend`);
         
         // localStorage도 업데이트 (캐시 역할)
         setRawSettings(newSettings);
       } catch (error) {
-        console.error('Failed to sync setting to backend:', error);
+        console.error(`Failed to sync setting ${String(key)} to backend:`, error);
         // 백엔드 동기화 실패 시 로컬에만 저장
         setRawSettings(newSettings);
       }
@@ -236,6 +258,16 @@ export const useSettings = () => {
         name: updates.name,
       });
       
+      // AuthContext의 user 정보도 업데이트
+      if (user) {
+        updateUser({
+          ...user,
+          name: updatedUserInfo.name || user.name,
+          email: updatedUserInfo.email,
+          profileImage: updatedUserInfo.profileImage
+        });
+      }
+      
       const newSettings = {
         ...settings,
         userInfo: updatedUserInfo
@@ -247,7 +279,7 @@ export const useSettings = () => {
       console.error('Failed to update user info:', error);
       throw error;
     }
-  }, [settings, isAuthenticated, setRawSettings, userApiService]);
+  }, [settings, isAuthenticated, setRawSettings, userApiService, user, updateUser]);
 
   // 비밀번호 변경 (백엔드 API 사용)
   const changePassword = useCallback(async (currentPassword: string, newPassword: string) => {

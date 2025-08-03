@@ -31,6 +31,7 @@ describe('SettingsContext', () => {
     weekStart: 'sunday',
     oldTodoDisplayLimit: 14,
     autoMoveTodos: true,
+    showTaskMoveNotifications: true,
     saturationAdjustment: {
       enabled: true,
       levels: [
@@ -46,14 +47,17 @@ describe('SettingsContext', () => {
 
   const mockUseSettingsReturn = {
     settings: mockSettings,
+    loading: false,
     updateSetting: jest.fn(),
     resetSettings: jest.fn(),
-    setSettings: jest.fn(),
     addCategory: jest.fn(),
     removeCategory: jest.fn(),
     updateCategory: jest.fn(),
     setDefaultCategory: jest.fn(),
     updateUserInfo: jest.fn(),
+    changePassword: jest.fn(),
+    exportData: jest.fn(),
+    importData: jest.fn(),
   };
 
   beforeEach(() => {
@@ -141,7 +145,6 @@ describe('SettingsContext', () => {
         
         return (
           <div>
-            <button onClick={() => context.setSettings(mockSettings)}>setSettings</button>
             <button onClick={() => context.addCategory('새 카테고리', '#123456')}>addCategory</button>
             <button onClick={() => context.removeCategory('1')}>removeCategory</button>
             <button onClick={() => context.updateCategory('1', { name: '새 이름' })}>updateCategory</button>
@@ -162,7 +165,6 @@ describe('SettingsContext', () => {
       expect(typeof context.settings).toBe('object');
       expect(typeof context.updateSetting).toBe('function');
       expect(typeof context.resetSettings).toBe('function');
-      expect(typeof context.setSettings).toBe('function');
       expect(typeof context.addCategory).toBe('function');
       expect(typeof context.removeCategory).toBe('function');
       expect(typeof context.updateCategory).toBe('function');

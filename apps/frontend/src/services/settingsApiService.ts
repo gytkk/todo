@@ -1,4 +1,5 @@
 import { AppSettings, UserSettingsData } from '@calendar-todo/shared-types';
+import { authenticatedFetch } from '@/lib/apiUtils';
 
 export class SettingsApiService {
   private static instance: SettingsApiService;
@@ -16,12 +17,8 @@ export class SettingsApiService {
    */
   async getUserSettings(): Promise<UserSettingsData> {
     try {
-      const response = await fetch(this.baseUrl, {
+      const response = await authenticatedFetch(this.baseUrl, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -41,12 +38,8 @@ export class SettingsApiService {
    */
   async updateUserSettings(settingsUpdate: Partial<UserSettingsData>): Promise<UserSettingsData> {
     try {
-      const response = await fetch(this.baseUrl, {
+      const response = await authenticatedFetch(this.baseUrl, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
         body: JSON.stringify(settingsUpdate),
       });
 
@@ -67,12 +60,8 @@ export class SettingsApiService {
    */
   async resetUserSettings(): Promise<UserSettingsData> {
     try {
-      const response = await fetch(`${this.baseUrl}/reset`, {
+      const response = await authenticatedFetch(`${this.baseUrl}/reset`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -92,12 +81,8 @@ export class SettingsApiService {
    */
   async exportUserData(): Promise<Record<string, unknown>> {
     try {
-      const response = await fetch(`${this.baseUrl}/export`, {
+      const response = await authenticatedFetch(`${this.baseUrl}/export`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -117,12 +102,8 @@ export class SettingsApiService {
    */
   async importUserData(importData: Record<string, unknown>): Promise<UserSettingsData> {
     try {
-      const response = await fetch(`${this.baseUrl}/import`, {
+      const response = await authenticatedFetch(`${this.baseUrl}/import`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
         body: JSON.stringify(importData),
       });
 

@@ -1,15 +1,24 @@
 "use client";
 
 import React, { createContext, useContext, ReactNode, useMemo } from 'react';
-import { AppSettings } from '@calendar-todo/shared-types';
+import { AppSettings, Category, UserInfo } from '@calendar-todo/shared-types';
 import { useSettings } from '@/hooks/useSettings';
 
 interface SettingsContextType {
   // Settings related
   settings: AppSettings;
+  loading: boolean;
   updateSetting: <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => void;
   resetSettings: () => void;
-  setSettings: (settings: AppSettings) => void;
+  updateUserInfo: (updates: Partial<UserInfo>) => void;
+  changePassword: (currentPassword: string, newPassword: string) => void;
+  exportData: () => Promise<Blob>;
+  importData: (file: File) => Promise<void>;
+  // Legacy category management (for compatibility)
+  addCategory: (name: string, color: string) => void;
+  removeCategory: (id: string) => void;
+  updateCategory: (id: string, updates: Partial<Omit<Category, 'id'>>) => void;
+  setDefaultCategory: (id: string) => void;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
