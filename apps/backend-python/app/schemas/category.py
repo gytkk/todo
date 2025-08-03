@@ -12,7 +12,7 @@ class CategoryCreateRequest(BaseModel):
     """Create category request schema."""
     
     name: str = Field(..., min_length=1, max_length=50)
-    color: str = Field(..., regex=r'^#[0-9A-Fa-f]{6}$')
+    color: str = Field(..., pattern=r'^#[0-9A-Fa-f]{6}$')
     icon: Optional[str] = Field(None, max_length=50)
 
 
@@ -20,7 +20,7 @@ class CategoryUpdateRequest(BaseModel):
     """Update category request schema."""
     
     name: Optional[str] = Field(None, min_length=1, max_length=50)
-    color: Optional[str] = Field(None, regex=r'^#[0-9A-Fa-f]{6}$')
+    color: Optional[str] = Field(None, pattern=r'^#[0-9A-Fa-f]{6}$')
     icon: Optional[str] = Field(None, max_length=50)
 
 
@@ -53,7 +53,7 @@ class CategoryDeleteResponse(BaseModel):
 class ReorderCategoriesRequest(BaseModel):
     """Reorder categories request schema."""
     
-    category_ids: list[str] = Field(..., min_items=1)
+    category_ids: list[str] = Field(..., min_length=1)
 
 
 class ReorderCategoriesResponse(BaseModel):
@@ -67,3 +67,8 @@ class AvailableColorsResponse(BaseModel):
     """Available colors response schema."""
     
     colors: list[str]
+
+
+# Aliases for service layer compatibility
+CategoryCreate = CategoryCreateRequest
+CategoryUpdate = CategoryUpdateRequest

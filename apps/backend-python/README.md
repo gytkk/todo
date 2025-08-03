@@ -8,8 +8,8 @@ Calendar Todo FastAPI 백엔드 서버
 
 ## 기술 스택
 
-- **Framework**: FastAPI 0.115.6
-- **Python**: 3.11+
+- **Framework**: FastAPI 0.116.1
+- **Python**: 3.13+
 - **Database**: Redis
 - **Authentication**: JWT with python-jose
 - **Password Hashing**: bcrypt via passlib
@@ -41,8 +41,8 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8001
 
 ### 4. API 문서 확인
 
-- Swagger UI: http://localhost:8001/docs
-- ReDoc: http://localhost:8001/redoc
+- Swagger UI: <http://localhost:8001/docs>
+- ReDoc: <http://localhost:8001/redoc>
 
 ## 테스트
 
@@ -125,17 +125,20 @@ DEBUG=true
 ## API 엔드포인트
 
 ### 인증 (`/auth`)
+
 - `POST /auth/register` - 사용자 등록
 - `POST /auth/login` - 로그인
 - `POST /auth/refresh` - 토큰 갱신
 - `POST /auth/logout` - 로그아웃
 
 ### 사용자 (`/users`)
+
 - `GET /users/me` - 현재 사용자 정보
 - `PUT /users/me` - 사용자 정보 수정
 - `PUT /users/me/password` - 비밀번호 변경
 
 ### 할일 (`/todos`)
+
 - `GET /todos` - 할일 목록 조회
 - `POST /todos` - 할일 생성
 - `GET /todos/{id}` - 할일 상세 조회
@@ -146,6 +149,7 @@ DEBUG=true
 - `POST /todos/move-tasks` - 작업 이동
 
 ### 사용자 설정 (`/user-settings`)
+
 - `GET /user-settings` - 사용자 설정 조회
 - `PUT /user-settings` - 사용자 설정 업데이트
 - `GET /user-settings/categories` - 카테고리 목록

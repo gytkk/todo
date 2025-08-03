@@ -4,6 +4,7 @@ Base Redis repository implementation.
 import json
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Generic, List, Optional, TypeVar, Union
+from datetime import datetime
 
 import redis.asyncio as redis
 from pydantic import BaseModel
@@ -46,8 +47,15 @@ class BaseRedisRepository(ABC, Generic[T]):
         """Serialize entity to Redis hash format."""
         data = entity.dict()
         # Convert all values to strings for Redis
-        return {k: json.dumps(v) if not isinstance(v, str) else v 
-                for k, v in data.items()}
+        result = {}
+        for k, v in data.items():
+            if isinstance(v, str):
+                result[k] = v
+            elif isinstance(v, datetime):
+                result[k] = v.isoformat()
+            else:
+                result[k] = json.dumps(v, default=str)
+        return result
     
     def deserialize(self, data: Dict[str, str]) -> T:
         """Deserialize Redis hash data to entity."""

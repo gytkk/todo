@@ -79,6 +79,14 @@ class UserSettingsRepository(BaseRedisRepository[UserSettings]):
         # Save updated settings
         return await self.save_for_user(user_id, settings)
     
+    async def create_default_settings(self, user_id: str) -> UserSettings:
+        """Create default settings for user."""
+        # Create default settings
+        default_settings = UserSettings(user_id=user_id)
+        
+        # Save default settings
+        return await self.save_for_user(user_id, default_settings)
+    
     async def reset_to_defaults_for_user(self, user_id: str) -> UserSettings:
         """Reset settings to defaults for user."""
         # Create default settings

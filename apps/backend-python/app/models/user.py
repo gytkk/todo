@@ -17,6 +17,12 @@ class User(BaseEntityModel):
     password_hash: str
     email_verified: bool = False
     is_active: bool = True
+    
+    @classmethod
+    def generate_id(cls) -> str:
+        """Generate a new user ID."""
+        from uuid import uuid4
+        return str(uuid4())
 
 
 class UserCreate(BaseModel):

@@ -9,6 +9,15 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from app.core.config import settings
 from app.core.security import verify_token
+from app.models.user import User
+from app.repositories.user_repository import UserRepository
+from app.repositories.user_settings_repository import UserSettingsRepository
+from app.repositories.category_repository import CategoryRepository
+from app.repositories.todo_repository import TodoRepository
+from app.services.auth_service import AuthService
+from app.services.user_service import UserService
+from app.services.todo_service import TodoService
+from app.services.user_settings_service import UserSettingsService
 
 # HTTP Bearer token scheme
 security = HTTPBearer()
@@ -100,3 +109,79 @@ def verify_refresh_token(token: str) -> str:
         )
     
     return user_id
+
+
+# Service Dependencies
+
+async def get_user_repository(
+    redis_client: redis.Redis = Depends(get_redis_client),
+) -> UserRepository:
+    """Get user repository."""
+    return UserRepository(redis_client)
+
+
+async def get_user_settings_repository(
+    redis_client: redis.Redis = Depends(get_redis_client),
+) -> UserSettingsRepository:
+    """Get user settings repository."""
+    return UserSettingsRepository(redis_client)
+
+
+async def get_category_repository(
+    redis_client: redis.Redis = Depends(get_redis_client),
+) -> CategoryRepository:
+    """Get category repository."""
+    return CategoryRepository(redis_client)
+
+
+async def get_todo_repository(
+    redis_client: redis.Redis = Depends(get_redis_client),
+) -> TodoRepository:
+    """Get todo repository."""
+    return TodoRepository(redis_client)
+
+
+async def get_auth_service(
+    user_repository: UserRepository = Depends(get_user_repository),
+    user_settings_repository: UserSettingsRepository = Depends(get_user_settings_repository),
+    redis_client: redis.Redis = Depends(get_redis_client),
+) -> AuthService:
+    """Get auth service."""
+    return AuthService(user_repository, user_settings_repository, redis_client)
+
+
+async def get_user_service(
+    user_repository: UserRepository = Depends(get_user_repository),
+) -> UserService:
+    """Get user service."""
+    return UserService(user_repository)
+
+
+async def get_todo_service(
+    todo_repository: TodoRepository = Depends(get_todo_repository),
+    category_repository: CategoryRepository = Depends(get_category_repository),
+) -> TodoService:
+    """Get todo service."""
+    return TodoService(todo_repository, category_repository)
+
+
+async def get_user_settings_service(
+    user_settings_repository: UserSettingsRepository = Depends(get_user_settings_repository),
+    category_repository: CategoryRepository = Depends(get_category_repository),
+) -> UserSettingsService:
+    """Get user settings service."""
+    return UserSettingsService(user_settings_repository, category_repository)
+
+
+async def get_current_user(
+    user_id: str = Depends(get_current_user_id),
+    user_repository: UserRepository = Depends(get_user_repository),
+) -> User:
+    """Get current authenticated user."""
+    user = await user_repository.find_by_id(user_id)
+    if user is None or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found or inactive",
+        )
+    return user

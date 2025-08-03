@@ -78,3 +78,8 @@ class DeleteAllTodosResponse(BaseModel):
     success: bool = True
     deleted_count: int
     message: str = "All todos deleted successfully"
+
+
+# Aliases for service layer compatibility
+TodoCreate = TodoCreateRequest
+TodoUpdate = TodoUpdateRequest

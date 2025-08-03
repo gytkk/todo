@@ -18,6 +18,12 @@ class UpdateUserProfileRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
 
 
+class UserUpdate(BaseModel):
+    """User update schema for service layer."""
+    
+    name: str = Field(..., min_length=1, max_length=100)
+
+
 class ChangePasswordRequest(ModelChangePasswordRequest):
     """Change password request schema."""
     pass  # Inherit from model

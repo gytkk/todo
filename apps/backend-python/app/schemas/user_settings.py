@@ -1,7 +1,10 @@
 """
 User settings-related request/response schemas.
 """
+from pydantic import BaseModel
+
 from app.models.user_settings import (
+    UserSettings,
     UserSettingsUpdate,
     UserSettingsResponse,
     ExportDataResponse
@@ -13,9 +16,12 @@ class UserSettingsRequest(UserSettingsUpdate):
     pass  # Inherit from model
 
 
-class ImportDataRequest(dict):
+class ImportDataRequest(BaseModel):
     """Import data request schema."""
-    pass  # Accept any dict structure for import
+    
+    settings: dict = {}
+    categories: list = []
+    todos: list = []
 
 
 class ImportDataResponse(BaseModel):
