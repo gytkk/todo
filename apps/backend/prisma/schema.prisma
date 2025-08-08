@@ -1,0 +1,125 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  password     String
+  name         String
+  profileImage String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relationships
+  todos        Todo[]
+  categories   Category[]
+  userSettings UserSettings?
+
+  @@map("users")
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String
+  color     String
+  icon      String?
+  isDefault Boolean  @default(false)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Foreign keys
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Relationships
+  todos Todo[]
+
+  @@unique([userId, name]) // Unique category name per user
+  @@map("categories")
+}
+
+model Todo {
+  id        String   @id @default(uuid())
+  title     String
+  date      DateTime
+  completed Boolean  @default(false)
+  todoType  TodoType @default(EVENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Foreign keys
+  userId     String
+  categoryId String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
+  @@index([userId, completed])
+  @@index([userId, todoType])
+  @@map("todos")
+}
+
+model UserSettings {
+  id     String @id @default(uuid())
+  userId String @unique
+
+  // Theme and Display Settings
+  theme       Theme  @default(SYSTEM)
+  language    String @default("ko")
+  themeColor  String @default("#3b82f6")
+  customColor String @default("#3b82f6")
+  defaultView String @default("month")
+
+  // Calendar Settings
+  dateFormat  String @default("YYYY-MM-DD")
+  timeFormat  String @default("24h")
+  timezone    String @default("Asia/Seoul")
+  weekStart   String @default("sunday")
+
+  // Todo Settings
+  oldTodoDisplayLimit        Int     @default(30)
+  autoMoveTodos              Boolean @default(true)
+  showTaskMoveNotifications  Boolean @default(true)
+  saturationEnabled          Boolean @default(true)
+  saturationLevels           Json    @default("[{\"days\":7,\"opacity\":1.0},{\"days\":14,\"opacity\":0.8},{\"days\":30,\"opacity\":0.6}]")
+  completedTodoDisplay       String  @default("all")
+
+  // Legacy Settings (for compatibility)
+  showWeekends   Boolean @default(true)
+  autoBackup     Boolean @default(false)
+  backupInterval String  @default("weekly")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Foreign key
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
+}
+
+enum TodoType {
+  EVENT
+  TASK
+
+  @@map("todo_type")
+}
+
+enum Theme {
+  LIGHT
+  DARK
+  SYSTEM
+
+  @@map("theme")
+}

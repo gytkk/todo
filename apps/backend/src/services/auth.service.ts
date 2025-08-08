@@ -1,9 +1,9 @@
 import { FastifyInstance } from 'fastify';
-import { UserRepository } from '../repositories/user.repository';
+import { UserPostgresRepository } from '../repositories/postgres/user.repository';
 import { PasswordService } from './password.service';
 import { JwtService } from './jwt.service';
 import { JwtPayload, UserProfile } from '@calendar-todo/shared-types';
-import { User } from '../entities/user.entity';
+import { User } from '@prisma/client';
 
 export interface AuthResponse {
   accessToken: string;
@@ -23,20 +23,20 @@ export interface LoginDto {
 }
 
 export class AuthService {
-  private userRepository: UserRepository;
+  private userRepository: UserPostgresRepository;
   private passwordService: PasswordService;
   private jwtService: JwtService;
 
   constructor(private app: FastifyInstance) {
-    this.userRepository = new UserRepository(app);
+    this.userRepository = new UserPostgresRepository(app);
     this.passwordService = new PasswordService();
     this.jwtService = new JwtService(app);
   }
 
   async register(dto: RegisterDto): Promise<User> {
     // 이메일 중복 확인
-    const emailExists = await this.userRepository.emailExists(dto.email);
-    if (emailExists) {
+    const existingUser = await this.userRepository.findByEmail(dto.email);
+    if (existingUser) {
       throw new Error('이미 사용 중인 이메일입니다');
     }
 

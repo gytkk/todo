@@ -25,7 +25,6 @@ export function useAuthenticatedCallback<TArgs extends unknown[], TReturn>(
       }
       return callback(...args);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [isAuthenticated, ...deps] // callback과 fallback은 parent에서 메모이제이션 해야 함
   );
 }

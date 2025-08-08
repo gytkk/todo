@@ -24,14 +24,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Korean calendar-based todo application built with Next.js 15, TypeScript, and shadcn/ui components for the frontend, and NestJS for the backend API. The app features a custom-built calendar implementation with a collapsible sidebar navigation and comprehensive settings management, providing an intuitive and modern todo management experience with category support and robust backend API.
+This is a Korean calendar-based todo application built with Next.js 15, TypeScript, and shadcn/ui components for the frontend, and Fastify for the backend API. The app features a custom-built calendar implementation with a collapsible sidebar navigation and comprehensive settings management, providing an intuitive and modern todo management experience with category support and robust PostgreSQL-backed API.
 
 **Key Technologies:**
 - **Frontend**: Next.js 15, React 19, TypeScript, shadcn/ui, Tailwind CSS
-- **Backend**: NestJS, TypeScript, JWT Authentication, Swagger/OpenAPI
-- **Database**: Redis with ioredis driver
-- **Infrastructure**: Docker Compose for development environment
-- **Testing**: Jest with coverage thresholds, React Testing Library
+- **Backend**: Fastify, TypeScript, JWT Authentication, Swagger/OpenAPI, Prisma ORM
+- **Database**: PostgreSQL 15 with Prisma Client (Redis available for caching/sessions)
+- **Infrastructure**: Docker Compose for development environment (PostgreSQL + pgAdmin)
+- **Testing**: Jest with coverage thresholds, React Testing Library, PostgreSQL integration tests
 - **Development**: Turborepo monorepo, pnpm workspaces
 
 ## Monorepo Structure
@@ -41,13 +41,14 @@ This project uses Turborepo for monorepo management with the following structure
 ```text
 ├── apps/
 │   ├── frontend/          # Next.js todo calendar application
-│   └── backend/           # NestJS API server with Redis integration
+│   └── backend/           # Fastify API server with PostgreSQL integration
 ├── packages/
 │   ├── shared-config/     # Shared configuration files (ESLint, TypeScript)
 │   ├── shared-types/      # Shared TypeScript types between frontend/backend
 │   └── ui/                # Shared UI components library (shadcn/ui)
 ├── z_plans/               # Implementation planning and TODO tracking
-├── docker-compose.yml     # Redis and Redis Commander setup
+├── docker-compose.yml     # PostgreSQL, pgAdmin, and Redis setup
+├── docs/                   # Project documentation and setup guides
 ├── CLAUDE.md              # Documentation for Claude Code 
 ├── package.json           # Root package.json with workspaces
 ├── pnpm-lock.yaml         # Package manager lock file
@@ -92,25 +93,33 @@ This project uses Turborepo for monorepo management with the following structure
 
 #### Backend Components
 
-- **NestJS API Server**: RESTful API server built with NestJS framework (`apps/backend/src/`)
-- **Authentication Module**: Complete JWT-based authentication system (`apps/backend/src/auth/`)
+- **Fastify API Server**: RESTful API server built with Fastify framework (`apps/backend/src/`)
+- **Authentication System**: Complete JWT-based authentication system (`apps/backend/src/services/auth.service.ts`)
   - **JWT Service**: Token generation and validation
-  - **Password Service**: bcrypt-based password hashing
-  - **Guards**: JWT and Local authentication guards
-  - **Strategies**: Passport.js JWT and Local strategies
-  - **Decorators**: Public route and current user decorators
-- **User Management**: User profile and account management (`apps/backend/src/users/`)
-- **Todo Management**: Complete todo CRUD with filtering and statistics (`apps/backend/src/todos/`)
-- **User Settings**: Settings and category management (`apps/backend/src/user-settings/`)
-- **Redis Integration**: Data persistence and caching layer (`apps/backend/src/redis/`)
-  - **Redis Service**: Connection management and operations
-  - **Repository Pattern**: User-scoped data isolation
-  - **Base Repository**: Common repository functionality
+  - **Password Service**: bcryptjs-based password hashing
+  - **Auth Plugin**: Fastify JWT plugin integration
+  - **Auth Routes**: Registration, login, and token refresh
+- **User Management**: User profile and account management (`apps/backend/src/services/user.service.ts`)
+- **PostgreSQL Integration**: Primary data store with Prisma ORM (`apps/backend/src/services/database.service.ts`)
+  - **Database Service**: PostgreSQL connection management
+  - **Prisma Schema**: Comprehensive relational data model
+  - **Repository Pattern**: PostgreSQL-based repositories with type safety
+  - **Migration System**: Automated schema migrations
+- **Repository Layer**: (`apps/backend/src/repositories/postgres/`)
+  - **User Repository**: User CRUD operations with authentication
+  - **Category Repository**: Category management with user isolation
+  - **Todo Repository**: Todo operations, statistics, and filtering
+  - **UserSettings Repository**: User preferences and configuration
 - **Security & Documentation**:
   - **Helmet**: Security headers and CSP
-  - **Swagger/OpenAPI**: API documentation at `/api`
-  - **Exception Filters**: Global error handling
-- **Main Application**: Bootstrap configuration with security middleware (`apps/backend/src/main.ts`)
+  - **Swagger/OpenAPI**: API documentation at `/documentation`
+  - **Error Handling**: Global error handlers and validation
+- **Plugins**: Fastify plugin architecture (`apps/backend/src/plugins/`)
+  - **Database Plugin**: PostgreSQL connection plugin
+  - **Auth Plugin**: JWT authentication middleware
+  - **Security Plugin**: Helmet and CORS configuration
+  - **Swagger Plugin**: API documentation setup
+- **Main Application**: Fastify app builder with plugin system (`apps/backend/src/app.ts`)
 
 #### Shared Packages
 
@@ -156,18 +165,22 @@ This project uses Turborepo for monorepo management with the following structure
 
 ### Data Architecture
 
-- **Redis Database**: Primary data store with Docker containerization
-- **User-Scoped Repositories**: Isolated data access per user
+- **PostgreSQL Database**: Primary relational data store with Docker containerization
+- **Prisma ORM**: Type-safe database access with automatic migrations
+- **User-Scoped Data**: Isolated data access per user with foreign key constraints
 - **JWT Authentication**: Secure token-based authentication flow
 - **Next.js API Routes**: Frontend-backend communication proxy
-- **Type Safety**: Full TypeScript coverage with shared types
-- **Migration Support**: Backward compatibility for settings upgrades
+- **Type Safety**: Full TypeScript coverage with shared types and Prisma client
+- **Database Relations**: Comprehensive foreign key relationships with cascade delete
+- **Transaction Support**: ACID-compliant transactions for data integrity
+- **Migration System**: Automated schema versioning and updates
+- **Redis Integration**: Available for caching and session management (parallel operation)
 - **Error Handling**: Robust error boundaries and validation
 - **Local Storage**: Client-side settings and temporary data persistence
 
 ### API Architecture
 
-#### Backend API Endpoints (NestJS - Port 3001)
+#### Backend API Endpoints (Fastify - Port 3001)
 
 - **Authentication**: `/auth/*`
   - `POST /auth/register` - User registration
@@ -219,10 +232,17 @@ This project uses Turborepo for monorepo management with the following structure
 - **Category System**: Full implementation with color coding and management
 - **Type System Enhancement**: Expanded shared types for better consistency
 - **Authentication Implementation**: Complete JWT-based authentication with registration/login
-- **Backend API Integration**: Full NestJS API with Redis database
+- **PostgreSQL Migration**: Complete migration from Redis to PostgreSQL
+- **Prisma ORM Integration**: Type-safe database access with schema migrations
+- **Fastify Framework**: Migration from NestJS to Fastify for improved performance
+- **Repository Pattern**: PostgreSQL-based repositories with comprehensive CRUD operations
+- **Database Relations**: Foreign key constraints and cascade delete operations
+- **Integration Testing**: Comprehensive test suite for PostgreSQL operations
+- **Performance Optimization**: Indexed queries and transaction support
+- **Backend API Integration**: Full Fastify API with PostgreSQL database
 - **API Routes**: Next.js API routes acting as backend proxies with authentication
-- **Docker Development Environment**: Redis and Redis Commander setup
-- **Enhanced Testing**: Jest with coverage thresholds and comprehensive test suites
+- **Docker Development Environment**: PostgreSQL, pgAdmin, and Redis setup
+- **Enhanced Testing**: Jest with coverage thresholds and PostgreSQL integration tests
 
 ## Build and Testing Procedures
 
@@ -231,23 +251,34 @@ This project uses Turborepo for monorepo management with the following structure
 - Node.js (Latest LTS version recommended)
 - pnpm package manager
 - Turborepo CLI
-- Docker and Docker Compose (for Redis)
+- Docker and Docker Compose (for PostgreSQL and Redis)
 
 ### Infrastructure Setup
 
-#### Redis Database Setup
+#### Database Setup (PostgreSQL + Redis)
 
 ```bash
-# Start Redis and Redis Commander
+# Start PostgreSQL, pgAdmin, and Redis
 docker-compose up -d
 
-# View Redis data via web interface
-open http://localhost:8081
-
-# Redis connection details:
+# PostgreSQL connection details:
 # Host: localhost
-# Port: 6379
-# Password: todoapp123 (configurable via REDIS_PASSWORD env var)
+# Port: 5432
+# Database: todoapp
+# Username: todouser
+# Password: todopass123
+
+# Access pgAdmin (PostgreSQL management)
+open http://localhost:8080
+# Email: admin@todoapp.com
+# Password: admin123
+
+# Access Redis Commander (Redis management)
+open http://localhost:8081
+# Redis Password: todoapp123
+
+# Database health check
+curl http://localhost:3001/health/database
 ```
 
 #### Backend API Documentation
@@ -257,7 +288,7 @@ open http://localhost:8081
 turbo dev --filter=backend
 
 # Access Swagger API documentation
-open http://localhost:3001/api
+open http://localhost:3001/documentation
 ```
 
 ### Turbo Command Quick Reference
@@ -415,27 +446,33 @@ Before committing changes, run the following commands in order:
   - Redis Commander: http://localhost:8081
 - **Module resolution**: Check import paths and package dependencies
 - **Cache issues**: Clear turbo cache with `turbo clean`
-- **Redis connection**: Ensure Docker is running and Redis container is healthy
+- **Database connection**: Ensure Docker is running and PostgreSQL container is healthy
 - **Authentication issues**: Check JWT token validity and backend API connectivity
 
 #### Database Issues
 
-- **Redis connection failed**: Check if Docker is running and Redis container is up
+- **PostgreSQL connection failed**: Check if Docker is running and PostgreSQL container is up
   ```bash
   docker-compose ps
-  docker-compose logs redis
+  docker-compose logs postgres
   ```
-- **Data persistence**: Redis data is stored in Docker volumes, survives container restarts
-- **Authentication errors**: Verify Redis password matches environment configuration
-- **Port conflicts**: Ensure ports 6379 (Redis) and 8081 (Redis Commander) are available
+- **Data persistence**: PostgreSQL data is stored in Docker volumes, survives container restarts
+- **Migration issues**: Run Prisma migrations to sync schema
+  ```bash
+  npx prisma migrate dev
+  npx prisma generate
+  ```
+- **Authentication errors**: Verify PostgreSQL credentials match environment configuration
+- **Port conflicts**: Ensure ports 5432 (PostgreSQL), 8080 (pgAdmin), 6379 (Redis), and 8081 (Redis Commander) are available
 
 #### Testing Issues
 
 - **Coverage thresholds**: Backend has minimum coverage requirements
   - Run `turbo test:cov --filter=backend` to check current coverage
   - Increase test coverage if below thresholds (19% branches, 28% functions, 37% lines, 38% statements)
-- **Test isolation**: Each test should clean up its Redis data
-- **E2E tests**: Require running Redis instance for backend integration tests
+- **Test isolation**: Each test should clean up its PostgreSQL data
+- **Integration tests**: Require running PostgreSQL instance for backend integration tests
+- **Test database**: Uses separate `todoapp_test` database for isolated testing
 
 ### Turborepo Cache Management
 
@@ -468,18 +505,24 @@ pnpm add <package> --filter=@calendar-todo/ui
 ### Docker Management
 
 ```bash
-# Start Redis services
+# Start all services (PostgreSQL, pgAdmin, Redis)
 docker-compose up -d
 
-# Stop Redis services
+# Stop all services
 docker-compose down
 
-# View Redis logs
+# View service logs
+docker-compose logs postgres
+docker-compose logs pgadmin
 docker-compose logs redis
 
-# Reset Redis data
+# Reset all data
 docker-compose down -v
 docker-compose up -d
+
+# Access service shells
+docker exec -it todo-postgres psql -U todouser -d todoapp
+docker exec -it todo-redis redis-cli -a todoapp123
 ```
 
 ### Deployment Preparation

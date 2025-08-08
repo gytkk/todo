@@ -1,6 +1,49 @@
 version: '3.8'
 
 services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: todo-postgres
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-todoapp}
+      - POSTGRES_USER=${POSTGRES_USER:-todouser}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-todopass123}
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --locale=C
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
+    networks:
+      - todo-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-todouser} -d ${POSTGRES_DB:-todoapp}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # pgAdmin for PostgreSQL management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: todo-pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL:-admin@todoapp.com}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD:-admin123}
+      - PGADMIN_CONFIG_SERVER_MODE=False
+    ports:
+      - "8080:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - todo-network
+    restart: unless-stopped
+
+  # Redis (유지 - 병렬 운영용)
   redis:
     image: redis:7-alpine
     container_name: todo-redis
@@ -20,6 +63,7 @@ services:
       retries: 3
     restart: unless-stopped
 
+  # Redis Commander (유지)
   redis-commander:
     image: rediscommander/redis-commander:latest
     container_name: todo-redis-commander
@@ -35,6 +79,10 @@ services:
     restart: unless-stopped
 
 volumes:
+  postgres-data:
+    driver: local
+  pgadmin-data:
+    driver: local
   redis-data:
     driver: local
 
