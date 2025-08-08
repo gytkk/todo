@@ -7,7 +7,6 @@ export async function buildApp(opts: FastifyServerOptions = {}): Promise<Fastify
   await app.register(import('./plugins/env'));
   await app.register(import('./plugins/security'));
   await app.register(import('./plugins/database')); // PostgreSQL connection
-  await app.register(import('./plugins/redis'));   // Keep Redis for parallel operation
   await app.register(import('./plugins/auth'));
   await app.register(import('./plugins/swagger'));
 

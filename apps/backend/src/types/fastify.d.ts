@@ -6,9 +6,6 @@ declare module 'fastify' {
       NODE_ENV: string;
       PORT: number;
       HOST: string;
-      REDIS_HOST: string;
-      REDIS_PORT: number;
-      REDIS_PASSWORD?: string;
       JWT_SECRET: string;
       JWT_EXPIRES_IN: string;
       JWT_REFRESH_EXPIRES_IN: string;

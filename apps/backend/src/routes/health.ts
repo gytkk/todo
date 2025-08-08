@@ -13,19 +13,22 @@ export default async function (fastify: FastifyInstance) {
             status: { type: 'string', enum: ['ok'] },
             timestamp: { type: 'string', format: 'date-time' },
             uptime: { type: 'number' },
-            redis: { type: 'string', enum: ['connected', 'disconnected'] },
+            database: { type: 'string', enum: ['connected', 'disconnected'] },
           },
         },
       },
     },
   }, async (request, reply) => {
-    const redisStatus = fastify.redis.status === 'ready' ? 'connected' : 'disconnected';
+    // Check PostgreSQL connection
+    const databaseStatus = await fastify.prisma.$queryRaw`SELECT 1`
+      .then(() => 'connected')
+      .catch(() => 'disconnected');
     
     return {
       status: 'ok',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
-      redis: redisStatus,
+      database: databaseStatus,
     };
   });
 }

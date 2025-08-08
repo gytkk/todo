@@ -17,7 +17,7 @@
 # 의존성 설치
 pnpm install
 
-# 데이터베이스 서비스 시작 (PostgreSQL + Redis)
+# 데이터베이스 서비스 시작 (PostgreSQL)
 docker-compose up -d
 
 # 개발 서버 실행
@@ -32,9 +32,8 @@ turbo dev --filter=backend
 
 - **프론트엔드**: <http://localhost:3000>
 - **백엔드 API**: <http://localhost:3001>
-- **API 문서**: <http://localhost:3001/documentation>
+- **API 문서**: <http://localhost:3001/docs>
 - **pgAdmin (PostgreSQL)**: <http://localhost:8080>
-- **Redis Commander**: <http://localhost:8081>
 
 ## 🛠️ 주요 명령어
 
@@ -117,7 +116,6 @@ docker-compose.yml             # 데이터베이스 인프라
 - PostgreSQL 15 (Primary Database)
 - Prisma ORM (타입 안전 데이터베이스 접근)
 - JWT 인증
-- Redis (캐싱/세션)
 - Docker Compose 인프라
 
 ### 개발 도구
@@ -128,7 +126,6 @@ docker-compose.yml             # 데이터베이스 인프라
 - Jest (테스트 프레임워크)
 - Docker Compose (인프라)
 - pgAdmin (PostgreSQL 관리)
-- Redis Commander (Redis 관리)
 
 ## 🏗️ 아키텍처
 
@@ -154,17 +151,12 @@ docker-compose.yml             # 데이터베이스 인프라
 
 - **PostgreSQL 15**: 주 데이터베이스 (포트 5432)
 - **pgAdmin**: PostgreSQL 관리 도구 (포트 8080)
-- **Redis**: 캐싱/세션 저장소 (포트 6379)
-- **Redis Commander**: Redis 관리 도구 (포트 8081)
 
 ### 데이터베이스 접근
 
 ```bash
 # PostgreSQL 접속
 docker exec -it todo-postgres psql -U todouser -d todoapp
-
-# Redis 접속
-docker exec -it todo-redis redis-cli -a todoapp123
 
 # 서비스 상태 확인
 docker-compose ps

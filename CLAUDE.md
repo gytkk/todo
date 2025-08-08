@@ -29,7 +29,7 @@ This is a Korean calendar-based todo application built with Next.js 15, TypeScri
 **Key Technologies:**
 - **Frontend**: Next.js 15, React 19, TypeScript, shadcn/ui, Tailwind CSS
 - **Backend**: Fastify, TypeScript, JWT Authentication, Swagger/OpenAPI, Prisma ORM
-- **Database**: PostgreSQL 15 with Prisma Client (Redis available for caching/sessions)
+- **Database**: PostgreSQL 15 with Prisma Client
 - **Infrastructure**: Docker Compose for development environment (PostgreSQL + pgAdmin)
 - **Testing**: Jest with coverage thresholds, React Testing Library, PostgreSQL integration tests
 - **Development**: Turborepo monorepo, pnpm workspaces
@@ -47,7 +47,7 @@ This project uses Turborepo for monorepo management with the following structure
 │   ├── shared-types/      # Shared TypeScript types between frontend/backend
 │   └── ui/                # Shared UI components library (shadcn/ui)
 ├── z_plans/               # Implementation planning and TODO tracking
-├── docker-compose.yml     # PostgreSQL, pgAdmin, and Redis setup
+├── docker-compose.yml     # PostgreSQL and pgAdmin setup
 ├── docs/                   # Project documentation and setup guides
 ├── CLAUDE.md              # Documentation for Claude Code 
 ├── package.json           # Root package.json with workspaces
@@ -174,7 +174,6 @@ This project uses Turborepo for monorepo management with the following structure
 - **Database Relations**: Comprehensive foreign key relationships with cascade delete
 - **Transaction Support**: ACID-compliant transactions for data integrity
 - **Migration System**: Automated schema versioning and updates
-- **Redis Integration**: Available for caching and session management (parallel operation)
 - **Error Handling**: Robust error boundaries and validation
 - **Local Storage**: Client-side settings and temporary data persistence
 
@@ -241,7 +240,7 @@ This project uses Turborepo for monorepo management with the following structure
 - **Performance Optimization**: Indexed queries and transaction support
 - **Backend API Integration**: Full Fastify API with PostgreSQL database
 - **API Routes**: Next.js API routes acting as backend proxies with authentication
-- **Docker Development Environment**: PostgreSQL, pgAdmin, and Redis setup
+- **Docker Development Environment**: PostgreSQL and pgAdmin setup
 - **Enhanced Testing**: Jest with coverage thresholds and PostgreSQL integration tests
 
 ## Build and Testing Procedures
@@ -251,14 +250,14 @@ This project uses Turborepo for monorepo management with the following structure
 - Node.js (Latest LTS version recommended)
 - pnpm package manager
 - Turborepo CLI
-- Docker and Docker Compose (for PostgreSQL and Redis)
+- Docker and Docker Compose (for PostgreSQL)
 
 ### Infrastructure Setup
 
-#### Database Setup (PostgreSQL + Redis)
+#### Database Setup (PostgreSQL)
 
 ```bash
-# Start PostgreSQL, pgAdmin, and Redis
+# Start PostgreSQL and pgAdmin
 docker-compose up -d
 
 # PostgreSQL connection details:
@@ -272,10 +271,6 @@ docker-compose up -d
 open http://localhost:8080
 # Email: admin@todoapp.com
 # Password: admin123
-
-# Access Redis Commander (Redis management)
-open http://localhost:8081
-# Redis Password: todoapp123
 
 # Database health check
 curl http://localhost:3001/health/database
@@ -443,7 +438,6 @@ Before committing changes, run the following commands in order:
 - **Port conflicts**: Development server auto-assigns available ports
   - Frontend: http://localhost:3000
   - Backend: http://localhost:3001
-  - Redis Commander: http://localhost:8081
 - **Module resolution**: Check import paths and package dependencies
 - **Cache issues**: Clear turbo cache with `turbo clean`
 - **Database connection**: Ensure Docker is running and PostgreSQL container is healthy
@@ -463,7 +457,7 @@ Before committing changes, run the following commands in order:
   npx prisma generate
   ```
 - **Authentication errors**: Verify PostgreSQL credentials match environment configuration
-- **Port conflicts**: Ensure ports 5432 (PostgreSQL), 8080 (pgAdmin), 6379 (Redis), and 8081 (Redis Commander) are available
+- **Port conflicts**: Ensure ports 5432 (PostgreSQL) and 8080 (pgAdmin) are available
 
 #### Testing Issues
 
@@ -505,7 +499,7 @@ pnpm add <package> --filter=@calendar-todo/ui
 ### Docker Management
 
 ```bash
-# Start all services (PostgreSQL, pgAdmin, Redis)
+# Start all services (PostgreSQL and pgAdmin)
 docker-compose up -d
 
 # Stop all services
@@ -514,16 +508,12 @@ docker-compose down
 # View service logs
 docker-compose logs postgres
 docker-compose logs pgadmin
-docker-compose logs redis
-
 # Reset all data
 docker-compose down -v
 docker-compose up -d
 
 # Access service shells
-docker exec -it todo-postgres psql -U todouser -d todoapp
-docker exec -it todo-redis redis-cli -a todoapp123
-```
+docker exec -it todo-postgres psql -U todouser -d todoapp```
 
 ### Deployment Preparation
 

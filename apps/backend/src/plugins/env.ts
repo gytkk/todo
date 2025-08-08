@@ -17,18 +17,6 @@ const schema = {
       type: 'string',
       default: '0.0.0.0',
     },
-    REDIS_HOST: {
-      type: 'string',
-      default: 'localhost',
-    },
-    REDIS_PORT: {
-      type: 'number',
-      default: 6379,
-    },
-    REDIS_PASSWORD: {
-      type: 'string',
-      default: '',
-    },
     JWT_SECRET: {
       type: 'string',
     },

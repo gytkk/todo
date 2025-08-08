@@ -1,8 +1,8 @@
 {
-  "name": "backend-fastify",
+  "name": "backend",
   "version": "0.0.1",
   "description": "Todo Calendar API built with Fastify",
-  "author": "",
+  "author": "gytkk",
   "private": true,
   "license": "UNLICENSED",
   "main": "dist/server.js",
@@ -10,7 +10,6 @@
     "build": "tsc",
     "dev": "tsx watch src/server.ts",
     "start": "node dist/server.js",
-    "start:prod": "node dist/server.js",
     "lint": "eslint \"{src,tests}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -32,7 +31,6 @@
     "date-fns": "^4.1.0",
     "fastify": "^4.28.1",
     "fastify-plugin": "^4.5.1",
-    "ioredis": "^5.4.1",
     "prisma": "^6.13.0",
     "uuid": "^11.0.3",
     "zod": "^3.23.8"
@@ -69,7 +67,9 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
-    "setupFilesAfterEnv": ["<rootDir>/test/jest.setup.ts"],
+    "setupFilesAfterEnv": [
+      "<rootDir>/test/jest.setup.ts"
+    ],
     "testTimeout": 30000,
     "maxWorkers": 1,
     "forceExit": true,
