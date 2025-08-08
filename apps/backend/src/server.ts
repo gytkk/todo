@@ -27,7 +27,7 @@ const start = async () => {
               transport: {
                 target: 'pino-pretty',
                 options: {
-                  translateTime: 'HH:MM:ss Z',
+                  translateTime: 'HH:mm:ss',
                   ignore: 'pid,hostname',
                   colorize: true,
                   singleLine: false,
