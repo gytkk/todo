@@ -290,19 +290,20 @@ open http://localhost:3001/documentation
 
 | Task | Command | Description |
 |------|---------|-------------|
-| Development | `turbo dev` | Start all development servers |
-| Build | `turbo build` | Build all packages and apps |
-| Lint | `turbo lint` | Run ESLint on all packages |
-| Type Check | `turbo type-check` | Run TypeScript type checking |
-| Test | `turbo test` | Run all tests |
-| Coverage | `turbo test:cov --filter=backend` | Run tests with coverage report |
-| E2E Test | `turbo test:e2e --filter=backend` | Run end-to-end tests |
-| Clean | `turbo clean` | Clear all caches |
-| Filtered | `turbo <command> --filter=<package>` | Run command on specific package |
+| Development | `pnpm dev` | Start all development servers |
+| Build | `pnpm build` | Build all packages and apps |
+| Lint | `pnpm lint` | Run ESLint on all packages |
+| Type Check | `pnpm type-check` | Run TypeScript type checking |
+| Test | `pnpm test` | Run all tests |
+| Coverage | `pnpm test:cov` | Run tests with coverage report |
+| Clean | `pnpm clean` | Clear all build outputs and caches |
+| Format | `pnpm format` | Format code with Prettier |
+| Quality Check | `pnpm quality` | Run lint + type-check |
+| Quality Fix | `pnpm quality:fix` | Fix lint issues + type-check |
 
-**Important**: Always use `turbo` commands instead of `npm run` commands!
+**Important**: Use `pnpm` commands for project-level operations. For filtered operations, use `turbo` directly.
 
-#### Common Filtered Commands
+#### Filtered Commands (Direct Turbo)
 
 ```bash
 # Frontend only
@@ -313,12 +314,11 @@ turbo lint --filter=frontend
 # Backend only  
 turbo dev --filter=backend
 turbo build --filter=backend
+turbo lint --filter=backend
 
-# Shared types only
+# Specific packages
 turbo build --filter=@calendar-todo/shared-types
-
-# UI components only
-turbo build --filter=@calendar-todo/ui
+turbo lint --filter=@calendar-todo/ui
 ```
 
 ### Development Commands

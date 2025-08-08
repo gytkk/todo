@@ -10,6 +10,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
+    "type-check": "tsc --noEmit",
+    "lint": "echo \"No linting needed for types-only package\"",
     "clean": "rm -rf dist"
   },
   "dependencies": {},

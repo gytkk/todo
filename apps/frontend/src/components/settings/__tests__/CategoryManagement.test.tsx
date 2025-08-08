@@ -40,12 +40,14 @@ const mockCategories: TodoCategory[] = [
     name: '업무',
     color: '#3b82f6',
     createdAt: new Date('2024-01-01'),
+    order: 0,
   },
   {
     id: 'personal',
     name: '개인',
     color: '#ef4444',
     createdAt: new Date('2024-01-01'),
+    order: 1,
   },
 ];
 
@@ -65,13 +67,15 @@ const mockUseCategoriesReturn = {
     id: 'new-category', 
     name: 'New Category', 
     color: '#10b981', 
-    createdAt: new Date() 
+    createdAt: new Date(),
+    order: 2
   })),
   updateCategory: jest.fn(() => Promise.resolve(true)),
   deleteCategory: jest.fn(() => Promise.resolve(true)),
   getCategoryById: jest.fn(),
   getAvailableColors: jest.fn(() => Promise.resolve(mockAvailableColors)),
-  loadCategories: jest.fn(),
+  reorderCategories: jest.fn(() => Promise.resolve(true)),
+  loadCategories: jest.fn(() => Promise.resolve()),
 };
 
 describe('CategoryManagement', () => {
@@ -83,11 +87,11 @@ describe('CategoryManagement', () => {
   });
 
   const renderWithAct = async (component: React.ReactElement) => {
-    let renderResult: ReturnType<typeof render>;
+    let renderResult: ReturnType<typeof render> | undefined;
     await act(async () => {
       renderResult = render(component);
     });
-    return renderResult;
+    return renderResult!;
   };
 
   describe('rendering', () => {
@@ -397,8 +401,8 @@ describe('CategoryManagement', () => {
     it('should allow selecting colors even when some are already used', async () => {
       // Multiple categories can use the same color in this implementation
       const existingCategories: TodoCategory[] = [
-        { id: '1', name: '카테고리1', color: '#ef4444', isDefault: false, createdAt: new Date() },
-        { id: '2', name: '카테고리2', color: '#f97316', isDefault: false, createdAt: new Date() },
+        { id: '1', name: '카테고리1', color: '#ef4444', order: 0, createdAt: new Date() },
+        { id: '2', name: '카테고리2', color: '#f97316', order: 1, createdAt: new Date() },
       ];
       
       const mockWithColors = {

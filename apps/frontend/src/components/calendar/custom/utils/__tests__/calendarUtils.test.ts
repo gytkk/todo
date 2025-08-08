@@ -16,6 +16,7 @@ const mockCategory1: TodoCategory = {
   id: 'work',
   name: '업무',
   color: '#3b82f6',
+  order: 0,
   createdAt: new Date('2024-01-01'),
 };
 
@@ -23,6 +24,7 @@ const mockCategory2: TodoCategory = {
   id: 'personal',
   name: '개인',
   color: '#ef4444',
+  order: 1,
   createdAt: new Date('2024-01-01'),
 };
 
@@ -32,6 +34,7 @@ const mockTodo1: TodoItem = {
   date: new Date('2024-01-15'),
   completed: false,
   category: mockCategory1,
+  todoType: 'task',
 };
 
 const mockTodo2: TodoItem = {
@@ -40,6 +43,7 @@ const mockTodo2: TodoItem = {
   date: new Date('2024-01-15'),
   completed: false,
   category: mockCategory2,
+  todoType: 'event',
 };
 
 const mockTodo3: TodoItem = {
@@ -48,6 +52,7 @@ const mockTodo3: TodoItem = {
   date: new Date('2024-01-15'),
   completed: true,
   category: mockCategory1,
+  todoType: 'task',
 };
 
 describe('calendarUtils', () => {

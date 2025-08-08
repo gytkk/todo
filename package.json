@@ -4,15 +4,19 @@
   "packageManager": "pnpm@10.0.0",
   "private": true,
   "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "lint": "turbo run lint",
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "lint:fix": "turbo lint --force",
+    "type-check": "turbo type-check",
+    "test": "turbo test",
+    "test:cov": "turbo test:cov",
+    "test:watch": "turbo test:watch",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "check-types": "turbo run check-types",
-    "test": "turbo run test",
-    "test:cov": "turbo run test:cov",
-    "test:watch": "turbo run test:watch",
-    "type-check": "turbo run type-check"
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "quality": "turbo lint type-check",
+    "quality:fix": "pnpm lint:fix && pnpm type-check",
+    "clean": "turbo clean"
   },
   "devDependencies": {
     "turbo": "latest",

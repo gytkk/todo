@@ -94,7 +94,7 @@ describe('useSettings', () => {
       user: null,
       login: jest.fn(),
       logout: jest.fn(),
-      register: jest.fn(),
+      updateUser: jest.fn(),
     });
   });
 

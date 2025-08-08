@@ -15,11 +15,6 @@
         "dist/**"
       ]
     },
-    "check-types": {
-      "dependsOn": [
-        "^check-types"
-      ]
-    },
     "dev": {
       "cache": false,
       "persistent": true
@@ -28,13 +23,19 @@
       "cache": false
     },
     "lint": {
-      "dependsOn": [
-        "^lint"
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".eslintrc*",
+        "eslint.config.*"
       ]
     },
     "type-check": {
       "dependsOn": [
         "^type-check"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "tsconfig*.json"
       ]
     },
     "test": {

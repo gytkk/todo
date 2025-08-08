@@ -5,6 +5,10 @@
   "files": [
     "tsconfig.json"
   ],
+  "scripts": {
+    "lint": "echo \"No linting needed for config package\"",
+    "type-check": "echo \"No type checking needed for config package\""
+  },
   "devDependencies": {
     "@types/node": "^20",
     "typescript": "^5"

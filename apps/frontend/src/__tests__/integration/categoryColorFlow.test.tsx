@@ -45,12 +45,14 @@ const mockCategories: TodoCategory[] = [
     name: '업무',
     color: '#3b82f6',
     createdAt: new Date('2024-01-01'),
+    order: 0,
   },
   {
     id: 'personal',
     name: '개인',
     color: '#ef4444',
     createdAt: new Date('2024-01-01'),
+    order: 1,
   },
 ];
 
@@ -67,7 +69,8 @@ const mockUseCategoriesReturn = {
   deleteCategory: jest.fn(),
   getCategoryById: jest.fn(),
   getAvailableColors: jest.fn(() => Promise.resolve(['#10b981', '#f59e0b'])),
-  loadCategories: jest.fn(),
+  reorderCategories: jest.fn(() => Promise.resolve(true)),
+  loadCategories: jest.fn(() => Promise.resolve()),
 };
 
 
@@ -103,7 +106,7 @@ describe('Category Color Integration Flow', () => {
       mockedUseCategories.mockReturnValue({
         ...mockUseCategoriesReturn,
         categories: [],
-        getAvailableColors: jest.fn(() => ['#3b82f6', '#ef4444', '#10b981']),
+        getAvailableColors: jest.fn(() => Promise.resolve(['#3b82f6', '#ef4444', '#10b981'])),
       });
       
       render(<CategoryManagement />);
@@ -118,7 +121,7 @@ describe('Category Color Integration Flow', () => {
         id: `cat-${i}`,
         name: `Category ${i}`,
         color: '#3b82f6',
-        isDefault: false,
+        order: i,
         createdAt: new Date(),
       }));
       
