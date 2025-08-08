@@ -41,7 +41,10 @@ export default fp(async function (fastify) {
       
       // 사용자 유효성 추가 확인
       const authService = new AuthService(fastify);
-      const user = await authService.validateUser((request.user as { sub: string }).sub);
+      // JWT payload에서 사용자 ID 추출
+      // jwtVerify 후 request.user는 FastifyJWT['payload'] 타입을 가짐
+      const jwtPayload = request.user as unknown as { sub: string; email: string };
+      const user = await authService.validateUser(jwtPayload.sub);
       
       if (!user) {
         return reply.code(401).send({ 

@@ -2,27 +2,6 @@ import { UserSettings, Theme, Prisma } from '@prisma/client';
 import { FastifyInstance } from 'fastify';
 import { BasePostgresRepository } from '../base-postgres.repository';
 
-export interface CreateUserSettingsDto {
-  userId: string;
-  theme?: Theme;
-  language?: string;
-  themeColor?: string;
-  customColor?: string;
-  defaultView?: string;
-  dateFormat?: string;
-  timeFormat?: string;
-  timezone?: string;
-  weekStart?: string;
-  oldTodoDisplayLimit?: number;
-  autoMoveTodos?: boolean;
-  showTaskMoveNotifications?: boolean;
-  saturationEnabled?: boolean;
-  saturationLevels?: unknown; // JSON type
-  completedTodoDisplay?: string;
-  showWeekends?: boolean;
-  autoBackup?: boolean;
-  backupInterval?: string;
-}
 
 export class UserSettingsPostgresRepository extends BasePostgresRepository<UserSettings> {
   protected tableName = 'user_settings';
@@ -82,7 +61,11 @@ export class UserSettingsPostgresRepository extends BasePostgresRepository<UserS
     }
   }
 
-  async create(settingsData: CreateUserSettingsDto): Promise<UserSettings> {
+  async create(settingsData: Partial<UserSettings>): Promise<UserSettings> {
+    if (!settingsData.userId) {
+      throw new Error('userId is required');
+    }
+    
     try {
       return await this.prisma.userSettings.create({
         data: {
@@ -157,7 +140,7 @@ export class UserSettingsPostgresRepository extends BasePostgresRepository<UserS
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
           // Record not found - create default settings
-          return await this.create({ userId } as CreateUserSettingsDto);
+          return await this.create({ userId });
         }
       }
       console.error('Error updating user settings by user id:', error);
@@ -226,7 +209,7 @@ export class UserSettingsPostgresRepository extends BasePostgresRepository<UserS
 
   async resetToDefaults(userId: string): Promise<UserSettings | null> {
     try {
-      const defaultSettings: CreateUserSettingsDto = {
+      const defaultSettings: Partial<UserSettings> = {
         userId,
         theme: Theme.SYSTEM,
         language: 'ko',
