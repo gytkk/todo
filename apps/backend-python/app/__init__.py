@@ -1,1 +1,0 @@
-# FastAPI Calendar Todo Backend
