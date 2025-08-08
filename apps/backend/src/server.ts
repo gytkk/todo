@@ -2,19 +2,39 @@ import { buildApp } from './app';
 
 const start = async () => {
   try {
+    const isProduction = process.env.NODE_ENV === 'production';
+    
     const app = await buildApp({
       logger: {
-        level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
-        transport:
-          process.env.NODE_ENV !== 'production'
-            ? {
-              target: 'pino-pretty',
-              options: {
-                translateTime: 'HH:MM:ss Z',
-                ignore: 'pid,hostname',
+        level: process.env.LOG_LEVEL || (isProduction ? 'info' : 'debug'),
+        ...(isProduction 
+          ? {
+              // Production 설정: 구조화된 JSON 로그
+              redact: ['req.headers.authorization'], // 민감한 정보 제거
+              serializers: {
+                req: (req) => ({
+                  method: req.method,
+                  url: req.url,
+                  id: req.id,
+                }),
+                res: (res) => ({
+                  statusCode: res.statusCode,
+                }),
               },
             }
-            : undefined,
+          : {
+              // Development 설정: 읽기 쉬운 형식
+              transport: {
+                target: 'pino-pretty',
+                options: {
+                  translateTime: 'HH:MM:ss Z',
+                  ignore: 'pid,hostname',
+                  colorize: true,
+                  singleLine: false,
+                },
+              },
+            }
+        ),
       },
     });
 

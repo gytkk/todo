@@ -4,6 +4,7 @@ declare module 'fastify' {
   interface FastifyInstance {
     config: {
       NODE_ENV: string;
+      LOG_LEVEL: string;
       PORT: number;
       HOST: string;
       JWT_SECRET: string;
