@@ -95,7 +95,7 @@ export class AuthService {
         id: user.id,
         email: user.email,
         name: user.name,
-        profileImage: user.profileImage,
+        profileImage: user.profileImage || undefined,
         emailVerified: false, // TODO: 이메일 검증 기능 추가 시 구현
         createdAt: user.createdAt,
       },
@@ -131,7 +131,7 @@ export class AuthService {
           id: user.id,
           email: user.email,
           name: user.name,
-          profileImage: user.profileImage,
+          profileImage: user.profileImage || undefined,
           emailVerified: false, // TODO: 이메일 검증 기능 추가 시 구현
           createdAt: user.createdAt,
         },

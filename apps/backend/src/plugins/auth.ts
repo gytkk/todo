@@ -55,7 +55,7 @@ export default fp(async function (fastify) {
         id: user.id,
         email: user.email,
         name: user.name,
-        profileImage: user.profileImage,
+        profileImage: user.profileImage || undefined,
       };
       
     } catch (err) {

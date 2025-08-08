@@ -119,9 +119,11 @@ export class UserSettingsPostgresRepository extends BasePostgresRepository<UserS
 
   async update(id: string, updates: Partial<UserSettings>): Promise<UserSettings | null> {
     try {
+      // Remove fields that shouldn't be updated
+      const { id: _, userId: __, createdAt: ___, updatedAt: ____, ...data } = updates;
       return await this.prisma.userSettings.update({
         where: { id },
-        data: updates,
+        data: data as Prisma.UserSettingsUpdateInput,
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -137,15 +139,17 @@ export class UserSettingsPostgresRepository extends BasePostgresRepository<UserS
 
   async updateByUserId(userId: string, updates: Partial<UserSettings>): Promise<UserSettings | null> {
     try {
+      // Remove fields that shouldn't be updated
+      const { id: _, userId: __, createdAt: ___, updatedAt: ____, ...data } = updates;
       return await this.prisma.userSettings.update({
         where: { userId },
-        data: updates,
+        data: data as Prisma.UserSettingsUpdateInput,
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
           // Record not found - create default settings
-          return await this.create({ userId, ...updates });
+          return await this.create({ userId } as CreateUserSettingsDto);
         }
       }
       console.error('Error updating user settings by user id:', error);
