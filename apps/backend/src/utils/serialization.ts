@@ -39,11 +39,11 @@ export function deserializeArray<T>(value: string | undefined | null): T[] {
   }
 }
 
-export function serializeObject<T extends Record<string, any>>(obj: T | undefined | null): string {
+export function serializeObject<T extends Record<string, unknown>>(obj: T | undefined | null): string {
   return obj ? JSON.stringify(obj) : '{}';
 }
 
-export function deserializeObject<T extends Record<string, any>>(value: string | undefined | null): T | null {
+export function deserializeObject<T extends Record<string, unknown>>(value: string | undefined | null): T | null {
   if (!value || value === '') return null;
   try {
     return JSON.parse(value) as T;

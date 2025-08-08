@@ -64,7 +64,7 @@ export abstract class BasePostgresRepository<T extends { id: string }>
   }
 
   // Helper method for counting records
-  protected async count(where?: any): Promise<number> {
+  protected async count(): Promise<number> {
     // Subclasses should implement table-specific counting
     throw new Error('count method must be implemented by subclass');
   }

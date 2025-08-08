@@ -41,7 +41,7 @@ export default fp(async function (fastify) {
       
       // 사용자 유효성 추가 확인
       const authService = new AuthService(fastify);
-      const user = await authService.validateUser((request as any).user.sub);
+      const user = await authService.validateUser((request.user as { sub: string }).sub);
       
       if (!user) {
         return reply.code(401).send({ 

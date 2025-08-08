@@ -18,7 +18,7 @@ export default async function (fastify: FastifyInstance) {
         },
       },
     },
-  }, async (request, reply) => {
+  }, async () => {
     // Check PostgreSQL connection
     const databaseStatus = await fastify.prisma.$queryRaw`SELECT 1`
       .then(() => 'connected')

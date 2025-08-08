@@ -17,7 +17,7 @@ export interface CreateUserSettingsDto {
   autoMoveTodos?: boolean;
   showTaskMoveNotifications?: boolean;
   saturationEnabled?: boolean;
-  saturationLevels?: any; // JSON type
+  saturationLevels?: unknown; // JSON type
   completedTodoDisplay?: string;
   showWeekends?: boolean;
   autoBackup?: boolean;
@@ -120,7 +120,11 @@ export class UserSettingsPostgresRepository extends BasePostgresRepository<UserS
   async update(id: string, updates: Partial<UserSettings>): Promise<UserSettings | null> {
     try {
       // Remove fields that shouldn't be updated
-      const { id: _, userId: __, createdAt: ___, updatedAt: ____, ...data } = updates;
+      const data = { ...updates };
+      delete data.id;
+      delete data.userId;
+      delete data.createdAt;
+      delete data.updatedAt;
       return await this.prisma.userSettings.update({
         where: { id },
         data: data as Prisma.UserSettingsUpdateInput,
@@ -140,7 +144,11 @@ export class UserSettingsPostgresRepository extends BasePostgresRepository<UserS
   async updateByUserId(userId: string, updates: Partial<UserSettings>): Promise<UserSettings | null> {
     try {
       // Remove fields that shouldn't be updated
-      const { id: _, userId: __, createdAt: ___, updatedAt: ____, ...data } = updates;
+      const data = { ...updates };
+      delete data.id;
+      delete data.userId;
+      delete data.createdAt;
+      delete data.updatedAt;
       return await this.prisma.userSettings.update({
         where: { userId },
         data: data as Prisma.UserSettingsUpdateInput,

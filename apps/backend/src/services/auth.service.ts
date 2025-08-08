@@ -136,7 +136,7 @@ export class AuthService {
           createdAt: user.createdAt,
         },
       };
-    } catch (error) {
+    } catch {
       throw new Error('Invalid refresh token');
     }
   }
