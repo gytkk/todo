@@ -27,6 +27,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This is a Korean calendar-based todo application built with Next.js 15, TypeScript, and shadcn/ui components for the frontend, and Fastify for the backend API. The app features a custom-built calendar implementation with a collapsible sidebar navigation and comprehensive settings management, providing an intuitive and modern todo management experience with category support and robust PostgreSQL-backed API.
 
 **Key Technologies:**
+
 - **Frontend**: Next.js 15, React 19, TypeScript, shadcn/ui, Tailwind CSS
 - **Backend**: Fastify, TypeScript, JWT Authentication, Swagger/OpenAPI, Prisma ORM
 - **Database**: PostgreSQL 15 with Prisma Client
@@ -436,8 +437,8 @@ Before committing changes, run the following commands in order:
 #### Development Server Issues
 
 - **Port conflicts**: Development server auto-assigns available ports
-  - Frontend: http://localhost:3000
-  - Backend: http://localhost:3001
+  - Frontend: <http://localhost:3000>
+  - Backend: <http://localhost:3001>
 - **Module resolution**: Check import paths and package dependencies
 - **Cache issues**: Clear turbo cache with `turbo clean`
 - **Database connection**: Ensure Docker is running and PostgreSQL container is healthy
@@ -446,16 +447,20 @@ Before committing changes, run the following commands in order:
 #### Database Issues
 
 - **PostgreSQL connection failed**: Check if Docker is running and PostgreSQL container is up
+
   ```bash
   docker-compose ps
   docker-compose logs postgres
   ```
+
 - **Data persistence**: PostgreSQL data is stored in Docker volumes, survives container restarts
 - **Migration issues**: Run Prisma migrations to sync schema
+
   ```bash
-  npx prisma migrate dev
-  npx prisma generate
+  pnpx prisma migrate dev
+  pnpx prisma generate
   ```
+
 - **Authentication errors**: Verify PostgreSQL credentials match environment configuration
 - **Port conflicts**: Ensure ports 5432 (PostgreSQL) and 8080 (pgAdmin) are available
 

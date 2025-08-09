@@ -1,34 +1,25 @@
 import { FastifyInstance } from 'fastify';
 
 export default async function (fastify: FastifyInstance) {
-  fastify.get('/health', {
+  fastify.get('/', {
     schema: {
       tags: ['health'],
-      summary: 'Health check',
-      description: 'Check if the API is running',
+      summary: 'Basic health check',
+      description: 'Basic health check endpoint for the root path',
       response: {
         200: {
           type: 'object',
           properties: {
             status: { type: 'string', enum: ['ok'] },
-            timestamp: { type: 'string', format: 'date-time' },
-            uptime: { type: 'number' },
-            database: { type: 'string', enum: ['connected', 'disconnected'] },
+            message: { type: 'string' },
           },
         },
       },
     },
   }, async () => {
-    // Check PostgreSQL connection
-    const databaseStatus = await fastify.prisma.$queryRaw`SELECT 1`
-      .then(() => 'connected')
-      .catch(() => 'disconnected');
-    
     return {
       status: 'ok',
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-      database: databaseStatus,
+      message: 'Calendar Todo API is running',
     };
   });
 }
