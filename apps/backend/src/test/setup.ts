@@ -34,8 +34,9 @@ export class TestHelper {
       logger: false, // Disable logging in tests
     });
 
-    // Override the prisma instance to use our test instance
-    this.app.decorate('prisma', this.prisma);
+    // Replace the prisma instance with our test instance
+    // Since the database plugin already decorated 'prisma', we need to replace it
+    (this.app as any).prisma = this.prisma;
   }
 
   async afterAll(): Promise<void> {

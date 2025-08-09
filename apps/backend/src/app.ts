@@ -14,13 +14,13 @@ export async function buildApp(opts: FastifyServerOptions = {}): Promise<Fastify
   await app.register(import('./routes/health'), { prefix: '/' });
   await app.register(import('./routes/auth'), { prefix: '/auth' });
   await app.register(import('./routes/users'), { prefix: '/users' });
-  // TODO: Add more routes as we migrate modules
 
   // Error handler
   app.setErrorHandler((error, request, reply) => {
     const { statusCode = 500, message } = error;
+    app.log.info(request);
     app.log.error(error);
-    
+
     reply.status(statusCode).send({
       statusCode,
       message: statusCode === 500 ? 'Internal Server Error' : message,

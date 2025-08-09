@@ -181,8 +181,8 @@ describe('Basic Integration Tests', () => {
       });
 
       expect(registerResponse.statusCode).toBe(201);
-      const user = registerResponse.json();
-      expect(user.email).toBe('authflow@example.com');
+      const response = registerResponse.json();
+      expect(response.user.email).toBe('authflow@example.com');
 
       // Login
       const loginResponse = await app.inject({
