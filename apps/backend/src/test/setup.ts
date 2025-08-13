@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { FastifyInstance } from 'fastify';
-import { buildApp } from '../app';
+import { buildApp } from '../app.js';
 
 export class TestHelper {
   private static instance: TestHelper;

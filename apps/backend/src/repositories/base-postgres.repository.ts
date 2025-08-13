@@ -4,7 +4,7 @@ import {
   BaseRepository,
   PaginatedResult,
   PaginationOptions,
-} from './interfaces/repository.interface';
+} from './interfaces/repository.interface.js';
 
 export abstract class BasePostgresRepository<T extends { id: string }>
   implements BaseRepository<T>

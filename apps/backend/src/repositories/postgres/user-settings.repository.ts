@@ -1,6 +1,6 @@
 import { UserSettings, Theme, Prisma } from '@prisma/client';
 import { FastifyInstance } from 'fastify';
-import { BasePostgresRepository } from '../base-postgres.repository';
+import { BasePostgresRepository } from '../base-postgres.repository.js';
 
 
 export class UserSettingsPostgresRepository extends BasePostgresRepository<UserSettings> {

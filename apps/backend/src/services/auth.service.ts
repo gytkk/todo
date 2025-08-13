@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
-import { UserPostgresRepository } from '../repositories/postgres/user.repository';
-import { PasswordService } from './password.service';
-import { JwtService } from './jwt.service';
+import { UserPostgresRepository } from '../repositories/postgres/user.repository.js';
+import { PasswordService } from './password.service.js';
+import { JwtService } from './jwt.service.js';
 import { JwtPayload, UserProfile } from '@calendar-todo/shared-types';
 import { User } from '@prisma/client';
 

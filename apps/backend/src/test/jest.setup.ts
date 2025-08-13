@@ -1,4 +1,4 @@
-import { TestHelper } from './setup';
+import { TestHelper } from './setup.js';
 
 // Set test environment variables
 process.env.NODE_ENV = 'test';

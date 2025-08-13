@@ -4,16 +4,16 @@ export async function buildApp(opts: FastifyServerOptions = {}): Promise<Fastify
   const app = Fastify(opts);
 
   // Register core plugins
-  await app.register(import('./plugins/env'));
-  await app.register(import('./plugins/security'));
-  await app.register(import('./plugins/database')); // PostgreSQL connection
-  await app.register(import('./plugins/auth'));
-  await app.register(import('./plugins/swagger'));
+  await app.register(import('./plugins/env.js'));
+  await app.register(import('./plugins/security.js'));
+  await app.register(import('./plugins/database.js')); // PostgreSQL connection
+  await app.register(import('./plugins/auth.js'));
+  await app.register(import('./plugins/swagger.js'));
 
   // Register routes
-  await app.register(import('./routes/health'), { prefix: '/' });
-  await app.register(import('./routes/auth'), { prefix: '/auth' });
-  await app.register(import('./routes/users'), { prefix: '/users' });
+  await app.register(import('./routes/health.js'), { prefix: '/' });
+  await app.register(import('./routes/auth.js'), { prefix: '/auth' });
+  await app.register(import('./routes/users.js'), { prefix: '/users' });
 
   // Error handler
   app.setErrorHandler((error, request, reply) => {

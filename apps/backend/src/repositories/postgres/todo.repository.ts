@@ -1,7 +1,7 @@
 import { Todo, TodoType, Prisma } from '@prisma/client';
 import { FastifyInstance } from 'fastify';
-import { BasePostgresRepository } from '../base-postgres.repository';
-import { PaginatedResult, PaginationOptions } from '../interfaces/repository.interface';
+import { BasePostgresRepository } from '../base-postgres.repository.js';
+import { PaginatedResult, PaginationOptions } from '../interfaces/repository.interface.js';
 
 export interface CreateTodoDto {
   title: string;

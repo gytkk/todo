@@ -1,8 +1,8 @@
 import { User, Prisma } from '@prisma/client';
 import { FastifyInstance } from 'fastify';
-import { BasePostgresRepository } from '../base-postgres.repository';
-import { CreateUserDto } from '../../entities/user.entity';
-import { PaginatedResult, PaginationOptions } from '../interfaces/repository.interface';
+import { BasePostgresRepository } from '../base-postgres.repository.js';
+import { CreateUserDto } from '../../entities/user.entity.js';
+import { PaginatedResult, PaginationOptions } from '../interfaces/repository.interface.js';
 
 export class UserPostgresRepository extends BasePostgresRepository<User> {
   protected tableName = 'users';

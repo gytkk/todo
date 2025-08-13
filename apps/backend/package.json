@@ -5,6 +5,7 @@
   "author": "gytkk",
   "private": true,
   "license": "UNLICENSED",
+  "type": "module",
   "main": "dist/server.js",
   "scripts": {
     "build": "tsc",

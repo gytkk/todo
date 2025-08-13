@@ -1,7 +1,7 @@
 import fp from 'fastify-plugin';
 import jwt from '@fastify/jwt';
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { AuthService } from '../services/auth.service';
+import { AuthService } from '../services/auth.service.js';
 
 declare module 'fastify' {
   interface FastifyInstance {

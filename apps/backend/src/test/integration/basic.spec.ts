@@ -1,4 +1,4 @@
-import { TestHelper } from '../setup';
+import { TestHelper } from '../setup.js';
 
 describe('Basic Integration Tests', () => {
   let testHelper: TestHelper;

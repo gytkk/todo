@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
-import { AuthService, RegisterDto, LoginDto } from '../services/auth.service';
-import { registerSchema, loginSchema, refreshTokenSchema } from '../schemas/auth.schema';
+import { AuthService, RegisterDto, LoginDto } from '../services/auth.service.js';
+import { registerSchema, loginSchema, refreshTokenSchema } from '../schemas/auth.schema.js';
 
 export default async function (fastify: FastifyInstance) {
   const authService = new AuthService(fastify);

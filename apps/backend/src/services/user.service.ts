@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
-import { UserPostgresRepository } from '../repositories/postgres/user.repository';
-import { PasswordService } from './password.service';
+import { UserPostgresRepository } from '../repositories/postgres/user.repository.js';
+import { PasswordService } from './password.service.js';
 import { User } from '@prisma/client';
 
 export interface UpdateUserDto {

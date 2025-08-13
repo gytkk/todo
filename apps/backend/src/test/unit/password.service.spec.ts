@@ -1,4 +1,4 @@
-import { PasswordService } from '../../services/password.service';
+import { PasswordService } from '../../services/password.service.js';
 
 describe('PasswordService - Unit Tests', () => {
   let passwordService: PasswordService;

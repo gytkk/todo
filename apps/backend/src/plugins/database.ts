@@ -1,6 +1,6 @@
 import fp from 'fastify-plugin';
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
-import { DatabaseService } from '../services/database.service';
+import { DatabaseService } from '../services/database.service.js';
 
 const databasePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   // Connect to PostgreSQL

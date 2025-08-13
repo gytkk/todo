@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
-import { UserService, UpdateUserDto, ChangePasswordDto } from '../services/user.service';
-import { updateUserProfileSchema, changePasswordSchema, getUserProfileSchema } from '../schemas/user.schema';
+import { UserService, UpdateUserDto, ChangePasswordDto } from '../services/user.service.js';
+import { updateUserProfileSchema, changePasswordSchema, getUserProfileSchema } from '../schemas/user.schema.js';
 
 export default async function (fastify: FastifyInstance) {
   const userService = new UserService(fastify);
