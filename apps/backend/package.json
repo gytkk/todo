@@ -14,9 +14,6 @@
     "start:prod": "NODE_ENV=production LOG_LEVEL=info node dist/server.js",
     "lint": "eslint \"{src,tests}/**/*.ts\" --fix",
     "test": "NODE_OPTIONS='--experimental-vm-modules' jest --testPathIgnorePatterns='integration' --setupFilesAfterEnv='<rootDir>/test/unit/jest.setup.unit.ts'",
-    "test:unit": "NODE_OPTIONS='--experimental-vm-modules' jest --testPathPattern='unit' --setupFilesAfterEnv='<rootDir>/test/unit/jest.setup.unit.ts'",
-    "test:integration": "jest --testPathPattern='integration'",
-    "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist"
