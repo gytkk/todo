@@ -13,8 +13,8 @@
     "start": "node dist/server.js",
     "start:prod": "NODE_ENV=production LOG_LEVEL=info node dist/server.js",
     "lint": "eslint \"{src,tests}/**/*.ts\" --fix",
-    "test": "jest --testPathIgnorePatterns='integration' --setupFilesAfterEnv='<rootDir>/test/unit/jest.setup.unit.ts'",
-    "test:unit": "jest --testPathPattern='unit' --setupFilesAfterEnv='<rootDir>/test/unit/jest.setup.unit.ts'",
+    "test": "NODE_OPTIONS='--experimental-vm-modules' jest --testPathIgnorePatterns='integration' --setupFilesAfterEnv='<rootDir>/test/unit/jest.setup.unit.ts'",
+    "test:unit": "NODE_OPTIONS='--experimental-vm-modules' jest --testPathPattern='unit' --setupFilesAfterEnv='<rootDir>/test/unit/jest.setup.unit.ts'",
     "test:integration": "jest --testPathPattern='integration'",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
@@ -55,33 +55,5 @@
     "tsx": "^4.19.2",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.39.0"
-  },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
-    },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s",
-      "!**/*.spec.ts",
-      "!**/node_modules/**",
-      "!**/dist/**",
-      "!**/test/**"
-    ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node",
-    "setupFilesAfterEnv": [
-      "<rootDir>/test/jest.setup.ts"
-    ],
-    "testTimeout": 30000,
-    "maxWorkers": 1,
-    "forceExit": true,
-    "detectOpenHandles": true
   }
 }
