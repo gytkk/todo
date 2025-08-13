@@ -24,8 +24,8 @@ export class PasswordService {
       errors.push('비밀번호는 최소 6자 이상이어야 합니다');
     }
 
-    if (password.length > 100) {
-      errors.push('비밀번호는 100자 이하여야 합니다');
+    if (password.length > 20) {
+      errors.push('비밀번호는 20자 이하여야 합니다');
     }
 
     // 추가 비밀번호 규칙을 여기에 구현할 수 있습니다

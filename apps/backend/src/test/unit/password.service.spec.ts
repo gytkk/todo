@@ -29,12 +29,12 @@ describe('PasswordService - Unit Tests', () => {
       expect(result.errors).toContain('비밀번호는 최소 6자 이상이어야 합니다');
     });
 
-    it('should return invalid for password longer than 100 characters', () => {
-      const longPassword = 'a'.repeat(101);
+    it('should return invalid for password longer than 20 characters', () => {
+      const longPassword = 'a'.repeat(21);
       const result = passwordService.validate(longPassword);
       
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('비밀번호는 100자 이하여야 합니다');
+      expect(result.errors).toContain('비밀번호는 20자 이하여야 합니다');
     });
 
     it('should return valid for minimum length password', () => {
@@ -45,7 +45,7 @@ describe('PasswordService - Unit Tests', () => {
     });
 
     it('should return valid for maximum length password', () => {
-      const maxPassword = 'a'.repeat(100);
+      const maxPassword = 'a'.repeat(20);
       const result = passwordService.validate(maxPassword);
       
       expect(result.isValid).toBe(true);
