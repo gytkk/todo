@@ -742,11 +742,11 @@ describe('TodoPostgresRepository - Unit Tests', () => {
         .mockResolvedValueOnce([ // event stats
           { completed: true, _count: { id: 3 } },
           { completed: false, _count: { id: 2 } }
-        ] as Array<{ completed: boolean; _count: { id: number } }>)
+        ] as Parameters<typeof mockPrisma.todo.groupBy.mockResolvedValueOnce>[0])
         .mockResolvedValueOnce([ // task stats
           { completed: true, _count: { id: 3 } },
           { completed: false, _count: { id: 2 } }
-        ] as Array<{ completed: boolean; _count: { id: number } }>);
+        ] as Parameters<typeof mockPrisma.todo.groupBy.mockResolvedValueOnce>[0]);
 
       // Act
       const result = await todoRepository.getStatsByUserId(userId);
@@ -754,7 +754,7 @@ describe('TodoPostgresRepository - Unit Tests', () => {
       // Assert
       expect(mockPrisma.todo.count).toHaveBeenCalledWith({ where: { userId } });
       expect(mockPrisma.todo.count).toHaveBeenCalledWith({ where: { userId, completed: true } });
-      
+
       expect(mockPrisma.todo.groupBy).toHaveBeenCalledWith({
         by: ['completed'],
         where: { userId, todoType: TodoType.EVENT },
