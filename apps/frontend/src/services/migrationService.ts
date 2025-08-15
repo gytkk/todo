@@ -27,7 +27,7 @@ export class MigrationService {
   async getLocalTodos(): Promise<TodoItem[]> {
     try {
       const stored = localStorage.getItem(this.LOCAL_STORAGE_KEY);
-      if (!stored) return [];
+      if (!stored || stored === 'undefined' || stored === 'null') return [];
 
       const savedTodos: SavedTodoItem[] = JSON.parse(stored);
       if (!Array.isArray(savedTodos)) return [];
@@ -132,7 +132,7 @@ export class MigrationService {
   async restoreFromBackup(): Promise<boolean> {
     try {
       const backupData = localStorage.getItem(`${this.LOCAL_STORAGE_KEY}_backup`);
-      if (!backupData) return false;
+      if (!backupData || backupData === 'undefined' || backupData === 'null') return false;
 
       const backup = JSON.parse(backupData);
       if (!backup.todos || !Array.isArray(backup.todos)) return false;

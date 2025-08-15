@@ -30,8 +30,15 @@ export class CategoryService extends BaseApiClient {
 
       const data = await response.json();
 
+      // 백엔드에서 배열을 직접 반환하므로 data 자체가 categories 배열
+      // Hydration 안전성을 위한 데이터 검증
+      if (!Array.isArray(data)) {
+        console.warn('Categories response is not an array:', typeof data, data);
+        return [];
+      }
+
       // 날짜 문자열을 Date 객체로 변환
-      const categories = data.categories.map((category: TodoCategory) => ({
+      const categories = data.map((category: TodoCategory) => ({
         ...category,
         createdAt: new Date(category.createdAt),
       }));

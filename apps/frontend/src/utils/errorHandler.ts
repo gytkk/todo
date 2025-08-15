@@ -38,7 +38,10 @@ export const handleAsyncError = async <T>(
 export const safeLocalStorageGet = (key: string, fallback: unknown = null) => {
   try {
     const item = localStorage.getItem(key);
-    return item ? JSON.parse(item) : fallback;
+    if (!item || item === 'undefined' || item === 'null') {
+      return fallback;
+    }
+    return JSON.parse(item);
   } catch {
     return fallback;
   }

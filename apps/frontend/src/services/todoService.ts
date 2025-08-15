@@ -52,13 +52,34 @@ export class TodoService extends BaseApiClient {
 
       const data = response.data;
 
-      // 날짜 문자열을 Date 객체로 변환
-      const todos = data.todos.map((todo: TodoItem) => ({
+      // Hydration 안전성을 위한 더 엄격한 데이터 검증
+      if (!data || typeof data !== 'object') {
+        console.warn('Invalid response data:', data);
+        return { 
+          todos: [], 
+          stats: { total: 0, completed: 0, incomplete: 0, completionRate: 0, recentCompletions: 0, byType: { event: { total: 0, completed: 0, incomplete: 0 }, task: { total: 0, completed: 0, incomplete: 0 } } } 
+        };
+      }
+
+      // todos 필드 검증
+      const todos = Array.isArray(data.todos) ? data.todos : [];
+      if (!data.todos) {
+        console.warn('data.todos is undefined, using empty array');
+      } else if (!Array.isArray(data.todos)) {
+        console.warn('data.todos is not an array:', typeof data.todos, data.todos);
+      }
+
+      // stats 필드 검증  
+      const defaultStats = { total: 0, completed: 0, incomplete: 0, completionRate: 0, recentCompletions: 0, byType: { event: { total: 0, completed: 0, incomplete: 0 }, task: { total: 0, completed: 0, incomplete: 0 } } };
+      const stats = (data.stats && typeof data.stats === 'object') ? data.stats : defaultStats;
+
+      // 날짜 문자열을 Date 객체로 변환 (안전한 처리)
+      const processedTodos = todos.map((todo: TodoItem) => ({
         ...todo,
         date: new Date(todo.date),
       }));
 
-      return { todos, stats: data.stats };
+      return { todos: processedTodos, stats };
     } catch (error) {
       console.error('Error loading todos:', error);
       return { todos: [], stats: { total: 0, completed: 0, incomplete: 0, completionRate: 0, recentCompletions: 0, byType: { event: { total: 0, completed: 0, incomplete: 0 }, task: { total: 0, completed: 0, incomplete: 0 } } } };
@@ -292,6 +313,14 @@ export class TodoService extends BaseApiClient {
       }
 
       // 태스크 ID들을 추출
+      if (!dueTasks.data.data || !Array.isArray(dueTasks.data.data)) {
+        return {
+          success: true,
+          message: '이동할 미완료 태스크가 없습니다',
+          movedCount: 0,
+          movedTaskIds: []
+        };
+      }
       const taskIds = dueTasks.data.data.map((task: TodoItem) => task.id);
       const today = new Date().toISOString();
 
@@ -333,7 +362,10 @@ export class TodoService extends BaseApiClient {
         return null;
       }
 
-      // 날짜 문자열을 Date 객체로 변환
+      // 데이터 유효성 검증 및 날짜 문자열을 Date 객체로 변환
+      if (!response.data.data || !Array.isArray(response.data.data)) {
+        return { ...response.data, data: [] };
+      }
       const tasks = response.data.data.map((task: TodoItem) => ({
         ...task,
         date: new Date(task.date),

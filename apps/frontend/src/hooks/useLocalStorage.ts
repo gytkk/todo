@@ -10,7 +10,10 @@ export function useLocalStorage<T>(
         return initialValue;
       }
       const item = window.localStorage.getItem(key);
-      return item ? JSON.parse(item) : initialValue;
+      if (!item || item === 'undefined' || item === 'null') {
+        return initialValue;
+      }
+      return JSON.parse(item);
     } catch (error) {
       console.error(`Error reading localStorage key "${key}":`, error);
       return initialValue;

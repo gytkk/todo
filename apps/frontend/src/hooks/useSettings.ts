@@ -95,9 +95,16 @@ export const useSettings = () => {
   const getStoredUserSettings = useCallback((): UserSettingsData | null => {
     try {
       const settingsData = localStorage.getItem('user_settings') || sessionStorage.getItem('user_settings');
-      return settingsData ? JSON.parse(settingsData) : null;
+      // Check for null, empty string, or "undefined" string
+      if (!settingsData || settingsData === 'undefined' || settingsData === 'null') {
+        return null;
+      }
+      return JSON.parse(settingsData);
     } catch (error) {
       console.error('Failed to parse stored user settings:', error);
+      // Clear invalid data from storage
+      localStorage.removeItem('user_settings');
+      sessionStorage.removeItem('user_settings');
       return null;
     }
   }, []);

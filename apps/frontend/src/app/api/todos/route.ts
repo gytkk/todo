@@ -37,6 +37,12 @@ export async function GET(request: NextRequest) {
     });
 
     const data = await response.json();
+    
+    // 디버깅을 위한 로깅
+    console.log('Frontend API Route GET - Backend response status:', response.status);
+    console.log('Frontend API Route GET - Backend response data:', data);
+    console.log('Frontend API Route GET - data.todos type:', typeof data.todos);
+    console.log('Frontend API Route GET - data.todos value:', data.todos);
 
     // 백엔드 응답을 그대로 프론트엔드로 전달
     return NextResponse.json(data, { status: response.status });

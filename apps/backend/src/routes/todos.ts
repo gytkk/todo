@@ -115,26 +115,62 @@ const todoListSchema = {
   },
   response: {
     200: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          id: { type: 'string' },
-          title: { type: 'string' },
-          date: { type: 'string' },
-          categoryId: { type: 'string' },
-          todoType: { type: 'string' },
-          completed: { type: 'boolean' },
-          userId: { type: 'string' },
-          createdAt: { type: 'string' },
-          updatedAt: { type: 'string' },
-          category: {
+      type: 'object',
+      properties: {
+        todos: {
+          type: 'array',
+          items: {
             type: 'object',
             properties: {
               id: { type: 'string' },
-              name: { type: 'string' },
-              color: { type: 'string' },
-              icon: { type: ['string', 'null'] },
+              title: { type: 'string' },
+              date: { type: 'string' },
+              categoryId: { type: 'string' },
+              todoType: { type: 'string' },
+              completed: { type: 'boolean' },
+              userId: { type: 'string' },
+              createdAt: { type: 'string' },
+              updatedAt: { type: 'string' },
+              category: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string' },
+                  name: { type: 'string' },
+                  color: { type: 'string' },
+                  icon: { type: ['string', 'null'] },
+                },
+              },
+            },
+          },
+        },
+        stats: {
+          type: 'object',
+          properties: {
+            total: { type: 'number' },
+            completed: { type: 'number' },
+            incomplete: { type: 'number' },
+            completionRate: { type: 'number' },
+            recentCompletions: { type: 'number' },
+            byType: {
+              type: 'object',
+              properties: {
+                event: {
+                  type: 'object',
+                  properties: {
+                    total: { type: 'number' },
+                    completed: { type: 'number' },
+                    incomplete: { type: 'number' },
+                  },
+                },
+                task: {
+                  type: 'object',
+                  properties: {
+                    total: { type: 'number' },
+                    completed: { type: 'number' },
+                    incomplete: { type: 'number' },
+                  },
+                },
+              },
             },
           },
         },
@@ -171,7 +207,17 @@ export default async function (fastify: FastifyInstance) {
     };
 
     const todos = await todoRepository.findByFilter(filter);
-    reply.send(todos);
+    const stats = await todoRepository.getStatsByUserId(user.id);
+    
+    // 디버깅을 위한 로깅
+    console.log('Backend response - todos type:', typeof todos);
+    console.log('Backend response - todos value:', todos);
+    console.log('Backend response - stats:', stats);
+    
+    reply.send({
+      todos,
+      stats
+    });
   });
 
   // POST /todos - Todo 생성

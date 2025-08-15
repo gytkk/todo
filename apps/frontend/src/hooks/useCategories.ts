@@ -10,9 +10,16 @@ import { DEFAULT_CATEGORIES, STORAGE_KEYS } from '@/constants/categories';
 const getStoredUserSettings = (): UserSettingsData | null => {
   try {
     const settingsData = localStorage.getItem('user_settings') || sessionStorage.getItem('user_settings');
-    return settingsData ? JSON.parse(settingsData) : null;
+    // Check for null, empty string, or "undefined" string
+    if (!settingsData || settingsData === 'undefined' || settingsData === 'null') {
+      return null;
+    }
+    return JSON.parse(settingsData);
   } catch (error) {
     console.error('Failed to parse stored user settings:', error);
+    // Clear invalid data from storage
+    localStorage.removeItem('user_settings');
+    sessionStorage.removeItem('user_settings');
     return null;
   }
 };
@@ -32,7 +39,7 @@ export const useCategories = () => {
       // localStorage에서 카테고리 필터 상태 복원
       try {
         const savedFilter = localStorage.getItem(STORAGE_KEYS.CATEGORY_FILTER);
-        if (savedFilter) {
+        if (savedFilter && savedFilter !== 'undefined' && savedFilter !== 'null') {
           setCategoryFilter(JSON.parse(savedFilter));
         } else {
           // 기본 카테고리 필터 설정 (모두 활성화)
@@ -90,13 +97,37 @@ export const useCategories = () => {
       // 저장된 설정이 없으면 API 호출
       const service = CategoryService.getInstance();
       const categories = await service.getCategories();
-      setCategories(categories);
+      
+      // Hydration 안전성을 위한 검증
+      if (Array.isArray(categories)) {
+        setCategories(categories);
+      } else {
+        console.warn('Invalid categories data received:', categories);
+        setCategories(DEFAULT_CATEGORIES);
+      }
       
       // 카테고리 필터도 함께 로드
       const filter = await service.getCategoryFilter();
-      setCategoryFilter(filter);
+      if (filter && typeof filter === 'object') {
+        setCategoryFilter(filter);
+      } else {
+        console.warn('Invalid category filter received:', filter);
+        // 기본 필터 설정 (모두 활성화)
+        const defaultFilter = categories.reduce((acc, cat) => {
+          acc[cat.id] = true;
+          return acc;
+        }, {} as CategoryFilter);
+        setCategoryFilter(defaultFilter);
+      }
     } catch (error) {
       console.error('Failed to load categories:', error);
+      // 에러 시 기본 카테고리 설정
+      setCategories(DEFAULT_CATEGORIES);
+      const defaultFilter = DEFAULT_CATEGORIES.reduce((acc, cat) => {
+        acc[cat.id] = true;
+        return acc;
+      }, {} as CategoryFilter);
+      setCategoryFilter(defaultFilter);
     } finally {
       setLoading(false);
     }
@@ -107,7 +138,7 @@ export const useCategories = () => {
     if (!authLoading) {
       loadCategories();
     }
-  }, [authLoading, loadCategories]);
+  }, [authLoading, isAuthenticated]); // loadCategories 제거하여 무한 재렌더링 방지
 
   // 카테고리 추가
   const addCategory = useAuthenticatedCallback(

@@ -34,14 +34,33 @@ export const useTodos = (categories: TodoCategory[] = DEFAULT_CATEGORIES) => {
         // 인증된 사용자: API에서 데이터 로드
         const todoService = TodoService.getInstance();
         const { todos: apiTodos, stats: apiStats } = await todoService.getTodos();
-        setTodos(apiTodos);
-        setStats(apiStats);
+        
+        // Hydration 안전성을 위한 검증
+        if (apiTodos && Array.isArray(apiTodos)) {
+          setTodos(apiTodos);
+        } else {
+          console.warn('Invalid todos data received:', apiTodos);
+          setTodos([]);
+        }
+        
+        if (apiStats && typeof apiStats === 'object') {
+          setStats(apiStats);
+        } else {
+          console.warn('Invalid stats data received:', apiStats);
+          setStats({
+            total: 0, completed: 0, incomplete: 0, completionRate: 0, recentCompletions: 0,
+            byType: { event: { total: 0, completed: 0, incomplete: 0 }, task: { total: 0, completed: 0, incomplete: 0 } }
+          });
+        }
       } else {
         // 미인증 사용자: 로컬 스토리지에서 데이터 로드
         const localTodoService = LocalTodoService.getInstance();
         const { todos: localTodos, stats: localStats } = await localTodoService.getTodos();
-        setTodos(localTodos);
-        setStats(localStats);
+        setTodos(localTodos || []);
+        setStats(localStats || {
+          total: 0, completed: 0, incomplete: 0, completionRate: 0, recentCompletions: 0,
+          byType: { event: { total: 0, completed: 0, incomplete: 0 }, task: { total: 0, completed: 0, incomplete: 0 } }
+        });
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : '할일을 불러오는 중 오류가 발생했습니다');
@@ -68,7 +87,7 @@ export const useTodos = (categories: TodoCategory[] = DEFAULT_CATEGORIES) => {
     if (!authLoading) {
       loadTodos();
     }
-  }, [authLoading, loadTodos]);
+  }, [authLoading, isAuthenticated]); // loadTodos 제거하여 무한 재렌더링 방지
 
   const addTodo = useCallback(async (title: string, date: Date, categoryId: string, todoType: TodoType = 'event') => {
     if (!title.trim() || !date || !categoryId) return;

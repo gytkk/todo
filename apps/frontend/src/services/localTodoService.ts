@@ -21,7 +21,7 @@ export class LocalTodoService {
   private loadTodos(): TodoItem[] {
     try {
       const stored = localStorage.getItem(this.STORAGE_KEY);
-      if (!stored) return [];
+      if (!stored || stored === 'undefined' || stored === 'null') return [];
 
       const savedTodos: SavedTodoItem[] = JSON.parse(stored);
       if (!Array.isArray(savedTodos)) return [];
@@ -407,7 +407,7 @@ export class LocalTodoService {
   async restoreFromBackup(): Promise<boolean> {
     try {
       const backupData = localStorage.getItem(`${this.STORAGE_KEY}_backup`);
-      if (!backupData) return false;
+      if (!backupData || backupData === 'undefined' || backupData === 'null') return false;
 
       const backup = JSON.parse(backupData);
       if (!backup.todos || !Array.isArray(backup.todos)) return false;

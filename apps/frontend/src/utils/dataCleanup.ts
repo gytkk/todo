@@ -4,7 +4,7 @@
 export const cleanupInvalidTodos = () => {
   try {
     const savedTodos = localStorage.getItem('calendar-todos');
-    if (!savedTodos) return;
+    if (!savedTodos || savedTodos === 'undefined' || savedTodos === 'null') return;
 
     const todos = JSON.parse(savedTodos);
     if (!Array.isArray(todos)) {

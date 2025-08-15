@@ -26,6 +26,9 @@ export class SettingsApiService {
       }
 
       const data = await response.json();
+      if (!data || !data.settings) {
+        throw new Error('Invalid response format: missing settings data');
+      }
       return data.settings;
     } catch (error) {
       console.error('Error fetching user settings:', error);
@@ -122,7 +125,11 @@ export class SettingsApiService {
   /**
    * UserSettingsData를 AppSettings 형식으로 변환합니다
    */
-  convertToAppSettings(userSettingsData: UserSettingsData): Partial<AppSettings> {
+  convertToAppSettings(userSettingsData: UserSettingsData | null | undefined): Partial<AppSettings> {
+    if (!userSettingsData) {
+      return {};
+    }
+    
     return {
       // 사용자 정보는 별도 처리 (사용자 프로필 API에서 가져옴)
       // categories는 카테고리 서비스에서 처리
