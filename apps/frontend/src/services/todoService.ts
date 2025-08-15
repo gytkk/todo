@@ -2,11 +2,12 @@ import { TodoItem, TodoStats, TodoCategory, TodoType } from '@calendar-todo/shar
 import { BaseApiClient } from './BaseApiClient';
 
 interface TasksDueResponse {
-  tasks: TodoItem[];
+  data: TodoItem[];
   count: number;
 }
 
 interface MoveTasksResponse {
+  success?: boolean;
   message: string;
   movedCount: number;
   movedTaskIds: string[];
@@ -38,19 +39,19 @@ export class TodoService extends BaseApiClient {
       if (completed !== undefined) params.append('completed', completed.toString());
 
       const url = `${this.BASE_URL}${params.toString() ? `?${params.toString()}` : ''}`;
-      
+
       const response = await this.get<{ todos: TodoItem[]; stats: TodoStats }>(url);
 
       if (response.status === 401) {
         return { todos: [], stats: { total: 0, completed: 0, incomplete: 0, completionRate: 0, recentCompletions: 0, byType: { event: { total: 0, completed: 0, incomplete: 0 }, task: { total: 0, completed: 0, incomplete: 0 } } } };
       }
-      
+
       if (response.error || !response.data) {
         throw new Error(`할일 목록 조회 실패: ${response.error || response.status}`);
       }
 
       const data = response.data;
-      
+
       // 날짜 문자열을 Date 객체로 변환
       const todos = data.todos.map((todo: TodoItem) => ({
         ...todo,
@@ -71,7 +72,7 @@ export class TodoService extends BaseApiClient {
         category: {
           ...todo.category,
           // category.createdAt이 존재하는 경우에만 변환, 없으면 현재 시간 사용
-          createdAt: todo.category?.createdAt 
+          createdAt: todo.category?.createdAt
             ? this.convertDateToISO(todo.category.createdAt)
             : this.convertDateToISO(new Date()),
         },
@@ -241,10 +242,10 @@ export class TodoService extends BaseApiClient {
               title: todoItem.title as string,
               date: new Date(todoItem.date as string),
               completed: Boolean(todoItem.completed),
-              category: (todoItem.category as TodoCategory) || { 
-                id: 'personal', 
-                name: '개인', 
-                color: '#f59e0b', 
+              category: (todoItem.category as TodoCategory) || {
+                id: 'personal',
+                name: '개인',
+                color: '#f59e0b',
                 isDefault: true,
                 createdAt: new Date(),
               },
@@ -279,8 +280,8 @@ export class TodoService extends BaseApiClient {
     try {
       // 먼저 오늘 이전의 미완료 태스크들을 조회
       const dueTasks = await this.get<TasksDueResponse>('/api/todos/tasks-due');
-      
-      if (dueTasks.error || !dueTasks.data || dueTasks.data.length === 0) {
+
+      if (dueTasks.error || !dueTasks.data || dueTasks.data.data.length === 0) {
         // 이동할 태스크가 없으면 성공으로 처리
         return {
           success: true,
@@ -291,7 +292,7 @@ export class TodoService extends BaseApiClient {
       }
 
       // 태스크 ID들을 추출
-      const taskIds = dueTasks.data.map(task => task.id);
+      const taskIds = dueTasks.data.data.map((task: TodoItem) => task.id);
       const today = new Date().toISOString();
 
       // 태스크들을 오늘로 이동
@@ -333,12 +334,12 @@ export class TodoService extends BaseApiClient {
       }
 
       // 날짜 문자열을 Date 객체로 변환
-      const tasks = response.data.tasks.map((task: TodoItem) => ({
+      const tasks = response.data.data.map((task: TodoItem) => ({
         ...task,
         date: new Date(task.date),
       }));
 
-      return { ...response.data, tasks };
+      return { ...response.data, data: tasks };
     } catch (error) {
       this.logError('이동 대상 작업 조회 중 오류 발생:', error);
       return null;
