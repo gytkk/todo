@@ -7,8 +7,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  Button,
-  Badge
+  Button
 } from "@calendar-todo/ui";
 import { Palette, GripVertical } from 'lucide-react';
 import { useCategories } from '../../hooks/useCategories';

@@ -34,7 +34,7 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
                   : 'opacity-60'
               }`}
               style={{
-                backgroundColor: isActive ? `${category.color}15` : `${category.color}08`,
+                backgroundColor: isActive ? `${category.color}12` : 'transparent',
                 borderColor: isActive ? `${category.color}40` : `${category.color}20`,
               }}
             >

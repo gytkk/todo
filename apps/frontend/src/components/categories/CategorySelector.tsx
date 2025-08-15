@@ -17,10 +17,8 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
   onSelectCategory,
   disabled = false
 }) => {
-  // 색상의 밝기를 계산하여 텍스트 색상 결정
-  const getTextColor = (hexColor: string, isSelected: boolean) => {
-    if (!isSelected) return hexColor;
-    
+  // 색상의 밝기를 계산하여 텍스트 색상 결정 (선택된 상태에서만 사용)
+  const getTextColor = (hexColor: string) => {
     // 헥스 색상을 RGB로 변환
     const r = parseInt(hexColor.slice(1, 3), 16);
     const g = parseInt(hexColor.slice(3, 5), 16);
@@ -33,14 +31,14 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
     return brightness > 128 ? '#000000' : '#ffffff';
   };
 
-  // 선택되지 않은 상태의 배경색 (매우 연한 색상)
+  // 선택된 상태의 배경색 (옅은 색상)
   const getLightBackgroundColor = (hexColor: string) => {
     const r = parseInt(hexColor.slice(1, 3), 16);
     const g = parseInt(hexColor.slice(3, 5), 16);
     const b = parseInt(hexColor.slice(5, 7), 16);
     
-    // 원래 색상에 투명도를 적용한 효과 (10% 정도)
-    return `rgba(${r}, ${g}, ${b}, 0.1)`;
+    // 원래 색상에 투명도를 적용한 효과 (15% 정도)
+    return `rgba(${r}, ${g}, ${b}, 0.15)`;
   };
 
   return (
@@ -52,10 +50,10 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
       >
         {categories.map(category => {
           const isSelected = selectedCategoryId === category.id;
-          const textColor = getTextColor(category.color, isSelected);
+          const textColor = isSelected ? getTextColor(category.color) : category.color;
           const backgroundColor = isSelected 
-            ? category.color 
-            : getLightBackgroundColor(category.color);
+            ? getLightBackgroundColor(category.color) 
+            : 'transparent';
 
           return (
             <Badge
@@ -107,7 +105,7 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
               <div
                 className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full mr-1.5 flex-shrink-0"
                 style={{
-                  backgroundColor: isSelected ? textColor : category.color
+                  backgroundColor: category.color
                 }}
               />
               <span className="truncate max-w-[80px] sm:max-w-none">
