@@ -94,6 +94,7 @@ export class TestHelper {
     name?: string;
     color?: string;
     isDefault?: boolean;
+    order?: number;
   }) {
     return this.prisma.category.create({
       data: {

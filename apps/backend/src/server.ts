@@ -3,37 +3,37 @@ import { buildApp } from './app.js';
 const start = async () => {
   try {
     const isProduction = process.env.NODE_ENV === 'production';
-    
+
     const app = await buildApp({
       logger: {
         level: process.env.LOG_LEVEL || (isProduction ? 'info' : 'debug'),
-        ...(isProduction 
+        ...(isProduction
           ? {
-              // Production 설정: 구조화된 JSON 로그
-              redact: ['req.headers.authorization'], // 민감한 정보 제거
-              serializers: {
-                req: (req) => ({
-                  method: req.method,
-                  url: req.url,
-                  id: req.id,
-                }),
-                res: (res) => ({
-                  statusCode: res.statusCode,
-                }),
-              },
-            }
+            // Production 설정: 구조화된 JSON 로그
+            redact: ['req.headers.authorization'], // 민감한 정보 제거
+            serializers: {
+              req: (req) => ({
+                method: req.method,
+                url: req.url,
+                id: req.id,
+              }),
+              res: (res) => ({
+                statusCode: res.statusCode,
+              }),
+            },
+          }
           : {
-              // Development 설정: 읽기 쉬운 형식
-              transport: {
-                target: 'pino-pretty',
-                options: {
-                  translateTime: 'HH:mm:ss',
-                  ignore: 'pid,hostname',
-                  colorize: true,
-                  singleLine: false,
-                },
+            // Development 설정: 읽기 쉬운 형식
+            transport: {
+              target: 'pino-pretty',
+              options: {
+                translateTime: 'HH:mm:ss',
+                ignore: 'pid,hostname',
+                colorize: true,
+                singleLine: false,
               },
-            }
+            },
+          }
         ),
       },
     });

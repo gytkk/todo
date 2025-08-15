@@ -26,8 +26,8 @@ describe('AuthService - Unit Tests', () => {
     mockPasswordService = mockDeep<PasswordService>();
     
     // Inject the mocks into the auth service
-    (authService as any).userRepository = mockUserRepository;
-    (authService as any).passwordService = mockPasswordService;
+    (authService as unknown as { userRepository: UserPostgresRepository }).userRepository = mockUserRepository;
+    (authService as unknown as { passwordService: PasswordService }).passwordService = mockPasswordService;
   });
 
   afterEach(() => {
@@ -142,12 +142,12 @@ describe('AuthService - Unit Tests', () => {
       
       // Mock JwtService methods through app instance
       const mockJwtService = mockDeep<{
-        sign: () => any;
-        signRefreshToken: () => any;
+        sign: (payload: object, options?: object) => Promise<string>;
+        signRefreshToken: (payload: object, options?: object) => Promise<string>;
       }>();
       mockJwtService.sign.mockResolvedValue(expectedTokens.accessToken);
       mockJwtService.signRefreshToken.mockResolvedValue(expectedTokens.refreshToken);
-      (authService as any).jwtService = mockJwtService;
+      (authService as unknown as { jwtService: typeof mockJwtService }).jwtService = mockJwtService;
 
       // Act
       const result = await authService.login(validLoginDto);
@@ -225,14 +225,14 @@ describe('AuthService - Unit Tests', () => {
       const newRefreshToken = 'new-refresh-token';
 
       const mockJwtService = mockDeep<{
-        verify: () => any;
-        sign: () => any;
-        signRefreshToken: () => any;
+        verify: (token: string) => Promise<object>;
+        sign: (payload: object, options?: object) => Promise<string>;
+        signRefreshToken: (payload: object, options?: object) => Promise<string>;
       }>();
       mockJwtService.verify.mockResolvedValue(mockPayload);
       mockJwtService.sign.mockResolvedValue(newAccessToken);
       mockJwtService.signRefreshToken.mockResolvedValue(newRefreshToken);
-      (authService as any).jwtService = mockJwtService;
+      (authService as unknown as { jwtService: typeof mockJwtService }).jwtService = mockJwtService;
       mockUserRepository.findById.mockResolvedValue(mockUser);
 
       // Act
@@ -250,10 +250,10 @@ describe('AuthService - Unit Tests', () => {
     it('should throw error for invalid refresh token', async () => {
       // Arrange
       const mockJwtService = mockDeep<{
-        verify: () => any;
+        verify: (token: string) => Promise<object>;
       }>();
       mockJwtService.verify.mockRejectedValue(new Error('Invalid token'));
-      (authService as any).jwtService = mockJwtService;
+      (authService as unknown as { jwtService: typeof mockJwtService }).jwtService = mockJwtService;
 
       // Act & Assert
       await expect(authService.refreshToken(validRefreshToken)).rejects.toThrow('Invalid refresh token');
@@ -263,10 +263,10 @@ describe('AuthService - Unit Tests', () => {
       // Arrange
       const inactiveUser = { ...mockUser, isActive: false };
       const mockJwtService = mockDeep<{
-        verify: () => any;
+        verify: (token: string) => Promise<object>;
       }>();
       mockJwtService.verify.mockResolvedValue(mockPayload);
-      (authService as any).jwtService = mockJwtService;
+      (authService as unknown as { jwtService: typeof mockJwtService }).jwtService = mockJwtService;
       mockUserRepository.findById.mockResolvedValue(inactiveUser);
 
       // Act & Assert

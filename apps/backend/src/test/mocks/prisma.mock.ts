@@ -1,6 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 import { mockDeep, mockReset, DeepMockProxy } from 'jest-mock-extended';
 import { FastifyInstance } from 'fastify';
+import { SignOptions } from '@fastify/jwt';
+import { JwtPayload } from '@calendar-todo/shared-types';
 
 // Jest globals are now available through setup
 
@@ -26,10 +28,10 @@ export const createMockApp = (): FastifyInstance => {
   const mockApp = {
     prisma: mockDeep<PrismaClient>(),
     jwt: mockDeep<{
-      sign: () => any;
-      verify: () => any;
+      sign: (payload: object, options?: SignOptions) => Promise<string>;
+      verify: (token: string) => Promise<JwtPayload>;
     }>(),
   } as unknown as FastifyInstance;
-  
+
   return mockApp;
 };

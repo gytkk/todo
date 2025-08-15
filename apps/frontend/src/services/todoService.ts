@@ -277,7 +277,28 @@ export class TodoService extends BaseApiClient {
    */
   async moveTasks(): Promise<MoveTasksResponse | null> {
     try {
-      const response = await this.post<MoveTasksResponse>('/api/todos/move-tasks', {});
+      // 먼저 오늘 이전의 미완료 태스크들을 조회
+      const dueTasks = await this.get<TasksDueResponse>('/api/todos/tasks-due');
+      
+      if (dueTasks.error || !dueTasks.data || dueTasks.data.length === 0) {
+        // 이동할 태스크가 없으면 성공으로 처리
+        return {
+          success: true,
+          message: '이동할 미완료 태스크가 없습니다',
+          movedCount: 0,
+          movedTaskIds: []
+        };
+      }
+
+      // 태스크 ID들을 추출
+      const taskIds = dueTasks.data.map(task => task.id);
+      const today = new Date().toISOString();
+
+      // 태스크들을 오늘로 이동
+      const response = await this.post<MoveTasksResponse>('/api/todos/move-tasks', {
+        taskIds,
+        newDate: today
+      });
 
       if (response.status === 401) {
         return null;
