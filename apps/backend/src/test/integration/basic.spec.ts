@@ -200,5 +200,137 @@ describe('Basic Integration Tests', () => {
       expect(loginResult).toHaveProperty('user');
       expect(loginResult.user.email).toBe('authflow@example.com');
     });
+
+    it('should validate access token', async () => {
+      const app = testHelper.getApp();
+      
+      // Register and login user first
+      const registerResponse = await app.inject({
+        method: 'POST',
+        url: '/auth/register',
+        payload: {
+          email: 'validate@example.com',
+          password: 'ValidatePassword123!',
+          name: 'Validate User'
+        }
+      });
+
+      expect(registerResponse.statusCode).toBe(201);
+
+      const loginResponse = await app.inject({
+        method: 'POST',
+        url: '/auth/login',
+        payload: {
+          email: 'validate@example.com',
+          password: 'ValidatePassword123!'
+        }
+      });
+
+      expect(loginResponse.statusCode).toBe(200);
+      const loginResult = loginResponse.json();
+      const { accessToken } = loginResult;
+
+      // Validate token
+      const validateResponse = await app.inject({
+        method: 'GET',
+        url: '/auth/validate',
+        headers: {
+          authorization: `Bearer ${accessToken}`
+        }
+      });
+
+      expect(validateResponse.statusCode).toBe(200);
+      const validateResult = validateResponse.json();
+      expect(validateResult.valid).toBe(true);
+      expect(validateResult.user).toHaveProperty('id');
+      expect(validateResult.user).toHaveProperty('email', 'validate@example.com');
+      expect(validateResult.user).toHaveProperty('name', 'Validate User');
+      expect(validateResult.user).not.toHaveProperty('password'); // Should not include password
+    });
+
+    it('should reject invalid token', async () => {
+      const app = testHelper.getApp();
+      
+      const validateResponse = await app.inject({
+        method: 'GET',
+        url: '/auth/validate',
+        headers: {
+          authorization: 'Bearer invalid-token'
+        }
+      });
+
+      expect(validateResponse.statusCode).toBe(401);
+    });
+
+    it('should require authentication header', async () => {
+      const app = testHelper.getApp();
+      
+      const validateResponse = await app.inject({
+        method: 'GET',
+        url: '/auth/validate'
+      });
+
+      expect(validateResponse.statusCode).toBe(401);
+    });
+
+    it('should refresh access token', async () => {
+      const app = testHelper.getApp();
+      
+      // Register and login user first
+      const registerResponse = await app.inject({
+        method: 'POST',
+        url: '/auth/register',
+        payload: {
+          email: 'refresh@example.com',
+          password: 'RefreshPassword123!',
+          name: 'Refresh User'
+        }
+      });
+
+      expect(registerResponse.statusCode).toBe(201);
+
+      const loginResponse = await app.inject({
+        method: 'POST',
+        url: '/auth/login',
+        payload: {
+          email: 'refresh@example.com',
+          password: 'RefreshPassword123!'
+        }
+      });
+
+      expect(loginResponse.statusCode).toBe(200);
+      const loginResult = loginResponse.json();
+      const { refreshToken } = loginResult;
+
+      // Refresh token
+      const refreshResponse = await app.inject({
+        method: 'POST',
+        url: '/auth/refresh',
+        payload: {
+          refreshToken
+        }
+      });
+
+      expect(refreshResponse.statusCode).toBe(200);
+      const refreshResult = refreshResponse.json();
+      expect(refreshResult).toHaveProperty('accessToken');
+      expect(refreshResult).toHaveProperty('refreshToken');
+      expect(refreshResult.accessToken).not.toBe(loginResult.accessToken); // Should be different token
+      expect(refreshResult.refreshToken).not.toBe(refreshToken); // Should be different refresh token
+    });
+
+    it('should reject invalid refresh token', async () => {
+      const app = testHelper.getApp();
+      
+      const refreshResponse = await app.inject({
+        method: 'POST',
+        url: '/auth/refresh',
+        payload: {
+          refreshToken: 'invalid-refresh-token'
+        }
+      });
+
+      expect(refreshResponse.statusCode).toBe(401);
+    });
   });
 });

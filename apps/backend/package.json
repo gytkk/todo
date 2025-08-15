@@ -13,7 +13,7 @@
     "start": "node dist/server.js",
     "start:prod": "NODE_ENV=production LOG_LEVEL=info node dist/server.js",
     "lint": "eslint \"{src,tests}/**/*.ts\" --fix",
-    "test": "NODE_OPTIONS='--experimental-vm-modules' jest --testPathIgnorePatterns='integration' --setupFilesAfterEnv='<rootDir>/test/unit/jest.setup.unit.ts'",
+    "test": "NODE_OPTIONS='--experimental-vm-modules' jest --testPathIgnorePatterns='integration'",
     "test:cov": "jest --coverage",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist"

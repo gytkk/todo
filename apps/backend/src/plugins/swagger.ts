@@ -18,7 +18,7 @@ export default fp(async function (fastify) {
         url: 'https://github.com/yourusername/todo-app',
         description: 'Find more info here',
       },
-      host: `localhost:${fastify.config.PORT}`,
+      // host를 제거하여 현재 접근한 호스트를 자동으로 사용하도록 함
       schemes: ['http', 'https'],
       consumes: ['application/json'],
       produces: ['application/json'],

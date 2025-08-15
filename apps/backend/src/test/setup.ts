@@ -36,7 +36,7 @@ export class TestHelper {
 
     // Replace the prisma instance with our test instance
     // Since the database plugin already decorated 'prisma', we need to replace it
-    (this.app as any).prisma = this.prisma;
+    (this.app as FastifyInstance & { prisma: PrismaClient }).prisma = this.prisma;
   }
 
   async afterAll(): Promise<void> {

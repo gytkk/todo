@@ -1,16 +1,14 @@
 import bcryptjs from 'bcryptjs';
-// @ts-ignore - ESM/CJS interop issue
-const bcrypt = bcryptjs.default || bcryptjs;
 
 export class PasswordService {
   private readonly saltRounds = 10;
 
   async hash(password: string): Promise<string> {
-    return await bcrypt.hash(password, this.saltRounds);
+    return await bcryptjs.hash(password, this.saltRounds);
   }
 
   async compare(password: string, hash: string): Promise<boolean> {
-    return await bcrypt.compare(password, hash);
+    return await bcryptjs.compare(password, hash);
   }
 
   validate(password: string): { isValid: boolean; errors: string[] } {

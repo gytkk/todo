@@ -101,4 +101,42 @@ export default async function (fastify: FastifyInstance) {
   }, async () => {
     return { message: '로그아웃되었습니다' };
   });
+
+  // 토큰 유효성 검증
+  fastify.get('/validate', {
+    schema: {
+      tags: ['auth'],
+      summary: '토큰 유효성 검증',
+      description: 'JWT 토큰의 유효성을 검증하고 사용자 정보를 반환합니다',
+      security: [{ bearerAuth: [] }],
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            valid: { type: 'boolean' },
+            user: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                email: { type: 'string' },
+                name: { type: 'string' },
+              },
+            },
+          },
+        },
+      },
+    },
+    onRequest: [fastify.authenticate],
+  }, async (request) => {
+    const user = request.user;
+    
+    return {
+      valid: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      },
+    };
+  });
 }

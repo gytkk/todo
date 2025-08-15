@@ -14,6 +14,8 @@ export async function buildApp(opts: FastifyServerOptions = {}): Promise<Fastify
   await app.register(import('./routes/health.js'), { prefix: '/' });
   await app.register(import('./routes/auth.js'), { prefix: '/auth' });
   await app.register(import('./routes/users.js'), { prefix: '/users' });
+  await app.register(import('./routes/todos.js'), { prefix: '/todos' });
+  await app.register(import('./routes/user-settings.js'), { prefix: '/user-settings' });
 
   // Error handler
   app.setErrorHandler((error, request, reply) => {
