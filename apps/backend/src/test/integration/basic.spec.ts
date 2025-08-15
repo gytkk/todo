@@ -184,6 +184,17 @@ describe('Basic Integration Tests', () => {
       const response = registerResponse.json();
       expect(response.user.email).toBe('authflow@example.com');
 
+      // Check if default category was created
+      const prisma = testHelper.getPrisma();
+      const categories = await prisma.category.findMany({
+        where: { userId: response.user.id }
+      });
+      
+      expect(categories).toHaveLength(1);
+      expect(categories[0].name).toBe('개인');
+      expect(categories[0].isDefault).toBe(true);
+      expect(categories[0].color).toBe('#3b82f6');
+
       // Login
       const loginResponse = await app.inject({
         method: 'POST',

@@ -25,11 +25,11 @@ export class SettingsApiService {
         throw new Error(`Failed to fetch user settings: ${response.statusText}`);
       }
 
-      const data = await response.json();
-      if (!data || !data.settings) {
+      const settings = await response.json();
+      if (!settings || typeof settings !== 'object') {
         throw new Error('Invalid response format: missing settings data');
       }
-      return data.settings;
+      return settings;
     } catch (error) {
       console.error('Error fetching user settings:', error);
       throw error;
@@ -50,8 +50,8 @@ export class SettingsApiService {
         throw new Error(`Failed to update user settings: ${response.statusText}`);
       }
 
-      const data = await response.json();
-      return data.settings;
+      const settings = await response.json();
+      return settings;
     } catch (error) {
       console.error('Error updating user settings:', error);
       throw error;
@@ -71,8 +71,8 @@ export class SettingsApiService {
         throw new Error(`Failed to reset user settings: ${response.statusText}`);
       }
 
-      const data = await response.json();
-      return data.settings;
+      const settings = await response.json();
+      return settings;
     } catch (error) {
       console.error('Error resetting user settings:', error);
       throw error;
@@ -114,8 +114,8 @@ export class SettingsApiService {
         throw new Error(`Failed to import user data: ${response.statusText}`);
       }
 
-      const data = await response.json();
-      return data.settings;
+      const settings = await response.json();
+      return settings;
     } catch (error) {
       console.error('Error importing user data:', error);
       throw error;

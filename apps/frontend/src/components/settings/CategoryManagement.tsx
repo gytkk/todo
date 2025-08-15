@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import { 
+import {
   Card,
   CardContent,
   CardDescription,
@@ -78,9 +78,8 @@ const SortableCategoryItem: React.FC<SortableCategoryItemProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-center justify-between p-3 bg-gray-50 rounded-lg ${
-        isDragging ? 'z-50' : ''
-      }`}
+      className={`flex items-center justify-between p-3 bg-gray-50 rounded-lg ${isDragging ? 'z-50' : ''
+        }`}
     >
       <div className="flex items-center gap-3">
         <div
@@ -105,9 +104,6 @@ const SortableCategoryItem: React.FC<SortableCategoryItemProps> = ({
           />
         ) : (
           <span className="font-medium">{category.name}</span>
-        )}
-        {isLastCategory && (
-          <Badge variant="secondary" className="text-xs">마지막</Badge>
         )}
       </div>
 
@@ -148,7 +144,7 @@ export const CategoryManagement: React.FC = () => {
   const [selectedColor, setSelectedColor] = useState('');
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
-  
+
   // Drag and drop sensors
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -183,15 +179,15 @@ export const CategoryManagement: React.FC = () => {
       if (result) {
         setNewCategoryName('');
         setSelectedColor('');
-        
+
         // Context를 통해 전체 앱의 카테고리 상태를 즉시 새로고침
         await refreshCategories();
-        
+
         // 커스텀 이벤트로 다른 컴포넌트들에게 카테고리 변경 알림
-        window.dispatchEvent(new CustomEvent('categoryChanged', { 
-          detail: { type: 'added', category: result } 
+        window.dispatchEvent(new CustomEvent('categoryChanged', {
+          detail: { type: 'added', category: result }
         }));
-        
+
       }
     }
   };
@@ -202,17 +198,17 @@ export const CategoryManagement: React.FC = () => {
       alert('최소 1개의 카테고리는 유지해야 합니다.');
       return;
     }
-    
+
     const result = await deleteCategory(categoryId, []);
     if (result) {
       // Context를 통해 전체 앱의 카테고리 상태를 즉시 새로고침
       await refreshCategories();
-      
+
       // 커스텀 이벤트로 다른 컴포넌트들에게 카테고리 변경 알림
-      window.dispatchEvent(new CustomEvent('categoryChanged', { 
-        detail: { type: 'deleted', categoryId } 
+      window.dispatchEvent(new CustomEvent('categoryChanged', {
+        detail: { type: 'deleted', categoryId }
       }));
-      
+
     }
   };
 
@@ -238,15 +234,15 @@ export const CategoryManagement: React.FC = () => {
       if (result) {
         setEditingCategory(null);
         setEditName('');
-        
+
         // Context를 통해 전체 앱의 카테고리 상태를 즉시 새로고침
         await refreshCategories();
-        
+
         // 커스텀 이벤트로 다른 컴포넌트들에게 카테고리 변경 알림
-        window.dispatchEvent(new CustomEvent('categoryChanged', { 
-          detail: { type: 'updated', categoryId: editingCategory, name: editName.trim() } 
+        window.dispatchEvent(new CustomEvent('categoryChanged', {
+          detail: { type: 'updated', categoryId: editingCategory, name: editName.trim() }
         }));
-        
+
       }
     }
   };
@@ -263,21 +259,21 @@ export const CategoryManagement: React.FC = () => {
     if (over && active.id !== over.id) {
       const oldIndex = categories.findIndex(cat => cat.id === active.id);
       const newIndex = categories.findIndex(cat => cat.id === over.id);
-      
+
       if (oldIndex !== -1 && newIndex !== -1) {
         // 새로운 순서로 배열 정렬
         const newOrder = arrayMove(categories, oldIndex, newIndex);
         const categoryIds = newOrder.map(cat => cat.id);
-        
+
         try {
           await reorderCategories(categoryIds);
           await refreshCategories();
-          
+
           // 커스텀 이벤트로 다른 컴포넌트들에게 카테고리 변경 알림
-          window.dispatchEvent(new CustomEvent('categoryChanged', { 
-            detail: { type: 'reordered', categoryIds } 
+          window.dispatchEvent(new CustomEvent('categoryChanged', {
+            detail: { type: 'reordered', categoryIds }
           }));
-          
+
         } catch (error) {
           console.error('카테고리 순서 변경 실패:', error);
         }
@@ -299,100 +295,100 @@ export const CategoryManagement: React.FC = () => {
       <CardContent className="space-y-6">
         <div>
 
-        {/* 카테고리 목록 */}
-        <div className="mb-6">
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={categories.map(cat => cat.id)}
-              strategy={verticalListSortingStrategy}
+          {/* 카테고리 목록 */}
+          <div className="mb-6">
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
             >
-              <div className="space-y-3">
-                {categories.map(category => (
-                  <SortableCategoryItem
-                    key={category.id}
-                    category={category}
-                    editingCategory={editingCategory}
-                    editName={editName}
-                    setEditName={setEditName}
-                    onStartEdit={startEdit}
-                    onSaveEdit={saveEdit}
-                    onCancelEdit={cancelEdit}
-                    onDelete={handleDeleteCategory}
-                    isLastCategory={categories.length <= 1}
-                  />
-                ))}
-              </div>
-            </SortableContext>
-          </DndContext>
-        </div>
-
-        {/* 새 카테고리 추가 */}
-        <div className="border-t pt-4">
-          <h4 className="font-medium mb-3">새 카테고리 추가</h4>
-          <div className="space-y-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                카테고리 이름
-              </label>
-              <input
-                type="text"
-                value={newCategoryName}
-                onChange={(e) => setNewCategoryName(e.target.value)}
-                placeholder="카테고리 이름을 입력하세요"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                maxLength={20}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                색상 선택
-              </label>
-              <div className="flex gap-2 flex-wrap">
-                {availableColors.map(color => (
-                  <button
-                    key={color}
-                    onClick={() => setSelectedColor(color)}
-                    className={`w-8 h-8 rounded-full border-2 transition-all ${selectedColor === color
-                      ? 'border-gray-800 scale-110'
-                      : 'border-gray-300 hover:border-gray-500'
-                      }`}
-                    style={{ backgroundColor: color }}
-                    title={`색상: ${color}`}
-                  />
-                ))}
-              </div>
-              {availableColors.length === 0 && (
-                <p className="text-sm text-gray-500 mt-2">
-                  색상을 불러올 수 없습니다.
-                </p>
-              )}
-            </div>
-
-            <Button
-              onClick={handleAddCategory}
-              disabled={!newCategoryName.trim() || !selectedColor}
-              className="w-full"
-            >
-              카테고리 추가
-            </Button>
+              <SortableContext
+                items={categories.map(cat => cat.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="space-y-3">
+                  {categories.map(category => (
+                    <SortableCategoryItem
+                      key={category.id}
+                      category={category}
+                      editingCategory={editingCategory}
+                      editName={editName}
+                      setEditName={setEditName}
+                      onStartEdit={startEdit}
+                      onSaveEdit={saveEdit}
+                      onCancelEdit={cancelEdit}
+                      onDelete={handleDeleteCategory}
+                      isLastCategory={categories.length <= 1}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
           </div>
-        </div>
 
-        {/* 안내 메시지 */}
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-          <h4 className="text-sm font-medium text-blue-900 mb-2">카테고리 관리 안내</h4>
-          <ul className="text-sm text-blue-800 space-y-1">
-            <li>• 최소 1개의 카테고리는 항상 유지되어야 합니다.</li>
-            <li>• 카테고리를 삭제하면 해당 카테고리의 할일들은 다른 카테고리로 이동됩니다.</li>
-            <li>• 여러 카테고리가 같은 색상을 사용할 수 있습니다.</li>
-            <li>• 총 {availableColors.length}가지 색상을 사용할 수 있습니다.</li>
-          </ul>
-        </div>
+          {/* 새 카테고리 추가 */}
+          <div className="border-t pt-4">
+            <h4 className="font-medium mb-3">새 카테고리 추가</h4>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  카테고리 이름
+                </label>
+                <input
+                  type="text"
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  placeholder="카테고리 이름을 입력하세요"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  maxLength={20}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  색상 선택
+                </label>
+                <div className="flex gap-2 flex-wrap">
+                  {availableColors.map(color => (
+                    <button
+                      key={color}
+                      onClick={() => setSelectedColor(color)}
+                      className={`w-8 h-8 rounded-full border-2 transition-all ${selectedColor === color
+                        ? 'border-gray-800 scale-110'
+                        : 'border-gray-300 hover:border-gray-500'
+                        }`}
+                      style={{ backgroundColor: color }}
+                      title={`색상: ${color}`}
+                    />
+                  ))}
+                </div>
+                {availableColors.length === 0 && (
+                  <p className="text-sm text-gray-500 mt-2">
+                    색상을 불러올 수 없습니다.
+                  </p>
+                )}
+              </div>
+
+              <Button
+                onClick={handleAddCategory}
+                disabled={!newCategoryName.trim() || !selectedColor}
+                className="w-full"
+              >
+                카테고리 추가
+              </Button>
+            </div>
+          </div>
+
+          {/* 안내 메시지 */}
+          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+            <h4 className="text-sm font-medium text-blue-900 mb-2">카테고리 관리 안내</h4>
+            <ul className="text-sm text-blue-800 space-y-1">
+              <li>• 최소 1개의 카테고리는 항상 유지되어야 합니다.</li>
+              <li>• 카테고리를 삭제하면 해당 카테고리의 할일들은 다른 카테고리로 이동됩니다.</li>
+              <li>• 여러 카테고리가 같은 색상을 사용할 수 있습니다.</li>
+              <li>• 총 {availableColors.length}가지 색상을 사용할 수 있습니다.</li>
+            </ul>
+          </div>
         </div>
       </CardContent>
     </Card>

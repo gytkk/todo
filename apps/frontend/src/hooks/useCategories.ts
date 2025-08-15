@@ -317,9 +317,10 @@ export const useCategories = () => {
     async (categoryIds: string[]): Promise<boolean> => {
       try {
         const service = CategoryService.getInstance();
-        const reorderedCategories = await service.reorderCategories(categoryIds);
-        if (reorderedCategories) {
-          setCategories(reorderedCategories);
+        const result = await service.reorderCategories(categoryIds);
+        if (result !== null) {
+          // 순서 변경 성공시 카테고리 목록을 다시 로드
+          await loadCategories();
           return true;
         }
         return false;

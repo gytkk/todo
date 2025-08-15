@@ -66,10 +66,10 @@ export class CategoryService extends BaseApiClient {
         throw new Error(`카테고리 생성 실패: ${response.status}`);
       }
 
-      const data = await response.json();
+      const category = await response.json();
       return {
-        ...data.category,
-        createdAt: new Date(data.category.createdAt),
+        ...category,
+        createdAt: new Date(category.createdAt),
       };
     } catch (error) {
       console.error('Error adding category:', error);
@@ -137,8 +137,8 @@ export class CategoryService extends BaseApiClient {
         throw new Error(`사용 가능한 색상 조회 실패: ${response.status}`);
       }
 
-      const data = await response.json();
-      return data.colors;
+      const availableColors = await response.json();
+      return availableColors;
     } catch (error) {
       console.error('Error getting available colors:', error);
       return [];
@@ -160,8 +160,8 @@ export class CategoryService extends BaseApiClient {
         throw new Error(`사용자 설정 조회 실패: ${response.status}`);
       }
 
-      const data = await response.json();
-      return data.settings?.categoryFilter || {};
+      const settings = await response.json();
+      return settings?.categoryFilter || {};
     } catch (error) {
       console.error('Error getting category filter:', error);
       return {};
@@ -230,13 +230,9 @@ export class CategoryService extends BaseApiClient {
       const data = await response.json();
       console.log('CategoryService: Success response:', data);
 
-      // 날짜 문자열을 Date 객체로 변환
-      const categories = data.categories.map((category: TodoCategory) => ({
-        ...category,
-        createdAt: new Date(category.createdAt),
-      }));
-
-      return categories;
+      // reorder API는 categories를 반환하지 않으므로 null 반환
+      // 호출하는 쪽에서 별도로 categories를 다시 조회해야 함
+      return null;
     } catch (error) {
       console.error('CategoryService: Error reordering categories:', error);
       return null;

@@ -1,5 +1,6 @@
 import { AuthService, RegisterDto, LoginDto } from '../../services/auth.service.js';
 import { UserPostgresRepository } from '../../repositories/postgres/user.repository.js';
+import { CategoryPostgresRepository } from '../../repositories/postgres/category.repository.js';
 import { PasswordService } from '../../services/password.service.js';
 import { FastifyInstance } from 'fastify';
 import { createMockApp } from '../mocks/prisma.mock.js';
@@ -13,6 +14,7 @@ describe('AuthService - Unit Tests', () => {
   let authService: AuthService;
   let mockApp: FastifyInstance;
   let mockUserRepository: jest.Mocked<UserPostgresRepository>;
+  let mockCategoryRepository: jest.Mocked<CategoryPostgresRepository>;
   let mockPasswordService: jest.Mocked<PasswordService>;
 
   beforeEach(() => {
@@ -23,10 +25,12 @@ describe('AuthService - Unit Tests', () => {
     
     // Replace internal repositories with deep mocks
     mockUserRepository = mockDeep<UserPostgresRepository>();
+    mockCategoryRepository = mockDeep<CategoryPostgresRepository>();
     mockPasswordService = mockDeep<PasswordService>();
     
     // Inject the mocks into the auth service
     (authService as unknown as { userRepository: UserPostgresRepository }).userRepository = mockUserRepository;
+    (authService as unknown as { categoryRepository: CategoryPostgresRepository }).categoryRepository = mockCategoryRepository;
     (authService as unknown as { passwordService: PasswordService }).passwordService = mockPasswordService;
   });
 
@@ -59,6 +63,17 @@ describe('AuthService - Unit Tests', () => {
       mockPasswordService.validate.mockReturnValue({ isValid: true, errors: [] });
       mockPasswordService.hash.mockResolvedValue(hashedPassword);
       mockUserRepository.create.mockResolvedValue(createdUser);
+      mockCategoryRepository.create.mockResolvedValue({
+        id: 'category-id',
+        name: '개인',
+        color: '#3b82f6',
+        icon: null,
+        isDefault: true,
+        order: 0,
+        userId: createdUser.id,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
 
       // Act
       const result = await authService.register(validRegisterDto);
@@ -71,6 +86,14 @@ describe('AuthService - Unit Tests', () => {
         email: validRegisterDto.email.toLowerCase(),
         password: hashedPassword,
         name: validRegisterDto.name
+      });
+      expect(mockCategoryRepository.create).toHaveBeenCalledWith({
+        name: '개인',
+        color: '#3b82f6',
+        icon: undefined,
+        isDefault: true,
+        order: 0,
+        userId: createdUser.id
       });
       expect(result).toEqual(createdUser);
     });

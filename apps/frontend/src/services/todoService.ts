@@ -1,10 +1,6 @@
 import { TodoItem, TodoStats, TodoCategory, TodoType } from '@calendar-todo/shared-types';
 import { BaseApiClient } from './BaseApiClient';
 
-interface TasksDueResponse {
-  data: TodoItem[];
-  count: number;
-}
 
 interface MoveTasksResponse {
   success?: boolean;
@@ -300,9 +296,9 @@ export class TodoService extends BaseApiClient {
   async moveTasks(): Promise<MoveTasksResponse | null> {
     try {
       // 먼저 오늘 이전의 미완료 태스크들을 조회
-      const dueTasks = await this.get<TasksDueResponse>('/api/todos/tasks-due');
+      const dueTasks = await this.get<TodoItem[]>('/api/todos/tasks-due');
 
-      if (dueTasks.error || !dueTasks.data || dueTasks.data.data.length === 0) {
+      if (dueTasks.error || !dueTasks.data || dueTasks.data.length === 0) {
         // 이동할 태스크가 없으면 성공으로 처리
         return {
           success: true,
@@ -313,7 +309,7 @@ export class TodoService extends BaseApiClient {
       }
 
       // 태스크 ID들을 추출
-      if (!dueTasks.data.data || !Array.isArray(dueTasks.data.data)) {
+      if (!dueTasks.data || !Array.isArray(dueTasks.data)) {
         return {
           success: true,
           message: '이동할 미완료 태스크가 없습니다',
@@ -321,7 +317,7 @@ export class TodoService extends BaseApiClient {
           movedTaskIds: []
         };
       }
-      const taskIds = dueTasks.data.data.map((task: TodoItem) => task.id);
+      const taskIds = dueTasks.data.map((task: TodoItem) => task.id);
       const today = new Date().toISOString();
 
       // 태스크들을 오늘로 이동
@@ -349,9 +345,9 @@ export class TodoService extends BaseApiClient {
   /**
    * 이동 대상 작업들 조회
    */
-  async getTasksDue(): Promise<TasksDueResponse | null> {
+  async getTasksDue(): Promise<{ data: TodoItem[] } | null> {
     try {
-      const response = await this.get<TasksDueResponse>('/api/todos/tasks-due');
+      const response = await this.get<TodoItem[]>('/api/todos/tasks-due');
 
       if (response.status === 401) {
         return null;
@@ -363,15 +359,15 @@ export class TodoService extends BaseApiClient {
       }
 
       // 데이터 유효성 검증 및 날짜 문자열을 Date 객체로 변환
-      if (!response.data.data || !Array.isArray(response.data.data)) {
-        return { ...response.data, data: [] };
+      if (!response.data || !Array.isArray(response.data)) {
+        return { data: [] };
       }
-      const tasks = response.data.data.map((task: TodoItem) => ({
+      const tasks = response.data.map((task: TodoItem) => ({
         ...task,
         date: new Date(task.date),
       }));
 
-      return { ...response.data, data: tasks };
+      return { data: tasks };
     } catch (error) {
       this.logError('이동 대상 작업 조회 중 오류 발생:', error);
       return null;

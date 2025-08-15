@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { UserPostgresRepository } from '../repositories/postgres/user.repository.js';
+import { CategoryPostgresRepository } from '../repositories/postgres/category.repository.js';
 import { PasswordService } from './password.service.js';
 import { JwtService } from './jwt.service.js';
 import { JwtPayload, UserProfile } from '@calendar-todo/shared-types';
@@ -24,11 +25,13 @@ export interface LoginDto {
 
 export class AuthService {
   private userRepository: UserPostgresRepository;
+  private categoryRepository: CategoryPostgresRepository;
   private passwordService: PasswordService;
   private jwtService: JwtService;
 
   constructor(private app: FastifyInstance) {
     this.userRepository = new UserPostgresRepository(app);
+    this.categoryRepository = new CategoryPostgresRepository(app);
     this.passwordService = new PasswordService();
     this.jwtService = new JwtService(app);
   }
@@ -54,6 +57,16 @@ export class AuthService {
       email: dto.email.toLowerCase(),
       password: hashedPassword,
       name: dto.name,
+    });
+
+    // 기본 카테고리 생성
+    await this.categoryRepository.create({
+      name: '개인',
+      color: '#3b82f6', // 기본 파란색
+      icon: undefined,
+      isDefault: true,
+      order: 0,
+      userId: user.id,
     });
 
     return user;
