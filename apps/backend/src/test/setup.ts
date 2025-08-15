@@ -28,7 +28,7 @@ export class TestHelper {
   async beforeAll(): Promise<void> {
     // Connect to database
     await this.prisma.$connect();
-    
+
     // Build the Fastify app
     this.app = await buildApp({
       logger: false, // Disable logging in tests

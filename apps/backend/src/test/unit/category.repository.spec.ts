@@ -480,17 +480,16 @@ describe('CategoryPostgresRepository - Unit Tests', () => {
       // Mock transaction behavior
       const mockTransaction = mockDeep<{
         category: {
-          updateMany: () => any;
-          update: () => any;
+          updateMany: () => Promise<{ count: number }>;
+          update: () => Promise<Category>;
         }
       }>();
       mockTransaction.category.updateMany.mockResolvedValue({ count: 1 });
       mockTransaction.category.update.mockResolvedValue(updatedCategory);
 
       // Mock withTransaction method
-      (categoryRepository as any).withTransaction = mockDeep<() => any>();
-      (categoryRepository as any).withTransaction.mockImplementation(
-        async (callback: any) => callback(mockTransaction)
+      (categoryRepository as unknown as { withTransaction: jest.MockedFunction<(callback: (tx: typeof mockTransaction) => Promise<Category>) => Promise<Category>> }).withTransaction = jest.fn().mockImplementation(
+        async (callback: (tx: typeof mockTransaction) => Promise<Category>) => callback(mockTransaction)
       );
 
       // Act
@@ -519,8 +518,7 @@ describe('CategoryPostgresRepository - Unit Tests', () => {
       const userId = 'user-id';
 
       // Mock withTransaction to throw error
-      (categoryRepository as any).withTransaction = mockDeep<() => any>();
-      (categoryRepository as any).withTransaction.mockRejectedValue(
+      (categoryRepository as unknown as { withTransaction: jest.MockedFunction<() => Promise<never>> }).withTransaction = jest.fn().mockRejectedValue(
         new Error('Transaction failed')
       );
 
@@ -545,15 +543,14 @@ describe('CategoryPostgresRepository - Unit Tests', () => {
       // Mock transaction behavior
       const mockTransaction = mockDeep<{
         category: {
-          update: () => any;
+          update: () => Promise<Category>;
         }
       }>();
-      mockTransaction.category.update.mockResolvedValue({});
+      mockTransaction.category.update.mockResolvedValue({} as Category);
 
       // Mock withTransaction method
-      (categoryRepository as any).withTransaction = mockDeep<() => any>();
-      (categoryRepository as any).withTransaction.mockImplementation(
-        async (callback: any) => callback(mockTransaction)
+      (categoryRepository as unknown as { withTransaction: jest.MockedFunction<(callback: (tx: typeof mockTransaction) => Promise<boolean>) => Promise<boolean>> }).withTransaction = jest.fn().mockImplementation(
+        async (callback: (tx: typeof mockTransaction) => Promise<boolean>) => callback(mockTransaction)
       );
 
       // Act
@@ -576,8 +573,7 @@ describe('CategoryPostgresRepository - Unit Tests', () => {
       const categoryOrders = [{ id: 'category-1', order: 0 }];
 
       // Mock withTransaction to throw error
-      (categoryRepository as any).withTransaction = mockDeep<() => any>();
-      (categoryRepository as any).withTransaction.mockRejectedValue(
+      (categoryRepository as unknown as { withTransaction: jest.MockedFunction<() => Promise<never>> }).withTransaction = jest.fn().mockRejectedValue(
         new Error('Transaction failed')
       );
 

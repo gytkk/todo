@@ -742,11 +742,11 @@ describe('TodoPostgresRepository - Unit Tests', () => {
         .mockResolvedValueOnce([ // event stats
           { completed: true, _count: { id: 3 } },
           { completed: false, _count: { id: 2 } }
-        ] as any)
+        ] as Array<{ completed: boolean; _count: { id: number } }>)
         .mockResolvedValueOnce([ // task stats
           { completed: true, _count: { id: 3 } },
           { completed: false, _count: { id: 2 } }
-        ] as any);
+        ] as Array<{ completed: boolean; _count: { id: number } }>);
 
       // Act
       const result = await todoRepository.getStatsByUserId(userId);

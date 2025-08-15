@@ -2,7 +2,7 @@ import { UserSettingsPostgresRepository } from '../../repositories/postgres/user
 import { FastifyInstance } from 'fastify';
 import { createMockApp } from '../mocks/prisma.mock.js';
 import { PrismaClient, Theme, Prisma, UserSettings } from '@prisma/client';
-import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
+import { DeepMockProxy } from 'jest-mock-extended';
 
 // Jest globals are now available through setup
 
@@ -720,8 +720,7 @@ describe('UserSettingsPostgresRepository - Unit Tests', () => {
       };
 
       // Mock findByUserId to return existing settings
-      (userSettingsRepository as any).findByUserId = mockDeep<() => any>();
-      (userSettingsRepository as any).findByUserId.mockResolvedValue(existingSettings);
+      (userSettingsRepository as unknown as { findByUserId: jest.MockedFunction<(userId: string) => Promise<UserSettings | null>> }).findByUserId = jest.fn().mockResolvedValue(existingSettings);
 
       // Act
       const result = await userSettingsRepository.getOrCreateByUserId(userId);
@@ -764,10 +763,14 @@ describe('UserSettingsPostgresRepository - Unit Tests', () => {
       };
 
       // Mock findByUserId to return null, create to return new settings
-      (userSettingsRepository as any).findByUserId = mockDeep<() => any>();
-      (userSettingsRepository as any).create = mockDeep<() => any>();
-      (userSettingsRepository as any).findByUserId.mockResolvedValue(null);
-      (userSettingsRepository as any).create.mockResolvedValue(newSettings);
+      (userSettingsRepository as unknown as { 
+        findByUserId: jest.MockedFunction<(userId: string) => Promise<UserSettings | null>>;
+        create: jest.MockedFunction<(data: Partial<UserSettings>) => Promise<UserSettings>>;
+      }).findByUserId = jest.fn().mockResolvedValue(null);
+      (userSettingsRepository as unknown as { 
+        findByUserId: jest.MockedFunction<(userId: string) => Promise<UserSettings | null>>;
+        create: jest.MockedFunction<(data: Partial<UserSettings>) => Promise<UserSettings>>;
+      }).create = jest.fn().mockResolvedValue(newSettings);
 
       // Act
       const result = await userSettingsRepository.getOrCreateByUserId(userId);
@@ -782,10 +785,14 @@ describe('UserSettingsPostgresRepository - Unit Tests', () => {
       // Arrange
       const userId = 'user-id';
 
-      (userSettingsRepository as any).findByUserId = mockDeep<() => any>();
-      (userSettingsRepository as any).create = mockDeep<() => any>();
-      (userSettingsRepository as any).findByUserId.mockResolvedValue(null);
-      (userSettingsRepository as any).create.mockRejectedValue(new Error('Creation failed'));
+      (userSettingsRepository as unknown as { 
+        findByUserId: jest.MockedFunction<(userId: string) => Promise<UserSettings | null>>;
+        create: jest.MockedFunction<(data: Partial<UserSettings>) => Promise<UserSettings>>;
+      }).findByUserId = jest.fn().mockResolvedValue(null);
+      (userSettingsRepository as unknown as { 
+        findByUserId: jest.MockedFunction<(userId: string) => Promise<UserSettings | null>>;
+        create: jest.MockedFunction<(data: Partial<UserSettings>) => Promise<UserSettings>>;
+      }).create = jest.fn().mockRejectedValue(new Error('Creation failed'));
 
       // Act & Assert
       await expect(userSettingsRepository.getOrCreateByUserId(userId)).rejects.toThrow('Failed to get or create user settings');
@@ -825,8 +832,7 @@ describe('UserSettingsPostgresRepository - Unit Tests', () => {
         updatedAt: new Date()
       };
 
-      (userSettingsRepository as any).updateByUserId = mockDeep<() => any>();
-      (userSettingsRepository as any).updateByUserId.mockResolvedValue(defaultSettings);
+      (userSettingsRepository as unknown as { updateByUserId: jest.MockedFunction<(userId: string, data: Partial<UserSettings>) => Promise<UserSettings | null>> }).updateByUserId = jest.fn().mockResolvedValue(defaultSettings);
 
       // Act
       const result = await userSettingsRepository.resetToDefaults(userId);
@@ -864,8 +870,7 @@ describe('UserSettingsPostgresRepository - Unit Tests', () => {
       // Arrange
       const userId = 'user-id';
 
-      (userSettingsRepository as any).updateByUserId = mockDeep<() => any>();
-      (userSettingsRepository as any).updateByUserId.mockRejectedValue(new Error('Update failed'));
+      (userSettingsRepository as unknown as { updateByUserId: jest.MockedFunction<(userId: string, data: Partial<UserSettings>) => Promise<UserSettings | null>> }).updateByUserId = jest.fn().mockRejectedValue(new Error('Update failed'));
 
       // Act
       const result = await userSettingsRepository.resetToDefaults(userId);
