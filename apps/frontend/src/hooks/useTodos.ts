@@ -119,13 +119,26 @@ export const useTodos = (categories: TodoCategory[] = DEFAULT_CATEGORIES) => {
 
       if (createdTodo) {
         setTodos(prevTodos => [...prevTodos, createdTodo]);
-        // Update stats
-        setStats(prevStats => ({
-          ...prevStats,
-          total: prevStats.total + 1,
-          incomplete: prevStats.incomplete + 1,
-          completionRate: Math.round((prevStats.completed / (prevStats.total + 1)) * 100),
-        }));
+        // Update stats including byType
+        setStats(prevStats => {
+          const newTotal = prevStats.total + 1;
+          const newByType = {
+            ...prevStats.byType,
+            [todoType]: {
+              ...prevStats.byType[todoType],
+              total: prevStats.byType[todoType].total + 1,
+              incomplete: prevStats.byType[todoType].incomplete + 1,
+            }
+          };
+          
+          return {
+            ...prevStats,
+            total: newTotal,
+            incomplete: prevStats.incomplete + 1,
+            completionRate: Math.round((prevStats.completed / newTotal) * 100),
+            byType: newByType,
+          };
+        });
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : '할일 추가 중 오류가 발생했습니다');
@@ -153,12 +166,32 @@ export const useTodos = (categories: TodoCategory[] = DEFAULT_CATEGORIES) => {
               const updatedTodo = { ...todo, completed: !todo.completed };
               
               // Update stats using the todo from the previous state
-              setStats(prevStats => ({
-                ...prevStats,
-                completed: todo.completed ? prevStats.completed - 1 : prevStats.completed + 1,
-                incomplete: todo.completed ? prevStats.incomplete + 1 : prevStats.incomplete - 1,
-                completionRate: Math.round(((todo.completed ? prevStats.completed - 1 : prevStats.completed + 1) / prevStats.total) * 100),
-              }));
+              setStats(prevStats => {
+                const isCompleting = !todo.completed;
+                const newCompleted = isCompleting ? prevStats.completed + 1 : prevStats.completed - 1;
+                const newIncomplete = isCompleting ? prevStats.incomplete - 1 : prevStats.incomplete + 1;
+                
+                const newByType = {
+                  ...prevStats.byType,
+                  [todo.todoType]: {
+                    ...prevStats.byType[todo.todoType],
+                    completed: isCompleting 
+                      ? prevStats.byType[todo.todoType].completed + 1 
+                      : prevStats.byType[todo.todoType].completed - 1,
+                    incomplete: isCompleting 
+                      ? prevStats.byType[todo.todoType].incomplete - 1 
+                      : prevStats.byType[todo.todoType].incomplete + 1,
+                  }
+                };
+                
+                return {
+                  ...prevStats,
+                  completed: newCompleted,
+                  incomplete: newIncomplete,
+                  completionRate: Math.round((newCompleted / prevStats.total) * 100),
+                  byType: newByType,
+                };
+              });
               
               return updatedTodo;
             }
@@ -220,13 +253,34 @@ export const useTodos = (categories: TodoCategory[] = DEFAULT_CATEGORIES) => {
           
           // Update stats using the todo from the previous state
           if (todoToDelete) {
-            setStats(prevStats => ({
-              ...prevStats,
-              total: prevStats.total - 1,
-              completed: todoToDelete.completed ? prevStats.completed - 1 : prevStats.completed,
-              incomplete: todoToDelete.completed ? prevStats.incomplete : prevStats.incomplete - 1,
-              completionRate: prevStats.total > 1 ? Math.round((prevStats.completed / (prevStats.total - 1)) * 100) : 0,
-            }));
+            setStats(prevStats => {
+              const newTotal = prevStats.total - 1;
+              const newCompleted = todoToDelete.completed ? prevStats.completed - 1 : prevStats.completed;
+              const newIncomplete = todoToDelete.completed ? prevStats.incomplete : prevStats.incomplete - 1;
+              
+              const newByType = {
+                ...prevStats.byType,
+                [todoToDelete.todoType]: {
+                  ...prevStats.byType[todoToDelete.todoType],
+                  total: prevStats.byType[todoToDelete.todoType].total - 1,
+                  completed: todoToDelete.completed 
+                    ? prevStats.byType[todoToDelete.todoType].completed - 1 
+                    : prevStats.byType[todoToDelete.todoType].completed,
+                  incomplete: todoToDelete.completed 
+                    ? prevStats.byType[todoToDelete.todoType].incomplete 
+                    : prevStats.byType[todoToDelete.todoType].incomplete - 1,
+                }
+              };
+              
+              return {
+                ...prevStats,
+                total: newTotal,
+                completed: newCompleted,
+                incomplete: newIncomplete,
+                completionRate: newTotal > 0 ? Math.round((newCompleted / newTotal) * 100) : 0,
+                byType: newByType,
+              };
+            });
           }
           
           return prevTodos.filter(todo => todo.id !== id);
@@ -272,9 +326,15 @@ export const useTodos = (categories: TodoCategory[] = DEFAULT_CATEGORIES) => {
 
   const getTodosByDate = useCallback((date: Date) => {
     const dateString = format(date, 'yyyy-MM-dd');
-    return todos.filter(
-      (todo) => format(todo.date, 'yyyy-MM-dd') === dateString
-    );
+    return todos.filter((todo) => {
+      // Ensure todo.date is a valid Date object
+      const todoDate = todo.date instanceof Date ? todo.date : new Date(todo.date);
+      if (isNaN(todoDate.getTime())) {
+        console.warn('Invalid date found in todo, skipping:', todo);
+        return false; // Skip invalid dates
+      }
+      return format(todoDate, 'yyyy-MM-dd') === dateString;
+    });
   }, [todos]);
 
   const getTodoStats = useCallback((): TodoStats => {

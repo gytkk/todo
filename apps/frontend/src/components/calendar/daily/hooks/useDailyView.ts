@@ -48,7 +48,13 @@ export const useDailyView = (
   const dailyData: DailyViewData = useMemo(() => {
     // 날짜별 할일 필터링 함수 (이미 필터링된 todos를 받으므로 카테고리 필터링 불필요)
     const getDayTodos = (date: Date): TodoItem[] => {
-      return todos.filter(todo => isSameDay(todo.date, date));
+      return todos.filter(todo => {
+        const todoDate = todo.date instanceof Date ? todo.date : new Date(todo.date);
+        if (isNaN(todoDate.getTime())) {
+          return false; // Skip invalid dates
+        }
+        return isSameDay(todoDate, date);
+      });
     };
 
     // 통계 계산 함수

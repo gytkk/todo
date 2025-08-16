@@ -212,7 +212,7 @@ describe('Todos Integration Tests', () => {
       const todos = response.json();
       expect(todos).toHaveLength(1);
       expect(todos[0].title).toBe('Task Todo');
-      expect(todos[0].todoType).toBe('TASK');
+      expect(todos[0].todoType).toBe('task');
     });
 
     it('should require authentication', async () => {
@@ -267,7 +267,7 @@ describe('Todos Integration Tests', () => {
         title: 'New Todo',
         date: '2024-01-15T10:00:00.000Z',
         categoryId: categoryId,
-        todoType: 'EVENT',
+        todoType: 'event',
         completed: false
       };
 
@@ -286,7 +286,7 @@ describe('Todos Integration Tests', () => {
       expect(todo.title).toBe(todoData.title);
       expect(todo.userId).toBe(userId);
       expect(todo.categoryId).toBe(categoryId);
-      expect(todo.todoType).toBe('EVENT');
+      expect(todo.todoType).toBe('event');
       expect(todo.completed).toBe(false);
     });
 
@@ -310,7 +310,7 @@ describe('Todos Integration Tests', () => {
 
       expect(response.statusCode).toBe(201);
       const todo = response.json();
-      expect(todo.todoType).toBe('EVENT'); // Default value
+      expect(todo.todoType).toBe('event'); // Default value
       expect(todo.completed).toBe(false); // Default value
     });
 
@@ -486,7 +486,7 @@ describe('Todos Integration Tests', () => {
       const updateData = {
         title: 'Updated Todo',
         completed: true,
-        todoType: 'TASK'
+        todoType: 'task'
       };
 
       const response = await app.inject({
@@ -502,7 +502,7 @@ describe('Todos Integration Tests', () => {
       const todo = response.json();
       expect(todo.title).toBe('Updated Todo');
       expect(todo.completed).toBe(true);
-      expect(todo.todoType).toBe('TASK');
+      expect(todo.todoType).toBe('task');
     });
 
     it('should allow partial updates', async () => {

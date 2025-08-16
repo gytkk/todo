@@ -71,9 +71,13 @@ export function StatisticsPage({ todos }: StatisticsPageProps) {
     const last7Days = Array.from({ length: 7 }, (_, i) => {
       const date = subDays(new Date(), 6 - i);
       const dateStr = format(date, 'yyyy-MM-dd');
-      const dayTodos = todos.filter(todo => 
-        format(todo.date, 'yyyy-MM-dd') === dateStr
-      );
+      const dayTodos = todos.filter(todo => {
+        const todoDate = todo.date instanceof Date ? todo.date : new Date(todo.date);
+        if (isNaN(todoDate.getTime())) {
+          return false; // Skip invalid dates
+        }
+        return format(todoDate, 'yyyy-MM-dd') === dateStr;
+      });
       const completed = dayTodos.filter(t => t.completed).length;
       
       return {
@@ -96,12 +100,20 @@ export function StatisticsPage({ todos }: StatisticsPageProps) {
     const currentMonthStr = format(currentMonth, 'yyyy-MM');
     const lastMonthStr = format(lastMonth, 'yyyy-MM');
     
-    const currentMonthTodos = todos.filter(todo => 
-      format(todo.date, 'yyyy-MM') === currentMonthStr
-    );
-    const lastMonthTodos = todos.filter(todo => 
-      format(todo.date, 'yyyy-MM') === lastMonthStr
-    );
+    const currentMonthTodos = todos.filter(todo => {
+      const todoDate = todo.date instanceof Date ? todo.date : new Date(todo.date);
+      if (isNaN(todoDate.getTime())) {
+        return false; // Skip invalid dates
+      }
+      return format(todoDate, 'yyyy-MM') === currentMonthStr;
+    });
+    const lastMonthTodos = todos.filter(todo => {
+      const todoDate = todo.date instanceof Date ? todo.date : new Date(todo.date);
+      if (isNaN(todoDate.getTime())) {
+        return false; // Skip invalid dates
+      }
+      return format(todoDate, 'yyyy-MM') === lastMonthStr;
+    });
 
     const currentCompleted = currentMonthTodos.filter(t => t.completed).length;
     const lastCompleted = lastMonthTodos.filter(t => t.completed).length;

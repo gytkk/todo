@@ -70,10 +70,15 @@ export class TodoService extends BaseApiClient {
       const stats = (data.stats && typeof data.stats === 'object') ? data.stats : defaultStats;
 
       // 날짜 문자열을 Date 객체로 변환 (안전한 처리)
-      const processedTodos = todos.map((todo: TodoItem) => ({
-        ...todo,
-        date: new Date(todo.date),
-      }));
+      const processedTodos = todos.map((todo: TodoItem) => {
+        const date = todo.date ? new Date(todo.date) : new Date();
+        // 유효하지 않은 날짜는 현재 날짜로 대체
+        if (isNaN(date.getTime())) {
+          console.warn('Invalid date found in todo, using current date:', todo);
+          return { ...todo, date: new Date() };
+        }
+        return { ...todo, date };
+      });
 
       return { todos: processedTodos, stats };
     } catch (error) {
@@ -246,9 +251,14 @@ export class TodoService extends BaseApiClient {
               throw new Error(`Invalid todo item at index ${index}`);
             }
 
+            const date = new Date(todoItem.date as string);
+            if (isNaN(date.getTime())) {
+              throw new Error(`Invalid date in todo item at index ${index}`);
+            }
+
             return {
               title: todoItem.title as string,
-              date: new Date(todoItem.date as string),
+              date,
               completed: Boolean(todoItem.completed),
               category: (todoItem.category as TodoCategory) || {
                 id: 'personal',
@@ -353,10 +363,14 @@ export class TodoService extends BaseApiClient {
       if (!response.data || !Array.isArray(response.data)) {
         return { data: [] };
       }
-      const tasks = response.data.map((task: TodoItem) => ({
-        ...task,
-        date: new Date(task.date),
-      }));
+      const tasks = response.data.map((task: TodoItem) => {
+        const date = task.date ? new Date(task.date) : new Date();
+        if (isNaN(date.getTime())) {
+          console.warn('Invalid date found in task, using current date:', task);
+          return { ...task, date: new Date() };
+        }
+        return { ...task, date };
+      });
 
       return { data: tasks };
     } catch (error) {

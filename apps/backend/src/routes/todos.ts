@@ -44,7 +44,7 @@ const todoCreateSchema = {
       title: { type: 'string', minLength: 1 },
       date: { type: 'string', format: 'date-time' },
       categoryId: { type: 'string' },
-      todoType: { type: 'string', enum: ['EVENT', 'TASK'] },
+      todoType: { type: 'string', enum: ['event', 'task'] },
       completed: { type: 'boolean' },
     },
   },
@@ -73,7 +73,7 @@ const todoUpdateSchema = {
       title: { type: 'string', minLength: 1 },
       date: { type: 'string', format: 'date-time' },
       categoryId: { type: 'string' },
-      todoType: { type: 'string', enum: ['EVENT', 'TASK'] },
+      todoType: { type: 'string', enum: ['event', 'task'] },
       completed: { type: 'boolean' },
     },
   },
@@ -110,7 +110,7 @@ const todoListSchema = {
       endDate: { type: 'string', format: 'date-time' },
       categoryId: { type: 'string' },
       completed: { type: 'boolean' },
-      todoType: { type: 'string', enum: ['EVENT', 'TASK'] },
+      todoType: { type: 'string', enum: ['event', 'task'] },
     },
   },
   response: {
@@ -243,11 +243,11 @@ export default async function (fastify: FastifyInstance) {
       });
     }
 
-    const todo = await todoRepository.create({
+    const todo = await todoRepository.createTodo({
       title,
       date: new Date(date),
       categoryId,
-      todoType: todoType || TodoType.EVENT,
+      todoType: todoType || 'event',
       completed: completed || false,
       userId: user.id,
     });

@@ -1,13 +1,37 @@
-import { Todo, TodoType, Prisma } from '@prisma/client';
 import { FastifyInstance } from 'fastify';
 import { BasePostgresRepository } from '../base-postgres.repository.js';
 import { PaginatedResult, PaginationOptions } from '../interfaces/repository.interface.js';
+import { Prisma, Todo, TodoType } from '@prisma/client';
+
+// Helper functions to transform between frontend (lowercase) and database (uppercase) TodoType values
+function transformTodoTypeToDb(todoType?: string): TodoType {
+  if (!todoType) return TodoType.EVENT;
+  return todoType === 'event' ? TodoType.EVENT : TodoType.TASK;
+}
+
+function transformTodoTypeFromDb(todoType: TodoType): string {
+  return todoType === TodoType.EVENT ? 'event' : 'task';
+}
+
+// Transform todo object from database format to frontend format
+function transformTodoFromDb<T extends { todoType: TodoType }>(todo: T | null): T | null {
+  if (!todo) return todo;
+  return {
+    ...todo,
+    todoType: transformTodoTypeFromDb(todo.todoType) as TodoType
+  };
+}
+
+// Transform array of todos from database format to frontend format
+function transformTodosFromDb<T extends { todoType: TodoType }>(todos: T[]): T[] {
+  return todos.map(transformTodoFromDb) as T[];
+}
 
 export interface CreateTodoDto {
   title: string;
   date: Date;
   completed?: boolean;
-  todoType?: TodoType;
+  todoType?: string; // Changed to string to accept frontend values
   userId: string;
   categoryId: string;
 }
@@ -27,7 +51,7 @@ export interface TodoFilterOptions {
   endDate?: Date;
   categoryId?: string;
   completed?: boolean;
-  todoType?: TodoType;
+  todoType?: string; // Changed to string to accept frontend values
 }
 
 export class TodoPostgresRepository extends BasePostgresRepository<Todo> {
@@ -39,9 +63,10 @@ export class TodoPostgresRepository extends BasePostgresRepository<Todo> {
 
   async findById(id: string): Promise<Todo | null> {
     try {
-      return await this.prisma.todo.findUnique({
+      const todo = await this.prisma.todo.findUnique({
         where: { id },
       });
+      return transformTodoFromDb(todo) as Todo;
     } catch (error) {
       console.error('Error finding todo by id:', error);
       return null;
@@ -63,7 +88,7 @@ export class TodoPostgresRepository extends BasePostgresRepository<Todo> {
           },
         },
       });
-      return todo as TodoWithCategory | null;
+      return transformTodoFromDb(todo) as TodoWithCategory | null;
     } catch (error) {
       console.error('Error finding todo with category by id:', error);
       return null;
@@ -72,9 +97,10 @@ export class TodoPostgresRepository extends BasePostgresRepository<Todo> {
 
   async findAll(): Promise<Todo[]> {
     try {
-      return await this.prisma.todo.findMany({
+      const todos = await this.prisma.todo.findMany({
         orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
       });
+      return transformTodosFromDb(todos);
     } catch (error) {
       console.error('Error finding all todos:', error);
       return [];
@@ -96,7 +122,7 @@ export class TodoPostgresRepository extends BasePostgresRepository<Todo> {
         },
         orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
       });
-      return todos as TodoWithCategory[];
+      return transformTodosFromDb(todos) as TodoWithCategory[];
     } catch (error) {
       console.error('Error finding all todos with categories:', error);
       return [];
@@ -128,7 +154,7 @@ export class TodoPostgresRepository extends BasePostgresRepository<Todo> {
       }
 
       if (filter.todoType) {
-        where.todoType = filter.todoType;
+        where.todoType = transformTodoTypeToDb(filter.todoType as string);
       }
 
       const todos = await this.prisma.todo.findMany({
@@ -146,7 +172,7 @@ export class TodoPostgresRepository extends BasePostgresRepository<Todo> {
         orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
       });
 
-      return todos as TodoWithCategory[];
+      return transformTodosFromDb(todos) as TodoWithCategory[];
     } catch (error) {
       console.error('Error finding todos by filter:', error);
       return [];
@@ -159,30 +185,57 @@ export class TodoPostgresRepository extends BasePostgresRepository<Todo> {
     }
 
     try {
-      return await this.prisma.todo.findMany({
+      const todos = await this.prisma.todo.findMany({
         where: {
           id: { in: ids },
         },
         orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
       });
+      return transformTodosFromDb(todos);
     } catch (error) {
       console.error('Error finding todos by ids:', error);
       return [];
     }
   }
 
-  async create(todoData: CreateTodoDto): Promise<Todo> {
+  async create(entity: Partial<Todo>): Promise<Todo> {
     try {
-      return await this.prisma.todo.create({
+      const transformedEntity = { ...entity };
+      if (entity.todoType) {
+        transformedEntity.todoType = transformTodoTypeToDb(entity.todoType as string);
+      }
+      
+      const todo = await this.prisma.todo.create({
+        data: transformedEntity as Prisma.TodoCreateInput,
+      });
+      const transformedTodo = transformTodoFromDb(todo);
+      if (!transformedTodo) {
+        throw new Error('Failed to transform created todo');
+      }
+      return transformedTodo;
+    } catch (error) {
+      console.error('Error creating todo:', error);
+      throw new Error('Failed to create todo');
+    }
+  }
+
+  async createTodo(todoData: CreateTodoDto): Promise<Todo> {
+    try {
+      const todo = await this.prisma.todo.create({
         data: {
           title: todoData.title,
           date: todoData.date,
           completed: todoData.completed ?? false,
-          todoType: todoData.todoType ?? TodoType.EVENT,
+          todoType: transformTodoTypeToDb(todoData.todoType as string),
           userId: todoData.userId,
           categoryId: todoData.categoryId,
         },
       });
+      const transformedTodo = transformTodoFromDb(todo);
+      if (!transformedTodo) {
+        throw new Error('Failed to transform created todo');
+      }
+      return transformedTodo;
     } catch (error) {
       console.error('Error creating todo:', error);
       throw new Error('Failed to create todo');
@@ -191,10 +244,17 @@ export class TodoPostgresRepository extends BasePostgresRepository<Todo> {
 
   async update(id: string, updates: Partial<Todo>): Promise<Todo | null> {
     try {
-      return await this.prisma.todo.update({
+      // Transform todoType if it's being updated
+      const transformedUpdates = { ...updates };
+      if (updates.todoType) {
+        transformedUpdates.todoType = transformTodoTypeToDb(updates.todoType as string);
+      }
+      
+      const todo = await this.prisma.todo.update({
         where: { id },
-        data: updates,
+        data: transformedUpdates,
       });
+      return transformTodoFromDb(todo) as Todo;
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
@@ -268,7 +328,7 @@ export class TodoPostgresRepository extends BasePostgresRepository<Todo> {
       ]);
 
       return {
-        items,
+        items: transformTodosFromDb(items),
         total,
         page,
         limit,
@@ -304,7 +364,7 @@ export class TodoPostgresRepository extends BasePostgresRepository<Todo> {
 
   async findIncompleteTasks(userId: string, beforeDate: Date): Promise<Todo[]> {
     try {
-      return await this.prisma.todo.findMany({
+      const todos = await this.prisma.todo.findMany({
         where: {
           userId,
           completed: false,
@@ -313,6 +373,7 @@ export class TodoPostgresRepository extends BasePostgresRepository<Todo> {
         },
         orderBy: { date: 'asc' },
       });
+      return transformTodosFromDb(todos);
     } catch (error) {
       console.error('Error finding incomplete tasks:', error);
       return [];

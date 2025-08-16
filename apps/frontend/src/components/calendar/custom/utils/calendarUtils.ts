@@ -24,7 +24,14 @@ export function createCalendarDates(
   // Pre-group todos by date key for O(1) lookup instead of O(n) filtering
   const todosByDate = new Map<string, TodoItem[]>();
   todos.forEach(todo => {
-    const dateKey = `${todo.date.getFullYear()}-${todo.date.getMonth()}-${todo.date.getDate()}`;
+    // Ensure todo.date is a valid Date object
+    const todoDate = todo.date instanceof Date ? todo.date : new Date(todo.date);
+    if (isNaN(todoDate.getTime())) {
+      console.warn('Invalid date found in todo:', todo);
+      return; // Skip invalid dates
+    }
+    
+    const dateKey = `${todoDate.getFullYear()}-${todoDate.getMonth()}-${todoDate.getDate()}`;
     if (!todosByDate.has(dateKey)) {
       todosByDate.set(dateKey, []);
     }
@@ -132,7 +139,14 @@ export function createWeekCalendarDates(
   // Pre-group todos by date key for O(1) lookup
   const todosByDate = new Map<string, TodoItem[]>();
   todos.forEach(todo => {
-    const dateKey = `${todo.date.getFullYear()}-${todo.date.getMonth()}-${todo.date.getDate()}`;
+    // Ensure todo.date is a valid Date object
+    const todoDate = todo.date instanceof Date ? todo.date : new Date(todo.date);
+    if (isNaN(todoDate.getTime())) {
+      console.warn('Invalid date found in todo:', todo);
+      return; // Skip invalid dates
+    }
+    
+    const dateKey = `${todoDate.getFullYear()}-${todoDate.getMonth()}-${todoDate.getDate()}`;
     if (!todosByDate.has(dateKey)) {
       todosByDate.set(dateKey, []);
     }
@@ -168,7 +182,14 @@ export function createDayCalendarDate(
   // Pre-group todos by date key for O(1) lookup
   const todosByDate = new Map<string, TodoItem[]>();
   todos.forEach(todo => {
-    const dateKey = `${todo.date.getFullYear()}-${todo.date.getMonth()}-${todo.date.getDate()}`;
+    // Ensure todo.date is a valid Date object
+    const todoDate = todo.date instanceof Date ? todo.date : new Date(todo.date);
+    if (isNaN(todoDate.getTime())) {
+      console.warn('Invalid date found in todo:', todo);
+      return; // Skip invalid dates
+    }
+    
+    const dateKey = `${todoDate.getFullYear()}-${todoDate.getMonth()}-${todoDate.getDate()}`;
     if (!todosByDate.has(dateKey)) {
       todosByDate.set(dateKey, []);
     }
@@ -224,10 +245,17 @@ export function getUniqueDatesFromTodos(todos: TodoItem[]): Date[] {
   const dates: Date[] = [];
   
   todos.forEach(todo => {
-    const dateKey = `${todo.date.getFullYear()}-${todo.date.getMonth()}-${todo.date.getDate()}`;
+    // Ensure todo.date is a valid Date object
+    const todoDate = todo.date instanceof Date ? todo.date : new Date(todo.date);
+    if (isNaN(todoDate.getTime())) {
+      console.warn('Invalid date found in todo:', todo);
+      return; // Skip invalid dates
+    }
+    
+    const dateKey = `${todoDate.getFullYear()}-${todoDate.getMonth()}-${todoDate.getDate()}`;
     if (!dateSet.has(dateKey)) {
       dateSet.add(dateKey);
-      dates.push(new Date(todo.date));
+      dates.push(new Date(todoDate));
     }
   });
   
@@ -241,7 +269,14 @@ export function groupTodosByDate(todos: TodoItem[]): Map<string, TodoItem[]> {
   const grouped = new Map<string, TodoItem[]>();
   
   todos.forEach(todo => {
-    const dateKey = `${todo.date.getFullYear()}-${todo.date.getMonth()}-${todo.date.getDate()}`;
+    // Ensure todo.date is a valid Date object
+    const todoDate = todo.date instanceof Date ? todo.date : new Date(todo.date);
+    if (isNaN(todoDate.getTime())) {
+      console.warn('Invalid date found in todo:', todo);
+      return; // Skip invalid dates
+    }
+    
+    const dateKey = `${todoDate.getFullYear()}-${todoDate.getMonth()}-${todoDate.getDate()}`;
     if (!grouped.has(dateKey)) {
       grouped.set(dateKey, []);
     }
@@ -255,12 +290,24 @@ export function groupTodosByDate(todos: TodoItem[]): Map<string, TodoItem[]> {
  * Checks if a date has any todos
  */
 export function hasTodosOnDate(date: Date, todos: TodoItem[]): boolean {
-  return todos.some(todo => dateUtils.isSameDay(todo.date, date));
+  return todos.some(todo => {
+    const todoDate = todo.date instanceof Date ? todo.date : new Date(todo.date);
+    if (isNaN(todoDate.getTime())) {
+      return false; // Invalid dates don't match
+    }
+    return dateUtils.isSameDay(todoDate, date);
+  });
 }
 
 /**
  * Gets todos for a specific date
  */
 export function getTodosForDate(date: Date, todos: TodoItem[]): TodoItem[] {
-  return todos.filter(todo => dateUtils.isSameDay(todo.date, date));
+  return todos.filter(todo => {
+    const todoDate = todo.date instanceof Date ? todo.date : new Date(todo.date);
+    if (isNaN(todoDate.getTime())) {
+      return false; // Invalid dates don't match
+    }
+    return dateUtils.isSameDay(todoDate, date);
+  });
 }
