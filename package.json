@@ -19,9 +19,9 @@
     "clean": "turbo clean"
   },
   "devDependencies": {
+    "prettier": "^3.6.2",
     "turbo": "latest",
-    "typescript": "^5",
-    "prettier": "^3.4.2"
+    "typescript": "^5.9.2"
   },
   "engines": {
     "node": ">=18"

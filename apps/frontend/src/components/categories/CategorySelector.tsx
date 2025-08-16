@@ -17,7 +17,7 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
   onSelectCategory,
   disabled = false
 }) => {
-  // 색상의 밝기를 계산하여 텍스트 색상 결정 (선택된 상태에서만 사용)
+  // 색상의 밝기를 계산하여 텍스트 색상 결정
   const getTextColor = (hexColor: string) => {
     // 헥스 색상을 RGB로 변환
     const r = parseInt(hexColor.slice(1, 3), 16);
@@ -27,18 +27,8 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
     // 밝기 계산 (0-255)
     const brightness = (r * 299 + g * 587 + b * 114) / 1000;
     
-    // 밝기가 128보다 크면 검은색, 작으면 흰색
-    return brightness > 128 ? '#000000' : '#ffffff';
-  };
-
-  // 선택된 상태의 배경색 (옅은 색상)
-  const getLightBackgroundColor = (hexColor: string) => {
-    const r = parseInt(hexColor.slice(1, 3), 16);
-    const g = parseInt(hexColor.slice(3, 5), 16);
-    const b = parseInt(hexColor.slice(5, 7), 16);
-    
-    // 원래 색상에 투명도를 적용한 효과 (15% 정도)
-    return `rgba(${r}, ${g}, ${b}, 0.15)`;
+    // 밝기가 155보다 크면 검은색, 작으면 흰색
+    return brightness > 155 ? '#000000' : '#ffffff';
   };
 
   return (
@@ -50,25 +40,21 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
       >
         {categories.map(category => {
           const isSelected = selectedCategoryId === category.id;
-          const textColor = isSelected ? getTextColor(category.color) : category.color;
-          const backgroundColor = isSelected 
-            ? getLightBackgroundColor(category.color) 
-            : 'transparent';
 
           return (
             <Badge
               key={category.id}
               variant="outline"
-              className={`cursor-pointer transition-all duration-200 border-2 px-2.5 py-1.5 text-xs sm:text-sm font-medium hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 min-h-[28px] ${
+              className={`cursor-pointer transition-all duration-200 px-3 py-1.5 text-xs sm:text-sm font-medium hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 min-h-[32px] border-2 ${
                 disabled ? 'opacity-50 cursor-not-allowed' : ''
               } ${isSelected 
-                ? 'shadow-md ring-1 ring-black/5' 
-                : 'hover:shadow-sm border-opacity-30'
+                ? 'shadow-sm ring-2 ring-offset-1' 
+                : 'hover:shadow-sm'
               }`}
               style={{
-                borderColor: category.color,
-                backgroundColor: backgroundColor,
-                color: textColor,
+                borderColor: isSelected ? category.color : `${category.color}60`,
+                backgroundColor: isSelected ? category.color : 'transparent',
+                color: isSelected ? getTextColor(category.color) : category.color,
                 '--tw-ring-color': category.color
               } as React.CSSProperties}
               onClick={() => !disabled && onSelectCategory(category.id)}
@@ -103,12 +89,13 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
               }}
             >
               <div
-                className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full mr-1.5 flex-shrink-0"
+                className="w-2.5 h-2.5 rounded-full mr-2 flex-shrink-0"
                 style={{
-                  backgroundColor: category.color
+                  backgroundColor: isSelected ? 'currentColor' : category.color,
+                  boxShadow: isSelected ? 'none' : `inset 0 0 0 1px ${category.color}20`
                 }}
               />
-              <span className="truncate max-w-[80px] sm:max-w-none">
+              <span className="truncate max-w-[80px] sm:max-w-none font-medium">
                 {category.name}
               </span>
             </Badge>

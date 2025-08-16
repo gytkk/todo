@@ -86,13 +86,7 @@ export class TodoService extends BaseApiClient {
     try {
       const createRequest = {
         title: todo.title,
-        category: {
-          ...todo.category,
-          // category.createdAt이 존재하는 경우에만 변환, 없으면 현재 시간 사용
-          createdAt: todo.category?.createdAt
-            ? this.convertDateToISO(todo.category.createdAt)
-            : this.convertDateToISO(new Date()),
-        },
+        categoryId: todo.category.id,
         todoType: todo.todoType,
         date: this.convertDateToISO(todo.date),
       };
@@ -130,10 +124,7 @@ export class TodoService extends BaseApiClient {
       if (updates.title !== undefined) updateRequest.title = updates.title;
       if (updates.completed !== undefined) updateRequest.completed = updates.completed;
       if (updates.category !== undefined) {
-        updateRequest.category = {
-          ...updates.category,
-          createdAt: this.convertDateToISO(updates.category.createdAt),
-        };
+        updateRequest.categoryId = updates.category.id;
       }
       if (updates.date !== undefined) updateRequest.date = this.convertDateToISO(updates.date);
 

@@ -3,17 +3,16 @@
   "version": "0.1.0",
   "description": "Shared TypeScript types for calendar todo monorepo",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "types": "src/index.ts",
   "files": [
-    "dist"
+    "src"
   ],
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
+    "build": "tsc --noEmit",
+    "dev": "tsc --noEmit --watch",
     "type-check": "tsc --noEmit",
     "lint": "echo \"No linting needed for types-only package\"",
-    "clean": "rm -rf dist"
+    "clean": "echo \"No build artifacts to clean\""
   },
   "dependencies": {},
   "devDependencies": {
@@ -22,19 +21,19 @@
   },
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.js"
+      "types": "./src/index.ts"
     },
     "./auth": {
-      "types": "./dist/auth.d.ts",
-      "import": "./dist/auth.js",
-      "require": "./dist/auth.js"
+      "types": "./src/auth.ts"
     },
     "./todo": {
-      "types": "./dist/todo.d.ts",
-      "import": "./dist/todo.js",
-      "require": "./dist/todo.js"
+      "types": "./src/todo.ts"
+    },
+    "./app": {
+      "types": "./src/app.ts"
+    },
+    "./settings": {
+      "types": "./src/settings.ts"
     }
   }
 }

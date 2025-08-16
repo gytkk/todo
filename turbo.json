@@ -15,6 +15,10 @@
         "dist/**"
       ]
     },
+    "@calendar-todo/shared-types#build": {
+      "dependsOn": [],
+      "outputs": []
+    },
     "dev": {
       "cache": false,
       "persistent": true
