@@ -82,18 +82,18 @@ model UserSettings {
   defaultView String @default("month")
 
   // Calendar Settings
-  dateFormat  String @default("YYYY-MM-DD")
-  timeFormat  String @default("24h")
-  timezone    String @default("Asia/Seoul")
-  weekStart   String @default("sunday")
+  dateFormat String @default("YYYY-MM-DD")
+  timeFormat String @default("24h")
+  timezone   String @default("Asia/Seoul")
+  weekStart  String @default("sunday")
 
   // Todo Settings
-  oldTodoDisplayLimit        Int     @default(30)
-  autoMoveTodos              Boolean @default(true)
-  showTaskMoveNotifications  Boolean @default(true)
-  saturationEnabled          Boolean @default(true)
-  saturationLevels           Json    @default("[{\"days\":7,\"opacity\":1.0},{\"days\":14,\"opacity\":0.8},{\"days\":30,\"opacity\":0.6}]")
-  completedTodoDisplay       String  @default("all")
+  oldTodoDisplayLimit       Int     @default(30)
+  autoMoveTodos             Boolean @default(true)
+  showTaskMoveNotifications Boolean @default(true)
+  saturationEnabled         Boolean @default(true)
+  saturationLevels          Json    @default("[{\"days\":7,\"opacity\":1.0},{\"days\":14,\"opacity\":0.8},{\"days\":30,\"opacity\":0.6}]")
+  completedTodoDisplay      String  @default("all")
 
   // Legacy Settings (for compatibility)
   showWeekends   Boolean @default(true)

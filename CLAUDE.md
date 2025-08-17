@@ -31,7 +31,7 @@ This is a Korean calendar-based todo application built with Next.js 15, TypeScri
 - **Frontend**: Next.js 15, React 19, TypeScript, shadcn/ui, Tailwind CSS
 - **Backend**: Fastify, TypeScript, JWT Authentication, Swagger/OpenAPI, Prisma ORM
 - **Database**: PostgreSQL 15 with Prisma Client
-- **Infrastructure**: Docker Compose for development environment (PostgreSQL + pgAdmin)
+- **Infrastructure**: Local PostgreSQL via Prisma development server
 - **Testing**: Jest with coverage thresholds, React Testing Library, PostgreSQL integration tests
 - **Development**: Turborepo monorepo, pnpm workspaces
 
@@ -48,7 +48,7 @@ This project uses Turborepo for monorepo management with the following structure
 │   ├── shared-types/      # Shared TypeScript types between frontend/backend
 │   └── ui/                # Shared UI components library (shadcn/ui)
 ├── z_plans/               # Implementation planning and TODO tracking
-├── docker-compose.yml     # PostgreSQL and pgAdmin setup
+├── prisma/                 # Database schema and migrations
 ├── docs/                   # Project documentation and setup guides
 ├── CLAUDE.md              # Documentation for Claude Code 
 ├── package.json           # Root package.json with workspaces
@@ -166,7 +166,7 @@ This project uses Turborepo for monorepo management with the following structure
 
 ### Data Architecture
 
-- **PostgreSQL Database**: Primary relational data store with Docker containerization
+- **PostgreSQL Database**: Primary relational data store with local development setup
 - **Prisma ORM**: Type-safe database access with automatic migrations
 - **User-Scoped Data**: Isolated data access per user with foreign key constraints
 - **JWT Authentication**: Secure token-based authentication flow
@@ -241,7 +241,7 @@ This project uses Turborepo for monorepo management with the following structure
 - **Performance Optimization**: Indexed queries and transaction support
 - **Backend API Integration**: Full Fastify API with PostgreSQL database
 - **API Routes**: Next.js API routes acting as backend proxies with authentication
-- **Docker Development Environment**: PostgreSQL and pgAdmin setup
+- **Local Development Environment**: PostgreSQL with Prisma development server
 - **Enhanced Testing**: Jest with coverage thresholds and PostgreSQL integration tests
 
 ## Build and Testing Procedures
@@ -251,27 +251,24 @@ This project uses Turborepo for monorepo management with the following structure
 - Node.js (Latest LTS version recommended)
 - pnpm package manager
 - Turborepo CLI
-- Docker and Docker Compose (for PostgreSQL)
+- PostgreSQL (for local development)
 
 ### Infrastructure Setup
 
 #### Database Setup (PostgreSQL)
 
 ```bash
-# Start PostgreSQL and pgAdmin
-docker-compose up -d
+# Start local PostgreSQL development server
+pnpx prisma db push
 
-# PostgreSQL connection details:
-# Host: localhost
-# Port: 5432
-# Database: todoapp
-# Username: todouser
-# Password: todopass123
+# Generate Prisma client
+pnpx prisma generate
 
-# Access pgAdmin (PostgreSQL management)
-open http://localhost:8080
-# Email: admin@todoapp.com
-# Password: admin123
+# Run database migrations
+pnpx prisma migrate dev
+
+# View database in Prisma Studio
+pnpx prisma studio
 
 # Database health check
 curl http://localhost:3001/health/database
@@ -441,19 +438,20 @@ Before committing changes, run the following commands in order:
   - Backend: <http://localhost:3001>
 - **Module resolution**: Check import paths and package dependencies
 - **Cache issues**: Clear turbo cache with `turbo clean`
-- **Database connection**: Ensure Docker is running and PostgreSQL container is healthy
+- **Database connection**: Ensure PostgreSQL is running and database is accessible
 - **Authentication issues**: Check JWT token validity and backend API connectivity
 
 #### Database Issues
 
-- **PostgreSQL connection failed**: Check if Docker is running and PostgreSQL container is up
+- **PostgreSQL connection failed**: Check if PostgreSQL service is running locally
 
   ```bash
-  docker-compose ps
-  docker-compose logs postgres
+  # Check PostgreSQL service status
+  pnpx prisma db pull
+  pnpx prisma generate
   ```
 
-- **Data persistence**: PostgreSQL data is stored in Docker volumes, survives container restarts
+- **Data persistence**: Local PostgreSQL data persists between development sessions
 - **Migration issues**: Run Prisma migrations to sync schema
 
   ```bash
@@ -461,8 +459,12 @@ Before committing changes, run the following commands in order:
   pnpx prisma generate
   ```
 
-- **Authentication errors**: Verify PostgreSQL credentials match environment configuration
-- **Port conflicts**: Ensure ports 5432 (PostgreSQL) and 8080 (pgAdmin) are available
+- **Authentication errors**: Verify PostgreSQL credentials in environment configuration
+- **Schema sync**: Use Prisma Studio to inspect database state
+
+  ```bash
+  pnpx prisma studio
+  ```
 
 #### Testing Issues
 
@@ -501,24 +503,24 @@ pnpm add <package> --filter=@calendar-todo/shared-types
 pnpm add <package> --filter=@calendar-todo/ui
 ```
 
-### Docker Management
+### Database Management
 
 ```bash
-# Start all services (PostgreSQL and pgAdmin)
-docker-compose up -d
+# Initialize and reset database
+pnpx prisma migrate reset
 
-# Stop all services
-docker-compose down
+# Apply pending migrations
+pnpx prisma migrate dev
 
-# View service logs
-docker-compose logs postgres
-docker-compose logs pgadmin
-# Reset all data
-docker-compose down -v
-docker-compose up -d
+# Push schema changes without migration
+pnpx prisma db push
 
-# Access service shells
-docker exec -it todo-postgres psql -U todouser -d todoapp```
+# View database content
+pnpx prisma studio
+
+# Generate Prisma client after schema changes
+pnpx prisma generate
+```
 
 ### Deployment Preparation
 

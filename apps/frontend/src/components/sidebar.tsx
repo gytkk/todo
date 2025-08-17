@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@calendar-todo/ui";
-import { Home, Settings, Menu, User, LucideIcon, BarChart3, LogIn, LogOut } from "lucide-react";
+import { Home, Settings, Menu, User, LucideIcon, BarChart3, LogIn, LogOut, CheckSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CategoryFilter } from "@/components/categories/CategoryFilter";
 import { useCategoryContext } from "@/contexts/AppContext";
@@ -39,6 +39,12 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
       name: "홈",
       icon: Home,
       href: "/",
+    },
+    {
+      id: "todos",
+      name: "할 일",
+      icon: CheckSquare,
+      href: "/todos",
     },
     {
       id: "statistics",
@@ -157,7 +163,7 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
           {menuItems.map((item: MenuItem) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
-            const isDisabled = (item.id === "statistics" || item.id === "settings") && (!isAuthenticated && !isLoading);
+            const isDisabled = (item.id === "statistics" || item.id === "settings" || item.id === "todos") && (!isAuthenticated && !isLoading);
 
             if (isDisabled) {
               return (

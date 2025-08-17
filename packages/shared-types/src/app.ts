@@ -2,7 +2,7 @@
 export type { UserInfo, Category, AppSettings } from './settings';
 
 // 페이지/네비게이션 관련 타입들
-export type PageType = "home" | "statistics" | "settings";
+export type PageType = "home" | "statistics" | "settings" | "todos";
 
 export interface SidebarState {
   expanded: boolean;
