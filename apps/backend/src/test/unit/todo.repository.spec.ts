@@ -28,7 +28,7 @@ describe('TodoPostgresRepository - Unit Tests', () => {
         title: 'Test Todo',
         date: new Date(),
         completed: false,
-        todoType: TodoType.EVENT,
+        todoType: 'event' as TodoType,
         userId: 'user-id',
         categoryId: 'category-id',
         createdAt: new Date(),
@@ -81,7 +81,7 @@ describe('TodoPostgresRepository - Unit Tests', () => {
         title: 'Test Todo',
         date: new Date(),
         completed: false,
-        todoType: TodoType.EVENT,
+        todoType: 'event' as TodoType,
         userId: 'user-id',
         categoryId: 'category-id',
         createdAt: new Date(),
@@ -139,7 +139,7 @@ describe('TodoPostgresRepository - Unit Tests', () => {
           title: 'Todo 1',
           date: new Date(),
           completed: false,
-          todoType: TodoType.EVENT,
+          todoType: 'event' as TodoType,
           userId: 'user-id',
           categoryId: 'category-id',
           createdAt: new Date(),
@@ -282,7 +282,7 @@ describe('TodoPostgresRepository - Unit Tests', () => {
       // Arrange
       const filter = {
         userId: 'user-id',
-        todoType: TodoType.TASK
+        todoType: 'task' as TodoType
       };
 
       mockPrisma.todo.findMany.mockResolvedValue([]);
@@ -294,7 +294,7 @@ describe('TodoPostgresRepository - Unit Tests', () => {
       expect(mockPrisma.todo.findMany).toHaveBeenCalledWith({
         where: {
           userId: 'user-id',
-          todoType: TodoType.TASK
+          todoType: 'task' as TodoType
         },
         include: {
           category: {
@@ -330,7 +330,7 @@ describe('TodoPostgresRepository - Unit Tests', () => {
         title: 'New Todo',
         date: new Date(),
         completed: false,
-        todoType: TodoType.EVENT,
+        todoType: 'event' as TodoType,
         userId: 'user-id',
         categoryId: 'category-id'
       };
@@ -367,7 +367,7 @@ describe('TodoPostgresRepository - Unit Tests', () => {
         id: 'todo-id',
         ...todoData,
         completed: false,
-        todoType: TodoType.EVENT,
+        todoType: 'event' as TodoType,
         createdAt: new Date(),
         updatedAt: new Date()
       };
@@ -379,11 +379,7 @@ describe('TodoPostgresRepository - Unit Tests', () => {
 
       // Assert
       expect(mockPrisma.todo.create).toHaveBeenCalledWith({
-        data: {
-          ...todoData,
-          completed: false,
-          todoType: TodoType.EVENT
-        }
+        data: todoData
       });
       expect(result).toEqual(createdTodo);
     });
@@ -418,7 +414,7 @@ describe('TodoPostgresRepository - Unit Tests', () => {
         title: 'Updated Title',
         date: new Date(),
         completed: true,
-        todoType: TodoType.EVENT,
+        todoType: 'event' as TodoType,
         userId: 'user-id',
         categoryId: 'category-id',
         createdAt: new Date(),
@@ -531,7 +527,7 @@ describe('TodoPostgresRepository - Unit Tests', () => {
         title: 'Test Todo',
         date: new Date(),
         completed: false,
-        todoType: TodoType.EVENT,
+        todoType: 'event' as TodoType,
         userId: 'user-id',
         categoryId: 'category-id',
         createdAt: new Date(),
@@ -565,7 +561,7 @@ describe('TodoPostgresRepository - Unit Tests', () => {
         title: 'Test Todo',
         date: new Date(),
         completed: true,
-        todoType: TodoType.EVENT,
+        todoType: 'event' as TodoType,
         userId: 'user-id',
         categoryId: 'category-id',
         createdAt: new Date(),
@@ -609,7 +605,7 @@ describe('TodoPostgresRepository - Unit Tests', () => {
         title: 'Test Todo',
         date: new Date(),
         completed: false,
-        todoType: TodoType.EVENT,
+        todoType: 'event' as TodoType,
         userId: 'user-id',
         categoryId: 'category-id',
         createdAt: new Date(),
@@ -638,7 +634,7 @@ describe('TodoPostgresRepository - Unit Tests', () => {
           title: 'Old Task 1',
           date: new Date('2024-01-10'),
           completed: false,
-          todoType: TodoType.TASK,
+          todoType: 'task' as TodoType,
           userId,
           categoryId: 'category-id',
           createdAt: new Date(),
@@ -649,7 +645,7 @@ describe('TodoPostgresRepository - Unit Tests', () => {
           title: 'Old Task 2',
           date: new Date('2024-01-12'),
           completed: false,
-          todoType: TodoType.TASK,
+          todoType: 'task' as TodoType,
           userId,
           categoryId: 'category-id',
           createdAt: new Date(),
@@ -667,7 +663,7 @@ describe('TodoPostgresRepository - Unit Tests', () => {
         where: {
           userId,
           completed: false,
-          todoType: TodoType.TASK,
+          todoType: 'task' as TodoType,
           date: { lt: beforeDate }
         },
         orderBy: { date: 'asc' }
@@ -757,12 +753,12 @@ describe('TodoPostgresRepository - Unit Tests', () => {
 
       expect(mockPrisma.todo.groupBy).toHaveBeenCalledWith({
         by: ['completed'],
-        where: { userId, todoType: TodoType.EVENT },
+        where: { userId, todoType: 'event' as TodoType },
         _count: { id: true }
       });
       expect(mockPrisma.todo.groupBy).toHaveBeenCalledWith({
         by: ['completed'],
-        where: { userId, todoType: TodoType.TASK },
+        where: { userId, todoType: 'task' as TodoType },
         _count: { id: true }
       });
 

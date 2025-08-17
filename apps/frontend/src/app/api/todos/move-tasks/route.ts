@@ -12,6 +12,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get the request body
+    const body = await request.json();
+
     // Forward request to backend
     const backendUrl = `${process.env.BACKEND_URL || 'http://localhost:3001'}/todos/move-tasks`;
     
@@ -21,6 +24,7 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${authToken}`,
       },
+      body: JSON.stringify(body),
     });
 
     const data = await response.json();

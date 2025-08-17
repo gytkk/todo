@@ -72,13 +72,12 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
       {children}
       
       {/* 토스트 컨테이너 */}
-      <div className="fixed top-0 right-0 z-50 p-4 space-y-2 pointer-events-none">
+      <div className="fixed top-4 right-4 z-50 space-y-3 pointer-events-none max-w-sm">
         {toasts.map((toast, index) => (
           <div 
             key={toast.id}
             className="pointer-events-auto"
             style={{ 
-              transform: `translateY(${index * 10}px)`,
               zIndex: 50 - index,
             }}
           >

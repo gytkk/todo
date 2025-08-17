@@ -111,14 +111,14 @@ export class TestHelper {
     title?: string;
     date?: Date;
     completed?: boolean;
-    todoType?: 'EVENT' | 'TASK';
+    todoType?: 'event' | 'task';
   }) {
     return this.prisma.todo.create({
       data: {
         title: todoData?.title || 'Test Todo',
         date: todoData?.date || new Date(),
         completed: todoData?.completed || false,
-        todoType: todoData?.todoType || 'EVENT',
+        todoType: todoData?.todoType || 'event',
         userId,
         categoryId,
       },

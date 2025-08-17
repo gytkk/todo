@@ -193,11 +193,11 @@ describe('Todos Integration Tests', () => {
       
       await testHelper.createTestTodo(userId, categoryId, {
         title: 'Event Todo',
-        todoType: TodoType.EVENT
+        todoType: TodoType.event
       });
       await testHelper.createTestTodo(userId, categoryId, {
         title: 'Task Todo',
-        todoType: TodoType.TASK
+        todoType: TodoType.task
       });
 
       const response = await app.inject({
@@ -796,27 +796,27 @@ describe('Todos Integration Tests', () => {
       // Create various todos for statistics
       await testHelper.createTestTodo(userId, categoryId, {
         title: 'Completed Event',
-        todoType: TodoType.EVENT,
+        todoType: 'event' as TodoType,
         completed: true
       });
       await testHelper.createTestTodo(userId, categoryId, {
         title: 'Incomplete Event',
-        todoType: TodoType.EVENT,
+        todoType: 'event' as TodoType,
         completed: false
       });
       await testHelper.createTestTodo(userId, categoryId, {
         title: 'Completed Task',
-        todoType: TodoType.TASK,
+        todoType: 'task' as TodoType,
         completed: true
       });
       await testHelper.createTestTodo(userId, categoryId, {
         title: 'Incomplete Task 1',
-        todoType: TodoType.TASK,
+        todoType: 'task' as TodoType,
         completed: false
       });
       await testHelper.createTestTodo(userId, categoryId, {
         title: 'Incomplete Task 2',
-        todoType: TodoType.TASK,
+        todoType: 'task' as TodoType,
         completed: false
       });
     });
@@ -916,31 +916,31 @@ describe('Todos Integration Tests', () => {
       // Create tasks with different dates
       await testHelper.createTestTodo(userId, categoryId, {
         title: 'Old Incomplete Task',
-        todoType: TodoType.TASK,
+        todoType: 'task' as TodoType,
         completed: false,
         date: lastWeek
       });
       await testHelper.createTestTodo(userId, categoryId, {
         title: 'Yesterday Incomplete Task',
-        todoType: TodoType.TASK,
+        todoType: 'task' as TodoType,
         completed: false,
         date: yesterday
       });
       await testHelper.createTestTodo(userId, categoryId, {
         title: 'Yesterday Completed Task',
-        todoType: TodoType.TASK,
+        todoType: 'task' as TodoType,
         completed: true,
         date: yesterday
       });
       await testHelper.createTestTodo(userId, categoryId, {
         title: 'Future Task',
-        todoType: TodoType.TASK,
+        todoType: 'task' as TodoType,
         completed: false,
         date: tomorrow
       });
       await testHelper.createTestTodo(userId, categoryId, {
         title: 'Old Event',
-        todoType: TodoType.EVENT,
+        todoType: 'event' as TodoType,
         completed: false,
         date: yesterday
       });
@@ -1028,13 +1028,13 @@ describe('Todos Integration Tests', () => {
 
       const task1 = await testHelper.createTestTodo(userId, categoryId, {
         title: 'Task 1',
-        todoType: TodoType.TASK,
+        todoType: 'task' as TodoType,
         completed: false,
         date: yesterday
       });
       const task2 = await testHelper.createTestTodo(userId, categoryId, {
         title: 'Task 2',
-        todoType: TodoType.TASK,
+        todoType: 'task' as TodoType,
         completed: false,
         date: yesterday
       });
@@ -1062,6 +1062,7 @@ describe('Todos Integration Tests', () => {
       const result = response.json();
       expect(result.success).toBe(true);
       expect(result.movedCount).toBe(2);
+      expect(result.movedTaskIds).toEqual(expect.arrayContaining(taskIds));
       
       // Verify tasks were moved
       const prisma = testHelper.getPrisma();
@@ -1083,7 +1084,7 @@ describe('Todos Integration Tests', () => {
       });
       const otherCategory = await testHelper.createTestCategory(otherUser.id);
       const otherTask = await testHelper.createTestTodo(otherUser.id, otherCategory.id, {
-        todoType: TodoType.TASK
+        todoType: TodoType.task
       });
 
       const response = await app.inject({
@@ -1101,7 +1102,8 @@ describe('Todos Integration Tests', () => {
       expect(response.statusCode).toBe(200);
       const result = response.json();
       expect(result.success).toBe(true);
-      expect(result.movedCount).toBe(2); // Only user's own tasks
+      expect(result.movedCount).toBe(2);
+      expect(result.movedTaskIds).toEqual(expect.arrayContaining(taskIds)); // Only user's own tasks
       
       // Verify other user's task wasn't moved
       const prisma = testHelper.getPrisma();
@@ -1141,6 +1143,30 @@ describe('Todos Integration Tests', () => {
       });
 
       expect(response.statusCode).toBe(400);
+    });
+
+    it('should handle empty taskIds array', async () => {
+      const app = testHelper.getApp();
+      const newDate = new Date().toISOString();
+      
+      const response = await app.inject({
+        method: 'POST',
+        url: '/todos/move-tasks',
+        headers: {
+          authorization: `Bearer ${authToken}`
+        },
+        payload: {
+          taskIds: [],
+          newDate: newDate
+        }
+      });
+
+      expect(response.statusCode).toBe(200);
+      const result = response.json();
+      expect(result.success).toBe(true);
+      expect(result.movedCount).toBe(0);
+      expect(result.movedTaskIds).toEqual([]);
+      expect(result.message).toBe('이동할 태스크가 없습니다');
     });
   });
 });

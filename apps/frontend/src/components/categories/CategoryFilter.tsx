@@ -17,10 +17,6 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
 
   return (
     <div className="p-4 border-t border-gray-200">
-      <div className="mb-3">
-        <h3 className="text-sm font-medium text-gray-700">카테고리 필터</h3>
-      </div>
-
       <div className="space-y-2">
         {categories.map(category => {
           const isActive = categoryFilter[category.id] !== false;
@@ -28,11 +24,10 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
           return (
             <label
               key={category.id}
-              className={`flex items-center gap-3 py-2 px-3 rounded-lg cursor-pointer transition-all duration-200 ease-in-out border hover:shadow-md active:scale-95 ${
-                isActive 
-                  ? 'shadow-sm' 
+              className={`flex items-center gap-3 py-2 px-3 rounded-lg cursor-pointer transition-all duration-200 ease-in-out border hover:shadow-md active:scale-95 ${isActive
+                  ? 'shadow-sm'
                   : 'opacity-60'
-              }`}
+                }`}
               style={{
                 backgroundColor: isActive ? `${category.color}12` : 'transparent',
                 borderColor: isActive ? `${category.color}40` : `${category.color}20`,
@@ -70,9 +65,8 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
                 )}
               </div>
               <div className="flex items-center gap-2 flex-1">
-                <span className={`text-sm font-medium transition-all duration-200 ${
-                  isActive ? 'text-gray-800' : 'text-gray-500'
-                }`}>
+                <span className={`text-sm font-medium transition-all duration-200 ${isActive ? 'text-gray-800' : 'text-gray-500'
+                  }`}>
                   {category.name}
                 </span>
               </div>

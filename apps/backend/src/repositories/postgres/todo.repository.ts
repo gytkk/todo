@@ -5,12 +5,12 @@ import { Prisma, Todo, TodoType } from '@prisma/client';
 
 // Helper functions to transform between frontend (lowercase) and database (uppercase) TodoType values
 function transformTodoTypeToDb(todoType?: string): TodoType {
-  if (!todoType) return TodoType.EVENT;
-  return todoType === 'event' ? TodoType.EVENT : TodoType.TASK;
+  if (!todoType) return TodoType.event;
+  return todoType === 'event' ? TodoType.event : TodoType.task;
 }
 
 function transformTodoTypeFromDb(todoType: TodoType): string {
-  return todoType === TodoType.EVENT ? 'event' : 'task';
+  return todoType === TodoType.event ? 'event' : 'task';
 }
 
 // Transform todo object from database format to frontend format
@@ -368,7 +368,7 @@ export class TodoPostgresRepository extends BasePostgresRepository<Todo> {
         where: {
           userId,
           completed: false,
-          todoType: TodoType.TASK,
+          todoType: TodoType.task,
           date: { lt: beforeDate },
         },
         orderBy: { date: 'asc' },
@@ -413,12 +413,12 @@ export class TodoPostgresRepository extends BasePostgresRepository<Todo> {
         this.prisma.todo.count({ where: { userId, completed: true } }),
         this.prisma.todo.groupBy({
           by: ['completed'],
-          where: { userId, todoType: TodoType.EVENT },
+          where: { userId, todoType: TodoType.event },
           _count: { id: true },
         }),
         this.prisma.todo.groupBy({
           by: ['completed'],
-          where: { userId, todoType: TodoType.TASK },
+          where: { userId, todoType: TodoType.task },
           _count: { id: true },
         }),
       ]);

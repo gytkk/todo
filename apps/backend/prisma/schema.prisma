@@ -54,7 +54,7 @@ model Todo {
   title     String
   date      DateTime
   completed Boolean  @default(false)
-  todoType  TodoType @default(EVENT)
+  todoType  TodoType @default(event)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -110,8 +110,8 @@ model UserSettings {
 }
 
 enum TodoType {
-  EVENT
-  TASK
+  event
+  task
 
   @@map("todo_type")
 }

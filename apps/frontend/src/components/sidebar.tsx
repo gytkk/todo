@@ -106,7 +106,7 @@ export function Sidebar({ onSidebarStateChange, onCloseTodoSidebar }: SidebarPro
       )}
 
       {/* 사이드바 */}
-      <div 
+      <div
         className={cn(
           "fixed left-0 top-0 h-screen bg-white border-r border-gray-100 shadow-sm transition-all duration-300 ease-in-out z-40 flex flex-col overflow-hidden",
           isVisible ? "translate-x-0" : "-translate-x-full",

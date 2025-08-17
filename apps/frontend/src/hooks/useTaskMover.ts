@@ -3,6 +3,7 @@ import { TodoService } from '@/services/todoService';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSettings } from '@/hooks/useSettings';
 import { useToast } from '@/contexts/ToastContext';
+import { useTodos } from '@/hooks/useTodos';
 
 /**
  * 작업 자동 이동을 관리하는 훅
@@ -20,6 +21,7 @@ export const useTaskMover = () => {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { settings } = useSettings();
   const { showSuccess, showError, showInfo } = useToast();
+  const { refetch: refreshTodos } = useTodos();
 
   /**
    * 작업 이동 실행
@@ -38,6 +40,9 @@ export const useTaskMover = () => {
         // 이동된 작업 ID들을 최근 이동 목록에 추가
         if (result.movedCount > 0) {
           setRecentlyMovedTaskIds(result.movedTaskIds);
+          
+          // 할 일 목록 새로고침
+          await refreshTodos();
           
           // 5초 후 하이라이트 제거
           setTimeout(() => {
@@ -68,7 +73,7 @@ export const useTaskMover = () => {
     } finally {
       setIsMoving(false);
     }
-  }, [isAuthenticated, isMoving, settings.autoMoveTodos, settings.showTaskMoveNotifications, showSuccess, showError, showInfo]);
+  }, [isAuthenticated, isMoving, settings.autoMoveTodos, settings.showTaskMoveNotifications, showSuccess, showError, showInfo, refreshTodos]);
 
   /**
    * 이동 대상 작업들 조회

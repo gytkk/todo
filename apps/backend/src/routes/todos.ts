@@ -353,6 +353,7 @@ export default async function (fastify: FastifyInstance) {
           taskIds: {
             type: 'array',
             items: { type: 'string' },
+            minItems: 0,
           },
           newDate: { type: 'string', format: 'date-time' },
         },
@@ -364,6 +365,10 @@ export default async function (fastify: FastifyInstance) {
             success: { type: 'boolean' },
             message: { type: 'string' },
             movedCount: { type: 'number' },
+            movedTaskIds: { 
+              type: 'array',
+              items: { type: 'string' }
+            },
           },
         },
       },
@@ -372,6 +377,17 @@ export default async function (fastify: FastifyInstance) {
     const user = request.user;
     const { taskIds, newDate } = request.body;
 
+    // 빈 배열인 경우 성공으로 처리
+    if (!taskIds || taskIds.length === 0) {
+      reply.send({
+        success: true,
+        message: '이동할 태스크가 없습니다',
+        movedCount: 0,
+        movedTaskIds: [],
+      });
+      return;
+    }
+
     const success = await todoRepository.moveTasks(user.id, taskIds, new Date(newDate));
     
     if (success) {
@@ -379,12 +395,14 @@ export default async function (fastify: FastifyInstance) {
         success: true,
         message: '태스크가 성공적으로 이동되었습니다',
         movedCount: taskIds.length,
+        movedTaskIds: taskIds,
       });
     } else {
       reply.code(500).send({
         success: false,
         message: '태스크 이동 중 오류가 발생했습니다',
         movedCount: 0,
+        movedTaskIds: [],
       });
     }
   });

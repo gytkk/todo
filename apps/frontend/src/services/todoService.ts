@@ -318,13 +318,28 @@ export class TodoService extends BaseApiClient {
           movedTaskIds: []
         };
       }
+      
       const taskIds = dueTasks.data.map((task: TodoItem) => task.id);
-      const today = new Date().toISOString();
+      
+      // 빈 배열인 경우 API 호출하지 않고 성공 응답 반환
+      if (taskIds.length === 0) {
+        return {
+          success: true,
+          message: '이동할 미완료 태스크가 없습니다',
+          movedCount: 0,
+          movedTaskIds: []
+        };
+      }
+      
+      // 오늘 날짜를 시작 시간(00:00:00)으로 설정
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayISO = today.toISOString();
 
       // 태스크들을 오늘로 이동
       const response = await this.post<MoveTasksResponse>('/api/todos/move-tasks', {
         taskIds,
-        newDate: today
+        newDate: todayISO
       });
 
       if (response.status === 401) {
