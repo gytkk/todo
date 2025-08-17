@@ -102,7 +102,14 @@ const SortableCategoryItem: React.FC<SortableCategoryItemProps> = ({
             maxLength={20}
           />
         ) : (
-          <span className="font-medium">{category.name}</span>
+          <div className="flex items-center gap-2">
+            <span className="font-medium">{category.name}</span>
+            {isLastCategory && (
+              <span className="px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full">
+                마지막
+              </span>
+            )}
+          </div>
         )}
       </div>
 
