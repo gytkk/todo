@@ -119,16 +119,19 @@ curl http://localhost:3001/health/database
 ## Backend API Endpoints
 
 **Authentication** (`/auth/*`)
+
 - `POST /auth/register` - User registration
 - `POST /auth/login` - User login with JWT token
 - `POST /auth/refresh` - JWT token refresh
 
 **User Management** (`/users/*`)
+
 - `GET /users/profile` - Get user profile
 - `PUT /users/profile` - Update user profile
 - `PUT /users/change-password` - Change password
 
 **Todo Management** (`/todos/*`)
+
 - `GET /todos` - Get user todos with filtering
 - `POST /todos` - Create new todo
 - `PUT /todos/:id` - Update todo
@@ -138,6 +141,7 @@ curl http://localhost:3001/health/database
 - `POST /todos/move-tasks` - Move incomplete tasks to new dates
 
 **Settings & Categories** (`/user-settings/*`)
+
 - `GET /user-settings` - Get user settings
 - `PUT /user-settings` - Update user settings
 - `GET /user-settings/categories` - Get user categories
