@@ -21,6 +21,7 @@ export const useTodos = (categories: TodoCategory[] = DEFAULT_CATEGORIES) => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
@@ -82,12 +83,12 @@ export const useTodos = (categories: TodoCategory[] = DEFAULT_CATEGORIES) => {
     }
   }, [isAuthenticated]);
 
-  // Load todos when authentication state changes
+  // Load todos when authentication state changes or refresh triggered
   useEffect(() => {
     if (!authLoading) {
       loadTodos();
     }
-  }, [authLoading, isAuthenticated]); // loadTodos 제거하여 무한 재렌더링 방지
+  }, [authLoading, isAuthenticated, refreshTrigger, loadTodos]);
 
   const addTodo = useCallback(async (title: string, date: Date, categoryId: string, todoType: TodoType = 'event') => {
     if (!title.trim() || !date || !categoryId) return;
@@ -118,27 +119,8 @@ export const useTodos = (categories: TodoCategory[] = DEFAULT_CATEGORIES) => {
       }
 
       if (createdTodo) {
-        setTodos(prevTodos => [...prevTodos, createdTodo]);
-        // Update stats including byType
-        setStats(prevStats => {
-          const newTotal = prevStats.total + 1;
-          const newByType = {
-            ...prevStats.byType,
-            [todoType]: {
-              ...prevStats.byType[todoType],
-              total: prevStats.byType[todoType].total + 1,
-              incomplete: prevStats.byType[todoType].incomplete + 1,
-            }
-          };
-          
-          return {
-            ...prevStats,
-            total: newTotal,
-            incomplete: prevStats.incomplete + 1,
-            completionRate: Math.round((prevStats.completed / newTotal) * 100),
-            byType: newByType,
-          };
-        });
+        // 할 일 추가 후 전체 목록을 다시 불러와서 확실하게 업데이트
+        setRefreshTrigger(prev => prev + 1);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : '할일 추가 중 오류가 발생했습니다');
@@ -160,44 +142,8 @@ export const useTodos = (categories: TodoCategory[] = DEFAULT_CATEGORIES) => {
       }
 
       if (success) {
-        setTodos(prevTodos => {
-          return prevTodos.map(todo => {
-            if (todo.id === id) {
-              const updatedTodo = { ...todo, completed: !todo.completed };
-              
-              // Update stats using the todo from the previous state
-              setStats(prevStats => {
-                const isCompleting = !todo.completed;
-                const newCompleted = isCompleting ? prevStats.completed + 1 : prevStats.completed - 1;
-                const newIncomplete = isCompleting ? prevStats.incomplete - 1 : prevStats.incomplete + 1;
-                
-                const newByType = {
-                  ...prevStats.byType,
-                  [todo.todoType]: {
-                    ...prevStats.byType[todo.todoType],
-                    completed: isCompleting 
-                      ? prevStats.byType[todo.todoType].completed + 1 
-                      : prevStats.byType[todo.todoType].completed - 1,
-                    incomplete: isCompleting 
-                      ? prevStats.byType[todo.todoType].incomplete - 1 
-                      : prevStats.byType[todo.todoType].incomplete + 1,
-                  }
-                };
-                
-                return {
-                  ...prevStats,
-                  completed: newCompleted,
-                  incomplete: newIncomplete,
-                  completionRate: Math.round((newCompleted / prevStats.total) * 100),
-                  byType: newByType,
-                };
-              });
-              
-              return updatedTodo;
-            }
-            return todo;
-          });
-        });
+        // 할 일 토글 후 전체 목록을 다시 불러와서 확실하게 업데이트
+        setRefreshTrigger(prev => prev + 1);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : '할일 완료 상태 변경 중 오류가 발생했습니다');
@@ -248,43 +194,8 @@ export const useTodos = (categories: TodoCategory[] = DEFAULT_CATEGORIES) => {
       }
 
       if (success) {
-        setTodos(prevTodos => {
-          const todoToDelete = prevTodos.find(t => t.id === id);
-          
-          // Update stats using the todo from the previous state
-          if (todoToDelete) {
-            setStats(prevStats => {
-              const newTotal = prevStats.total - 1;
-              const newCompleted = todoToDelete.completed ? prevStats.completed - 1 : prevStats.completed;
-              const newIncomplete = todoToDelete.completed ? prevStats.incomplete : prevStats.incomplete - 1;
-              
-              const newByType = {
-                ...prevStats.byType,
-                [todoToDelete.todoType]: {
-                  ...prevStats.byType[todoToDelete.todoType],
-                  total: prevStats.byType[todoToDelete.todoType].total - 1,
-                  completed: todoToDelete.completed 
-                    ? prevStats.byType[todoToDelete.todoType].completed - 1 
-                    : prevStats.byType[todoToDelete.todoType].completed,
-                  incomplete: todoToDelete.completed 
-                    ? prevStats.byType[todoToDelete.todoType].incomplete 
-                    : prevStats.byType[todoToDelete.todoType].incomplete - 1,
-                }
-              };
-              
-              return {
-                ...prevStats,
-                total: newTotal,
-                completed: newCompleted,
-                incomplete: newIncomplete,
-                completionRate: newTotal > 0 ? Math.round((newCompleted / newTotal) * 100) : 0,
-                byType: newByType,
-              };
-            });
-          }
-          
-          return prevTodos.filter(todo => todo.id !== id);
-        });
+        // 할 일 삭제 후 전체 목록을 다시 불러와서 확실하게 업데이트
+        setRefreshTrigger(prev => prev + 1);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : '할일 삭제 중 오류가 발생했습니다');
