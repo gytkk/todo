@@ -9,16 +9,12 @@
 
 - Node.js 18+
 - pnpm 패키지 매니저
-- Docker & Docker Compose (데이터베이스용)
 
 ### 설치 및 실행
 
 ```bash
 # 의존성 설치
 pnpm install
-
-# 데이터베이스 서비스 시작 (PostgreSQL)
-docker-compose up -d
 
 # 개발 서버 실행
 turbo dev
@@ -69,7 +65,6 @@ packages/
 ├── shared-types/              # 공통 타입
 └── ui/                       # 공통 UI 컴포넌트
 docs/                          # 프로젝트 문서
-docker-compose.yml             # 데이터베이스 인프라
 ```
 
 ## ✨ 주요 기능
@@ -116,7 +111,6 @@ docker-compose.yml             # 데이터베이스 인프라
 - PostgreSQL 15 (Primary Database)
 - Prisma ORM (타입 안전 데이터베이스 접근)
 - JWT 인증
-- Docker Compose 인프라
 
 ### 개발 도구
 
@@ -124,7 +118,6 @@ docker-compose.yml             # 데이터베이스 인프라
 - pnpm (패키지 관리)
 - ESLint + Prettier
 - Jest (테스트 프레임워크)
-- Docker Compose (인프라)
 - pgAdmin (PostgreSQL 관리)
 
 ## 🏗️ 아키텍처
@@ -144,26 +137,6 @@ docker-compose.yml             # 데이터베이스 인프라
 - **JWT 인증**: 안전한 토큰 기반 인증
 - **Swagger/OpenAPI**: 자동 API 문서화
 - **타입 안전성**: TypeScript + Prisma
-
-## 🐳 Docker 환경
-
-### 서비스 구성
-
-- **PostgreSQL 15**: 주 데이터베이스 (포트 5432)
-- **pgAdmin**: PostgreSQL 관리 도구 (포트 8080)
-
-### 데이터베이스 접근
-
-```bash
-# PostgreSQL 접속
-docker exec -it todo-postgres psql -U todouser -d todoapp
-
-# 서비스 상태 확인
-docker-compose ps
-
-# 로그 확인
-docker-compose logs postgres
-```
 
 ## 🧪 테스트
 
@@ -212,7 +185,7 @@ turbo test:watch --filter=backend
 
 1. 저장소 클론
 2. `pnpm install` 실행
-3. `docker-compose up -d` 실행
+3. `pnpx prisma dev` 실행 (local PostgreSQL)
 4. `turbo dev` 실행
 
 ### 코드 스타일

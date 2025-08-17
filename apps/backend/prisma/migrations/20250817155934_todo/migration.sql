@@ -1,5 +1,8 @@
+-- CreateSchema
+CREATE SCHEMA IF NOT EXISTS "public";
+
 -- CreateEnum
-CREATE TYPE "public"."todo_type" AS ENUM ('EVENT', 'TASK');
+CREATE TYPE "public"."todo_type" AS ENUM ('event', 'task');
 
 -- CreateEnum
 CREATE TYPE "public"."theme" AS ENUM ('LIGHT', 'DARK', 'SYSTEM');
@@ -39,7 +42,7 @@ CREATE TABLE "public"."todos" (
     "title" TEXT NOT NULL,
     "date" TIMESTAMP(3) NOT NULL,
     "completed" BOOLEAN NOT NULL DEFAULT false,
-    "todoType" "public"."todo_type" NOT NULL DEFAULT 'EVENT',
+    "todoType" "public"."todo_type" NOT NULL DEFAULT 'event',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "userId" TEXT NOT NULL,
@@ -105,3 +108,4 @@ ALTER TABLE "public"."todos" ADD CONSTRAINT "todos_categoryId_fkey" FOREIGN KEY 
 
 -- AddForeignKey
 ALTER TABLE "public"."user_settings" ADD CONSTRAINT "user_settings_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
