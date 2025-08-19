@@ -6,6 +6,22 @@ import { useToast } from '@/contexts/ToastContext';
 import { useTodos } from '@/hooks/useTodos';
 
 /**
+ * localStorage 유틸리티 함수들
+ */
+const NOTIFICATION_STORAGE_KEY = 'task-move-notification-last-shown';
+
+const shouldShowNoTaskNotification = (): boolean => {
+  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+  const lastShown = localStorage.getItem(NOTIFICATION_STORAGE_KEY);
+  return lastShown !== today;
+};
+
+const markNotificationShown = (): void => {
+  const today = new Date().toISOString().split('T')[0];
+  localStorage.setItem(NOTIFICATION_STORAGE_KEY, today);
+};
+
+/**
  * 작업 자동 이동을 관리하는 훅
  */
 export const useTaskMover = () => {
@@ -56,10 +72,14 @@ export const useTaskMover = () => {
             );
           }
         } else if (result.movedCount === 0 && settings.showTaskMoveNotifications) {
-          showInfo(
-            '작업 이동 없음',
-            '이동할 미완료 작업이 없습니다.'
-          );
+          // 하루에 한 번만 '이동할 작업 없음' 알람 표시
+          if (shouldShowNoTaskNotification()) {
+            showInfo(
+              '작업 이동 없음',
+              '이동할 미완료 작업이 없습니다.'
+            );
+            markNotificationShown();
+          }
         }
       }
     } catch (error) {

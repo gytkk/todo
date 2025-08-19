@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, ReactNode, useEffect, useMemo } from 'react';
+import React, { createContext, ReactNode, useEffect, useMemo, useContext } from 'react';
 import { CategoryProvider } from './CategoryContext';
 import { TodoProvider } from './TodoContext';
 import { CalendarProvider } from './CalendarContext';
@@ -14,6 +14,7 @@ interface AppContextType {
   // All contexts are accessible through their specific hooks
   // This interface provides type safety for the combined context
   initialized: boolean;
+  recentlyMovedTaskIds: string[];
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -31,11 +32,12 @@ function AppContextProvider({ children }: AppProviderProps) {
   }, []);
 
   // Initialize task mover for automatic task movement
-  useTaskMover();
+  const { recentlyMovedTaskIds } = useTaskMover();
 
   const contextValue: AppContextType = useMemo(() => ({
-    initialized: true
-  }), []);
+    initialized: true,
+    recentlyMovedTaskIds
+  }), [recentlyMovedTaskIds]);
 
   return (
     <AppContext.Provider value={contextValue}>
@@ -60,7 +62,14 @@ export function AppProvider({ children }: AppProviderProps) {
   );
 }
 
-// Removed Consumer components - no longer needed as providers access data directly
+// Hook to use the AppContext
+export function useAppContext() {
+  const context = useContext(AppContext);
+  if (context === undefined) {
+    throw new Error('useAppContext must be used within an AppProvider');
+  }
+  return context;
+}
 
 // Export individual context hooks for direct usage
 export { useCategoryContext } from './CategoryContext';

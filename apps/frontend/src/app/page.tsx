@@ -5,18 +5,17 @@ import { CalendarView } from "@/components/calendar/CalendarView";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AppLayout } from "@/components/AppLayout";
 import { useCallback, Suspense, useEffect } from "react";
-import { useTodoContext, useCategoryContext } from "@/contexts/AppContext";
+import { useTodoContext, useCategoryContext, useAppContext } from "@/contexts/AppContext";
 import { useCalendar } from "@/hooks/useCalendar";
 import { PageLoading } from "@/components/ui/loading";
 import { ResponsiveContainer, ResponsiveTodoInterface } from "@/components/responsive";
 import { useAuth } from "@/contexts/AuthContext";
-import { useTaskMover } from "@/hooks/useTaskMover";
 
 function HomeContent() {
   const { todos } = useTodoContext();
   const { getFilteredTodos, refreshCategories, categoryFilter, categories } = useCategoryContext();
   const { isAuthenticated } = useAuth();
-  const { recentlyMovedTaskIds } = useTaskMover();
+  const { recentlyMovedTaskIds } = useAppContext();
   const {
     selectedDate,
     isSidebarOpen,
