@@ -1,0 +1,103 @@
+# Development environment values
+# Override default values for development deployment
+
+# Single replica for development
+replicaCount: 1
+
+image:
+  tag: "dev-latest"
+  pullPolicy: Always
+
+# Frontend configuration for development
+frontend:
+  replicaCount: 1
+  image:
+    tag: "dev-latest"
+    pullPolicy: Always
+  resources:
+    limits:
+      cpu: 250m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  autoscaling:
+    enabled: false
+
+# Backend configuration for development
+backend:
+  replicaCount: 1
+  image:
+    tag: "dev-latest"
+    pullPolicy: Always
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 200m
+      memory: 256Mi
+  autoscaling:
+    enabled: false
+  env:
+    NODE_ENV: development
+    PORT: "3001"
+    FRONTEND_URL: http://localhost:3000
+
+# PostgreSQL configuration for development
+postgresql:
+  enabled: true
+  auth:
+    postgresPassword: "dev-postgres123"
+    username: "todouser"
+    password: "dev-todopass123"
+    database: "todoapp_dev"
+  primary:
+    persistence:
+      enabled: true
+      size: 2Gi
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 200m
+        memory: 256Mi
+
+# JWT configuration for development
+jwt:
+  secret: "dev-super-secret-jwt-key-here-min-32-chars-for-development"
+  refreshSecret: "dev-super-secret-refresh-jwt-key-here-min-32-chars-for-development"
+
+# Ingress configuration for development
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+  hosts:
+    - host: calendar-todo-dev.local
+      paths:
+        - path: /
+          pathType: Prefix
+          backend: frontend
+        - path: /api
+          pathType: Prefix
+          backend: backend
+  tls: []
+
+# Database migration
+dbMigration:
+  enabled: true
+  image:
+    tag: "dev-latest"
+
+# Resource limits for development
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi

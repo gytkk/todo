@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "calendar-todo.fullname" . }}-backend
+  labels:
+    {{- include "calendar-todo.backend.labels" . | nindent 4 }}
+data:
+  NODE_ENV: {{ .Values.backend.env.NODE_ENV | quote }}
+  PORT: {{ .Values.backend.env.PORT | quote }}
+  FRONTEND_URL: {{ .Values.backend.env.FRONTEND_URL | quote }}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "calendar-todo.fullname" . }}-frontend
+  labels:
+    {{- include "calendar-todo.frontend.labels" . | nindent 4 }}
+data:
+  NODE_ENV: "production"
+  PORT: "3000"
+  HOSTNAME: "0.0.0.0"

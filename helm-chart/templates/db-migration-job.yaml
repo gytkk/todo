@@ -1,0 +1,65 @@
+{{- if .Values.dbMigration.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "calendar-todo.fullname" . }}-db-migration
+  labels:
+    {{- include "calendar-todo.labels" . | nindent 4 }}
+    app.kubernetes.io/component: db-migration
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "1"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: {{ .Values.dbMigration.backoffLimit }}
+  template:
+    metadata:
+      labels:
+        {{- include "calendar-todo.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: db-migration
+    spec:
+      restartPolicy: {{ .Values.dbMigration.restartPolicy }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "calendar-todo.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: wait-for-db
+          image: postgres:15-alpine
+          command:
+            - sh
+            - -c
+            - |
+              until pg_isready -h {{ if .Values.postgresql.enabled }}{{ include "calendar-todo.fullname" . }}-postgresql{{ else }}{{ .Values.externalDatabase.host }}{{ end }} -p {{ if .Values.postgresql.enabled }}5432{{ else }}{{ .Values.externalDatabase.port }}{{ end }}; do
+                echo "Waiting for database..."
+                sleep 2
+              done
+              echo "Database is ready!"
+      containers:
+        - name: db-migration
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: {{ include "calendar-todo.dbMigration.image" . }}
+          imagePullPolicy: {{ .Values.dbMigration.image.pullPolicy | default .Values.image.pullPolicy }}
+          command:
+            - sh
+            - -c
+            - |
+              echo "Running database migrations..."
+              pnpm prisma generate
+              pnpm prisma db push --accept-data-loss
+              echo "Migrations completed successfully!"
+          env:
+            - name: DATABASE_URL
+              value: {{ include "calendar-todo.databaseUrl" . }}
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 250m
+              memory: 256Mi
+{{- end }}

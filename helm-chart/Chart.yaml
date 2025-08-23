@@ -1,0 +1,25 @@
+apiVersion: v2
+name: calendar-todo
+description: A Korean calendar-based todo application with Next.js frontend and Fastify backend
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+home: https://github.com/gytkk/calendar-todo
+sources:
+  - https://github.com/gytkk/calendar-todo
+maintainers:
+  - name: gytkk
+    email: gytkk@example.com
+keywords:
+  - calendar
+  - todo
+  - nextjs
+  - fastify
+  - postgresql
+dependencies:
+  - name: postgresql
+    version: "15.5.34"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: postgresql.enabled
+annotations:
+  category: Application

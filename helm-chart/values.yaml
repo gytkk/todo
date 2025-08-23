@@ -1,0 +1,184 @@
+# Default values for calendar-todo
+# This is a YAML-formatted file.
+
+replicaCount: 1
+
+image:
+  registry: docker.io
+  repository: calendar-todo
+  tag: latest
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  fsGroup: 1001
+  runAsUser: 1001
+  runAsGroup: 1001
+
+securityContext: {}
+
+# Frontend configuration
+frontend:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: calendar-todo/frontend
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 3000
+    targetPort: 3000
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+
+# Backend configuration
+backend:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: calendar-todo/backend
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 3001
+    targetPort: 3001
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+  env:
+    NODE_ENV: production
+    PORT: "3001"
+    FRONTEND_URL: http://localhost:3000
+
+# PostgreSQL configuration (using Bitnami chart)
+postgresql:
+  enabled: true
+  auth:
+    postgresPassword: "postgres123"
+    username: "todouser"
+    password: "todopass123"
+    database: "todoapp"
+  primary:
+    persistence:
+      enabled: true
+      storageClass: ""
+      size: 8Gi
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+      requests:
+        cpu: 500m
+        memory: 512Mi
+  metrics:
+    enabled: false
+
+# External PostgreSQL configuration (if not using bundled)
+externalDatabase:
+  host: ""
+  port: 5432
+  username: "todouser"
+  password: "todopass123"
+  database: "todoapp"
+  existingSecret: ""
+  existingSecretPasswordKey: ""
+
+# JWT configuration
+jwt:
+  secret: "your-super-secret-jwt-key-here-min-32-chars"
+  refreshSecret: "your-super-secret-refresh-jwt-key-here-min-32-chars"
+  existingSecret: ""
+  secretKey: "jwt-secret"
+  refreshSecretKey: "jwt-refresh-secret"
+
+# Ingress configuration
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: calendar-todo.local
+      paths:
+        - path: /
+          pathType: Prefix
+          backend: frontend
+        - path: /api
+          pathType: Prefix
+          backend: backend
+  tls: []
+    # - secretName: calendar-todo-tls
+    #   hosts:
+    #     - calendar-todo.local
+
+# Persistence
+persistence:
+  enabled: true
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  size: 1Gi
+
+# Database migration job
+dbMigration:
+  enabled: true
+  image:
+    repository: calendar-todo/backend
+    tag: latest
+  restartPolicy: OnFailure
+  backoffLimit: 5
+
+# Monitoring
+monitoring:
+  enabled: false
+  serviceMonitor:
+    enabled: false
+    namespace: ""
+    labels: {}
+
+# Resource quotas
+resources: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
